@@ -1,6 +1,6 @@
 '''
 E3SM CLUBB Diagnostics package 
-
+# python CLUBB_PROF_20250117.py
 Main code to make 1) 2D plots,2) profiles, 3) budgets on selected stations, 
          and then build up  webpages  etc
     Zhun Guo : guozhun@lasg.iap.ac.cn ; guozhun@uwm.edu
