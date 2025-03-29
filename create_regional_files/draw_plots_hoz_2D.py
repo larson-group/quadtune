@@ -1,5 +1,5 @@
 '''
-    Draw 2D plots
+    Draw 2D plots.Set MKREG=True, to create Regional files (set Intll=xx), the profiles of selected sites are also contained in RG files.
     Updates on Jan 2025 
     Zhun Guo : guozhun@lasg.iap.ac.cn ; guozhun@uwm.edu
     Kate Thayer-Calder
