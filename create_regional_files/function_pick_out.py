@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Apr 10 13:24:40 2019
+    Find out the location of selected sites.
     Updates on Jan 2025
     Zhun Guo : guozhun@lasg.iap.ac.cn ; guozhun@uwm.edu
     Kate Thayer-Calder
