@@ -83,6 +83,13 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     # Remove prefixes from CLUBB variable names in order to shorten them
     paramsAbbrv = abbreviateParamsNames(paramsNames)
 
+    # If the singular values are to be related to the eigenvalues of the covariance matrix
+    #     then the columns of the matrix to decompose, X, must have each column centered.
+    #     https://stats.stackexchange.com/questions/134282/relationship-between-svd-and-pca-how-to-use-svd-to-perform-pca
+    #     https://stats.stackexchange.com/questions/189822/how-does-centering-make-a-difference-in-pca-for-svd-and-eigen-decomposition
+    normlzdLinplusSensMatrixPolyColCenter = \
+        normlzdLinplusSensMatrixPoly - np.mean(normlzdLinplusSensMatrixPoly, axis=0)
+
     # Create a way to order the metrics by sensitivity, for later use in plots
     metricsSens = np.linalg.norm(normlzdWeightedSensMatrixPoly, axis=1)  # measure of sensitivity of each metric
     # metricsSensOrder = (rankdata(metricsSens) - 1).astype(int)  # this ordering doesn't work as an index
@@ -334,10 +341,6 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
 
         print("Creating paramsIncrBarChart . . .")
 
-        u, s, vh = \
-            np.linalg.svd(normlzdLinplusSensMatrixPoly,
-                          full_matrices=False)
-
         sumParamsIncrs = np.mean(minusNonlinMatrixDparamsOrdered, axis=0)
         calcBias = np.sum( sumParamsIncrs )
         sumParamsIncrsPlusBiases = np.append(sumParamsIncrs, calcBias)
@@ -583,15 +586,15 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
 
 
     if createPlotType['biasesVsSvdScatterplot']:
+
         print("Creating biasesVsSvdScatterplot . . .")
 
         # vh = V^T = transpose of right-singular vector matrix, V.
-        #normlzdSensMatrixPolyCentered = normlzdSensMatrixPoly - np.mean(normlzdSensMatrixPoly,0)
-
-        #normlzdLinplusSensMatrixPolyCentered = normlzdLinplusSensMatrixPoly - np.mean(normlzdLinplusSensMatrixPoly, 0)
-
+        #u, s, vh = \
+        #    np.linalg.svd(normlzdLinplusSensMatrixPoly,
+        #                  full_matrices=False)
         u, s, vh = \
-            np.linalg.svd(normlzdLinplusSensMatrixPoly,
+            np.linalg.svd(normlzdLinplusSensMatrixPolyColCenter,
                           full_matrices=False)
 
         #normlzdLinplusSensMatrixPolyPlusBias = np.hstack((normlzdLinplusSensMatrixPoly, normlzdDefaultBiasesCol))
@@ -874,6 +877,7 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
             tunedLossChange[:numBoxes, :],
             globTunedLossChange[:numBoxes, :],
             normlzdLinplusSensMatrixPoly[:numBoxes, :],
+            normlzdLinplusSensMatrixPolyColCenter[:numBoxes, :],
             paramsAbbrv,
             downloadConfig,
             useLongTitle,
@@ -904,8 +908,8 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
         #matrixDictKeyString = "normlzdLinplusSensMatrixPolyDebiased"
         #matrixDict = {matrixDictKeyString: normlzdLinplusSensMatrixPolyDebiased}
 
-        matrixDictKeyString = "normlzdLinplusSensMatrixPoly"
-        matrixDict = {matrixDictKeyString: normlzdLinplusSensMatrixPoly}
+        matrixDictKeyString = "normlzdLinplusSensMatrixPolyColCenter"
+        matrixDict = {matrixDictKeyString: normlzdLinplusSensMatrixPolyColCenter}
         u, s, vh = \
             np.linalg.svd(matrixDict[matrixDictKeyString], full_matrices=False)
 
@@ -925,7 +929,7 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
         if useLongTitle:
             plotTitle = "SVD v^T Matrix, " + matrixDictKeyString
         else:
-            plotTitle = "Right singular vector matrix"
+            plotTitle = "Right singular vector matrix, <i>v</i><sup>T</sup>"
         vhMatrixFig = \
         createColoredMatrixFig(
             matrix=vh,
@@ -1064,6 +1068,7 @@ def createMapGallery(
     tunedLossChange,
     globTunedLossChange,
     normlzdLinplusSensMatrixPoly,
+    normlzdLinplusSensMatrixPolyColCenter,
     paramsAbbrv,
     downloadConfig,
     useLongTitle,
@@ -1255,7 +1260,10 @@ def createMapGallery(
     #print("1e6*defaultLossCol = ", 1e6*np.sort(defaultLossCol[:,0]))
 
     u, s, vh = \
-        np.linalg.svd(normlzdLinplusSensMatrixPoly, full_matrices=False)
+        np.linalg.svd(normlzdLinplusSensMatrixPolyColCenter, full_matrices=False)
+
+    #u, s, vh = \
+    #    np.linalg.svd(normlzdLinplusSensMatrixPoly, full_matrices=False)
 
     #u, s, vh = \
     #    np.linalg.svd(normlzdCurvMatrix, full_matrices=False)
@@ -3360,7 +3368,6 @@ def calcMatrixAngles(matrix):
     Calculate cos(angle) among all rows of the same matrix.
     Return a matrix of cosines.
     """
-
 
     normed_matrix = normalize(matrix, axis=1, norm='l2')
 

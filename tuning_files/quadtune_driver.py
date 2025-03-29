@@ -107,7 +107,7 @@ def main():
 
     prescribedBiasesCol = normlzdPrescribedBiasesCol * np.abs(normMetricValsCol)
 
-    # defaultBiasesCol + prescribedBiasesCol = -fwdFnc_tuned_params  (see objFnc).
+    # defaultBiasesCol + prescribedBiasesCol = -fwdFnc_tuned_params  (see lossFnc).
     #     This lumps the prescribed-parameter adjustment into defaultBiasesCol.
     #        but it may be clearer to separate them out.
     # defaultBiasesCol = default simulation - observations
@@ -200,23 +200,23 @@ def main():
     # Check whether the minimizer actually reduces chisqd
     # Initial value of chisqd, which assumes parameter perturbations are zero
     #normlzdWeightedDefaultBiasesCol = metricsWeights * normlzdDefaultBiasesCol
-    chisqdZero = objFnc(np.zeros_like(defaultParamValsOrigRow), \
-                        normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights, \
-                        normlzdCurvMatrix, reglrCoef, numMetrics)
+    chisqdZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
+                         normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
+                         normlzdCurvMatrix, reglrCoef, numMetrics)
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
-    chisqdMin = objFnc(dnormlzdParamsSolnNonlin.T, \
-                        normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights, \
+    chisqdMin = lossFnc(dnormlzdParamsSolnNonlin.T,
+                        normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
                         normlzdCurvMatrix, reglrCoef, numMetrics)
 
     print("chisqdMinRatio =", chisqdMin/chisqdZero)
 
-    chisqdUnweightedZero = objFnc(np.zeros_like(defaultParamValsOrigRow), \
-                        normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights), \
-                        normlzdCurvMatrix, reglrCoef, numMetrics)
+    chisqdUnweightedZero = lossFnc(np.zeros_like(defaultParamValsOrigRow), \
+                                   normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights), \
+                                   normlzdCurvMatrix, reglrCoef, numMetrics)
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
-    chisqdUnweightedMin = objFnc(dnormlzdParamsSolnNonlin.T, \
-                        normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights), \
-                        normlzdCurvMatrix, reglrCoef, numMetrics)
+    chisqdUnweightedMin = lossFnc(dnormlzdParamsSolnNonlin.T, \
+                                  normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights), \
+                                  normlzdCurvMatrix, reglrCoef, numMetrics)
 
     print("chisqdUnweightedMinRatio =", chisqdUnweightedMin/chisqdUnweightedZero)
 
@@ -231,15 +231,15 @@ def main():
     # Check whether the minimizer actually reduces chisqd
     # Initial value of chisqd, which assumes parameter perturbations are zero
     normlzdGlobTunedBiasesCol = globTunedBiasesCol/np.abs(normMetricValsCol)
-    chisqdGlobTunedMin = objFnc(np.zeros_like(defaultParamValsOrigRow), \
-                        normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, metricsWeights, \
-                        normlzdCurvMatrix, reglrCoef, numMetrics)
+    chisqdGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow), \
+                                 normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, metricsWeights, \
+                                 normlzdCurvMatrix, reglrCoef, numMetrics)
 
     print("chisqdGlobTunedMinRatio =", chisqdGlobTunedMin/chisqdZero)
 
-    chisqdUnweightedGlobTunedMin = objFnc(np.zeros_like(defaultParamValsOrigRow), \
-                        normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, np.ones_like(metricsWeights), \
-                        normlzdCurvMatrix, reglrCoef, numMetrics)
+    chisqdUnweightedGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow), \
+                                           normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, np.ones_like(metricsWeights), \
+                                           normlzdCurvMatrix, reglrCoef, numMetrics)
 
     print("chisqdUnweightedGlobTunedMinRatio =", chisqdUnweightedGlobTunedMin/chisqdUnweightedZero)
     print("-----------------------------------------------------")
@@ -318,14 +318,14 @@ def lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
     """Each regional component of loss function (including squares)"""
 
     weightedBiasDiffSqdCol = \
-        np.square( (-normlzdDefaultBiasesCol \
-         - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) \
+        np.square( (-normlzdDefaultBiasesCol
+                    - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) \
          ) * metricsWeights )
 
     return weightedBiasDiffSqdCol
 
-def objFnc(dnormlzdParams, normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-           normlzdCurvMatrix, reglrCoef, numMetrics):
+def lossFnc(dnormlzdParams, normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
+            normlzdCurvMatrix, reglrCoef, numMetrics):
     """Define objective function (a.k.a. loss function) that is to be minimized."""
 
     dnormlzdParams = np.atleast_2d(dnormlzdParams).T # convert from 1d row array to 2d column array
@@ -337,8 +337,12 @@ def objFnc(dnormlzdParams, normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWe
     #    np.square( (-normlzdDefaultBiasesCol \
     #     - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) \
     #     ) * metricsWeights )
-    chisqd = np.sqrt(np.sum(weightedBiasDiffSqdCol)) \
+    # This is the chisqd fnc listed in Eqn. (15.2.2) of Numerical Recipes, 1992.
+    # It is like MSE (not RMSE), except that it sums the squares rather than averaging them.
+    chisqd = np.sum(weightedBiasDiffSqdCol) \
              + reglrCoef * np.linalg.norm(dnormlzdParams, ord=1)
+    #chisqd = np.sqrt(np.sum(weightedBiasDiffSqdCol)) \
+    #         + reglrCoef * np.linalg.norm(dnormlzdParams, ord=1)
     #chisqd = np.linalg.norm( weightedBiasDiffCol, ord=2 )**1  \
     #            + reglrCoef * np.linalg.norm( dnormlzdParams, ord=1 )
 
@@ -364,14 +368,14 @@ def solveUsingNonlin(metricsNames,
     x0TwoYr = np.array([0.5805136, -0.2722521, -0.8183079, 0.3150205, -0.4794127])
     # Perform nonlinear optimization
     #normlzdDefaultBiasesCol = defaultBiasesCol/np.abs(normMetricValsCol)
-    #dnormlzdParamsSolnNonlin = minimize(objFnc,x0=np.ones_like(np.transpose(defaultParamValsOrigRow)), \
-    dnormlzdParamsSolnNonlin = minimize(objFnc,x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])), \
-    #dnormlzdParamsSolnNonlin = minimize(objFnc,x0=x0TwoYr, \
-    #dnormlzdParamsSolnNonlin = minimize(objFnc,dnormlzdParamsSoln, \
-                               args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-                               normlzdCurvMatrix, reglrCoef, numMetrics),\
-                               method='Powell', tol=1e-12,
-                               bounds=Bounds(lb=lowerBoundsCol) )
+    #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=np.ones_like(np.transpose(defaultParamValsOrigRow)), \
+    dnormlzdParamsSolnNonlin = minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])), \
+                                        #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=x0TwoYr, \
+                                        #dnormlzdParamsSolnNonlin = minimize(lossFnc,dnormlzdParamsSoln, \
+                                        args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
+                               normlzdCurvMatrix, reglrCoef, numMetrics), \
+                                        method='Powell', tol=1e-12,
+                                        bounds=Bounds(lb=lowerBoundsCol))
     dnormlzdParamsSolnNonlin = np.atleast_2d(dnormlzdParamsSolnNonlin.x).T
 
 
@@ -423,10 +427,10 @@ def solveUsingNonlin(metricsNames,
 
 
 
-    dnormlzdParamsSolnLin = minimize(objFnc,x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])), \
-                               args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-                               0*normlzdCurvMatrix, reglrCoef, numMetrics),\
-                               method='Powell')
+    dnormlzdParamsSolnLin = minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])), \
+                                     args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
+                               0*normlzdCurvMatrix, reglrCoef, numMetrics), \
+                                     method='Powell')
     dnormlzdParamsSolnLin = np.atleast_2d(dnormlzdParamsSolnLin.x).T
     dparamsSolnLin = dnormlzdParamsSolnLin * np.transpose(magParamValsRow)
     paramsSolnLin = np.transpose(defaultParamValsOrigRow) + dparamsSolnLin
@@ -599,10 +603,11 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
 
             # Check results using a 3rd calculation
             polyCoefs = np.polyfit(normlzdOrdDparams, normlzdOrdMetrics, 2)
+            # The curvature matrix is d2m/dp2, not 0.5*d2m/dp2
+            #     because of this 2:
             normlzdCurvMatrixPoly[arrayRow][arrayCol] = 2. * polyCoefs[0]
             normlzdSensMatrixPoly[arrayRow,arrayCol] = polyCoefs[1]
             normlzdConstMatrixPoly[arrayRow,arrayCol] = polyCoefs[2]
-
 
     return ( normlzdCurvMatrixPoly, normlzdSensMatrixPoly, normlzdConstMatrixPoly, \
              normlzdOrdDparamsMin, normlzdOrdDparamsMax )
