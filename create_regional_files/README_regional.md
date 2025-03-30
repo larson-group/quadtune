@@ -29,11 +29,14 @@ Target Site Selection
 Set latitude/longitude in main program: lats= and lons=, then enable findout=True to call function_pick_out.py
 Supports DYNCORE grids (e.g., SE/FV):
 Declare calfvsite = [True, False] (set True for FV grid)
+
 Search parameter: area=1.5 (matches model grids within 1.5-degree square around site, averaging multiple grids)
 2D Plot Generation and Regional File Creation
 2D plots: Set draw2d=True in main program to call draw_plots_hoz_2D.py
+
 Regional files:
 Set MKREG = True and specify resolution intll=20 or 30 in draw_hoz_plots_2D.py
 Regional files are named as: ./data/'+cseason+'/'+str(intll)+cases[im]+'_Regional.nc'
 Target site mean profiles will also be stored in regional files
+
 Note: Current version can only generate complete regional files for SE grids
