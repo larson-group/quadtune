@@ -17,7 +17,7 @@ import Common_functions
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as ticker
 import cartopy.crs as ccrs
-import cmaps
+#import cmaps
 
 from matplotlib import font_manager as fm
 from subprocess import call
@@ -114,17 +114,17 @@ def draw_2D_plot (ptype,pixel,cseason, ncases, cases, casenames, nsite, lats, lo
  rangeyr   =[      '200101_201812',      '200101_201812',     '200101_201812',          '','197901_201612', '197901_201612','197901_201612','197901_201612','197901_201612','197901_201612','197901_201612','','','','197901_201612','197901_201612','197901_201612','197901_201612']
 
 # no need to edit
- ncea_str    = ncopath+'/ncea '
- ncwa_str    = ncopath+'/ncwa -C '
- ncks_str    = ncopath+'/ncks '
- ncap2_str   = ncopath+'/ncap2 '
- ncecat_str  = ncopath+'/ncecat '
- ncrename_str= ncopath+'/ncrename '
- ncdiff_str  = ncopath+'/ncdiff '
+ ncea_str    = ncopath+'ncea '
+ ncwa_str    = ncopath+'ncwa -C '
+ ncks_str    = ncopath+'ncks '
+ ncap2_str   = ncopath+'ncap2 '
+ ncecat_str  = ncopath+'ncecat '
+ ncrename_str= ncopath+'ncrename '
+ ncdiff_str  = ncopath+'ncdiff '
 
  nvaris = len(varis)
  plot2d=['' for x in range(nvaris)]
- cmap1 = cmaps.MPL_rainbow 
+ #cmap1 = cmaps.MPL_rainbow 
 
  for iv in range(0, nvaris):
 # make plot for each field 
@@ -346,7 +346,7 @@ def draw_2D_plot (ptype,pixel,cseason, ncases, cases, casenames, nsite, lats, lo
                       locals()[varisl[ivl]] = inptrs.variables[varisl[ivl]][0,:]
 
                  if (varisl[ivl] == 'SWCF'):
-                      os.system(ncks_str+' -v toa_cre_sw_mon /home/ac.zguo/diagnostic_v2_0/climo/ceres_ebaf_toa_v4.1/ceres_ebaf_toa_v4.1_ANN_200101_201812_climo.nc -O '+cases[im]+'_local_obs0.nc')
+                      os.system(ncks_str+' -v toa_cre_sw_mon '+filepathobs+'/ceres_ebaf_toa_v4.1/ceres_ebaf_toa_v4.1_ANN_200101_201812_climo.nc -O '+cases[im]+'_local_obs0.nc')
                       os.system(ncrename_str+' -v toa_cre_sw_mon,SWCF '+cases[im]+'_local_obs0.nc '+cases[im]+'_local_obs1.nc')
                       os.system(ncdiff_str+regridpath[im][0]+cases[im]+regridpath[im][1]+cases[im]+'_ANN_climo.nc '+cases[im]+'_local_obs1.nc '+cases[im]+'_local_obs2.nc ')
                       os.system(ncap2_str+' -h -O -s  "weights=cos(lat*3.1415/180)" '+cases[im]+'_local_obs2.nc '+cases[im]+'_local_obs3.nc ')
@@ -473,7 +473,7 @@ def draw_2D_plot (ptype,pixel,cseason, ncases, cases, casenames, nsite, lats, lo
        ax.plot = ax.contourf(grid_x, grid_y, A_grid ,
                                levels=levels,  
                                transform=ccrs.PlateCarree(),  # 
-                               cmap=cmap1,  # colors
+                               cmap="rainbow",  # colors
                                extend='both')  
 
        ax.coastlines()
