@@ -26,36 +26,41 @@ def setUpConfig(beVerbose):
     doBootstrapSampling = False
     numBootstrapSamples = 2
 
-    # Number of metrics to tune on
+    # Number of metrics to tune.
+    # If there are more metrics than this, then
+    #   the metrics in the list beyond this number
+    #   will appear in plots but not be counted in the tuning.
     numMetricsToTune = 162
 
     # L1 regularization coefficient, i.e., penalty on param perturbations in objFnc
-    # Increase this value to 0.1 or 0.5 or so if you want to reduce 
-    # the size of tuned parameter perturbations.
+    # Increase this value to 0.1 or 0.5 or so if you want to eliminate
+    # unimportant parameters.
     reglrCoef = 0.0
 
     # Use these flags to determine whether or not to create specific plots
+    #    in create_nonbootstrap_figs.py
     createPlotType = {
-        'paramsErrorBarsFig': False,
-        'biasesOrderedArrowFig': False,
-        'threeDotFig': True,
-        'metricsBarChart': True,
-        'paramsIncrsBarChart': True,
-        'paramsAbsIncrsBarChart': True,
-        'paramsTotContrbBarChart': False,
-        'biasesVsDiagnosticScatterplot': False,
-        'dpMin2PtFig': False,
-        'dpMinMatrixScatterFig': False,
-        'projectionMatrixFigs': False,
-        'biasesVsSensMagScatterplot': True,
-        'biasesVsSvdScatterplot': False,
-        'paramsCorrArrayFig': True,
-        'sensMatrixAndBiasVecFig': False,
-        'PcaBiplot': False,
-        'PcSensMap': True,
-        'vhMatrixFig': True,
+        'paramsErrorBarsFig': False,               # Parameter values with error bars
+        'biasesOrderedArrowFig': False,            # Predicted vs. actual global-model bias removal
+        'threeDotFig': True,                       # Quadratic fnc for each metric and parameter
+        'metricsBarChart': True,                   # Visualization of tuning matrix eqn
+        'paramsIncrsBarChart': True,               # Mean parameter contributions to removal of biases
+        'paramsAbsIncrsBarChart': True,            # Squared parameter contributions to bias removal
+        'paramsTotContrbBarChart': False,          # Linear + nonlinear contributions to bias removal
+        'biasesVsDiagnosticScatterplot': False,    # Scatterplot of biases vs. other fields
+        'dpMin2PtFig': False,                      # Min param perturbation needed to simultaneously remove 2 biases
+        'dpMinMatrixScatterFig': False,            # Scatterplot of min param perturbation for 2-bias removal
+        'projectionMatrixFigs': False,             # Color-coded projection matrix
+        'biasesVsSensMagScatterplot': True,        # Biases vs. parameter sensitivities
+        'biasesVsSvdScatterplot': False,           # Left SV1*bias vs. left SV2*bias
+        'paramsCorrArrayFig': True,                # Color-coded matrix showing correlations among parameters
+        'sensMatrixAndBiasVecFig': False,          # Color-coded matrix equation
+        'PcaBiplot': False,                        # Principal components biplot
+        'PcSensMap': True,                         # Maps showing sensitivities to parameters and left singular vectors
+        'vhMatrixFig': True,                       # Color-coded matrix of right singular vectors
     }
 
+    # These are metrics from customized regions that differ from the standard 20x20 degree tiles.
     # Metrics are observed quantities that we want a tuned simulation to match.
     #    The first column is the metric name.
     #    The order of metricNames determines the order of rows in sensMatrix.
@@ -93,11 +98,14 @@ def setUpConfig(beVerbose):
     metricsWeightsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsWeightsCustom']].to_numpy().astype(float)
     metricsNormsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsNormsCustom']].to_numpy().astype(float)
 
-    # These are some metrics that we want to include
+    # These are a selected subset of the tunable metrics that we want to include
     #      in the metrics bar-chart, 3-dot plot, etc.
     # They must be a subset of metricsNames
     highlightedMetricsToPlot = np.array(['SWCF_6_14', 'SWCF_6_18', 'SWCF_8_13',
                                          'SWCF_3_14', 'SWCF_1_14', 'SWCF_3_6', 'SWCF_1_6'])
+
+    # Directory where the regional files are stored (plus possibly a filename prefix)
+    folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
 
     # Parameters are tunable model parameters, e.g. clubb_C8.
     # The float listed below after the parameter name is a factor that is used below for scaling plots.
@@ -106,8 +114,6 @@ def setUpConfig(beVerbose):
     #    up and in the other, it is perturbed down.
     #    The output from each sensitivity simulation is expected to be stored in its own netcdf file.
     #    Each netcdf file contains metric values and parameter values for a single simulation.
-    folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
-
     paramsNamesScalesAndFilenames = \
         [
             ['clubb_c8', 1.0,

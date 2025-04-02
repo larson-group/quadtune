@@ -646,8 +646,8 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
         #yCol = u[whitelistedMetricsMask, 1]
 
         residVsSvdScatterplot = \
-            createScatterplot(xCol=xCol[whitelistedMetricsMask], xColLabel='SV1',
-                              yCol=yCol[whitelistedMetricsMask], yColLabel='SV2',
+            createScatterplot(xCol=xCol[whitelistedMetricsMask], xColLabel='SV1*bias',
+                              yCol=yCol[whitelistedMetricsMask], yColLabel='SV2*bias',
                               colorCol=tunedLossChange[whitelistedMetricsMask, 0],
                               #colorCol=np.minimum(1, -defaultBiasesCol[whitelistedMetricsMask, 0] / np.abs(normMetricValsCol[whitelistedMetricsMask, 0])),
                               colorColLabel='loss change',
