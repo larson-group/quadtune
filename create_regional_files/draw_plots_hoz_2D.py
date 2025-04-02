@@ -124,7 +124,7 @@ def draw_2D_plot (ptype,pixel,cseason, ncases, cases, casenames, nsite, lats, lo
 
  nvaris = len(varis)
  plot2d=['' for x in range(nvaris)]
- cmap1 = "rainbox" #cmaps.MPL_rainbow 
+ cmap1 = "rainbow" #cmaps.MPL_rainbow 
 
  for iv in range(0, nvaris):
 # make plot for each field 
