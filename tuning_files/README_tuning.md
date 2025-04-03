@@ -2,13 +2,15 @@
 
 This folder contains scripts that, given regional files as input,
 optimize parameter values and create diagnostic plots. 
+The scripts have been tested using Python 3.12.
 The regional files must be created beforehand by running the scripts
 in folder `create_regional_files`.
 
 ## Getting started
 
 1) Use `requirements.txt` to import needed python libraries.
-The scripts have been tested using Python 3.12.
+E.g., use your IDE or at the command line type 
+`pip install -r requirements.txt`.
 
 2) QuadTune has no namelist file, but in `config.py`, 
 you may specify the configuration of your tuning run, 

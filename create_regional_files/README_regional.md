@@ -27,7 +27,8 @@ Simulation configuration:
 
 Model output climatology file paths:  
 - Vertical profile data: climopath=path  
-- Regridded output data: regridpath=path  
+- Regridded output data: regridpath=path  (The location of model output regridded to lat/lon coordinates. 
+                                           Used to calculate RMSE values)
 
 ### Plot Settings:
 
