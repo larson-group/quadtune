@@ -61,7 +61,7 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     rather than a bootstrap ensemble of parameter sets.
     """
     
-    from config import abbreviateParamsNames
+    from config_default import abbreviateParamsNames
     from quadtune_driver import lossFncMetrics, normlzdSemiLinMatrixFnc
 
     print("Creating plots . . .")

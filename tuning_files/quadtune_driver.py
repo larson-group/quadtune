@@ -21,7 +21,7 @@ def main():
     create diagnostic plots.
     """
 
-    from config import setUpConfig
+    from config_default import setUpConfig
     from set_up_inputs \
         import setUpColAndRowVectors, \
                setupDefaultMetricValsCol

@@ -103,6 +103,8 @@ def setUpConfig(beVerbose):
     # They must be a subset of metricsNames
     highlightedMetricsToPlot = np.array(['SWCF_6_14', 'SWCF_6_18', 'SWCF_8_13',
                                          'SWCF_3_14', 'SWCF_1_14', 'SWCF_3_6', 'SWCF_1_6'])
+    #highlightedMetricsToPlot = np.concatenate((highlightedMetricsToPlot,
+    #                                           ['SWCF_5_4', 'SWCF_5_5', 'SWCF_5_9']))
 
     # Directory where the regional files are stored (plus possibly a filename prefix)
     folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
@@ -116,21 +118,21 @@ def setUpConfig(beVerbose):
     #    Each netcdf file contains metric values and parameter values for a single simulation.
     paramsNamesScalesAndFilenames = \
         [
-            ['clubb_c8', 1.0,
-             folder_name + '14_Regional.nc',
-             folder_name + '15_Regional.nc'],
-            ['clubb_c_invrs_tau_n2', 1.0,
-             folder_name + '10_Regional.nc',
-             folder_name + '11_Regional.nc'],
-            ['clubb_c_invrs_tau_sfc', 1.0,
-             folder_name + '6_Regional.nc',
-             folder_name + '7_Regional.nc'],
-            ['clubb_c_invrs_tau_wpxp_n2_thresh', 1.e3,
-             folder_name + '8_Regional.nc',
-             folder_name + '9_Regional.nc'],
-            ['clubb_c_invrs_tau_n2_wp2', 1.0,
-             folder_name + '4_Regional.nc',
-             folder_name + '5_Regional.nc'],
+        ['clubb_c8', 1.0,
+         folder_name + '14_Regional.nc',
+         folder_name + '15_Regional.nc'],
+        ['clubb_c_invrs_tau_n2', 1.0,
+         folder_name + '10_Regional.nc',
+         folder_name + '11_Regional.nc'],
+        ['clubb_c_invrs_tau_sfc', 1.0,
+         folder_name + '6_Regional.nc',
+         folder_name + '7_Regional.nc'],
+        ['clubb_c_invrs_tau_wpxp_n2_thresh', 1.e3,
+         folder_name + '8_Regional.nc',
+         folder_name + '9_Regional.nc'],
+        ['clubb_c_invrs_tau_n2_wp2', 1.0,
+         folder_name + '4_Regional.nc',
+         folder_name + '5_Regional.nc'],
         ]
 
     # Split up the above list into parameter names, scales, and filenames.
@@ -138,7 +140,7 @@ def setUpConfig(beVerbose):
         pd.DataFrame(paramsNamesScalesAndFilenames,
                      columns=['paramsNames', 'paramsScales',
                               'sensNcFilenames', 'sensNcFilenamesExt'])
-    # 'sensNcFilenamesExt', 'sensNcFilenames'] )
+                              #'sensNcFilenamesExt', 'sensNcFilenames'] )
     paramsNames = dfparamsNamesScalesAndFilenames[['paramsNames']].to_numpy().astype(str)[:, 0]
     # Extract scaling factors of parameter values from user-defined list paramsNamesScalesAndFilenames.
     # The scaling is not used for any calculations, but it allows us to avoid plotting very large or small values.
@@ -166,16 +168,13 @@ def setUpConfig(beVerbose):
                               'prescribedSensNcFilenames', 'prescribedSensNcFilenamesExt'
                               ]
                      )
-    prescribedParamsNames = dfprescribedParamsNamesScalesAndValues[['prescribedParamsNames']].to_numpy().astype(str)[:,
-                            0]
+    prescribedParamsNames = dfprescribedParamsNamesScalesAndValues[['prescribedParamsNames']].to_numpy().astype(str)[:,0]
     # Extract scaling factors of parameter values from user-defined list paramsNamesScalesAndFilenames.
     # The scaling is not used for any calculations, but it allows us to avoid plotting very large or small values.
-    prescribedParamsScales = dfprescribedParamsNamesScalesAndValues[['prescribedParamsScales']].to_numpy().astype(
-        float)[:, 0]
+    prescribedParamsScales = dfprescribedParamsNamesScalesAndValues[['prescribedParamsScales']].to_numpy().astype(float)[:, 0]
     prescribedParamVals = dfprescribedParamsNamesScalesAndValues[['prescribedParamVals']].to_numpy().astype(float)[:, 0]
     prescribedParamValsRow = prescribedParamVals
-    prescribedSensNcFilenames = dfprescribedParamsNamesScalesAndValues[['prescribedSensNcFilenames']].to_numpy().astype(
-        str)[:, 0]
+    prescribedSensNcFilenames = dfprescribedParamsNamesScalesAndValues[['prescribedSensNcFilenames']].to_numpy().astype(str)[:, 0]
     prescribedSensNcFilenamesExt = dfprescribedParamsNamesScalesAndValues[
                                        ['prescribedSensNcFilenamesExt']].to_numpy().astype(str)[:, 0]
     prescribedTransformedParamsNames = np.array([''])
@@ -183,13 +182,13 @@ def setUpConfig(beVerbose):
     # Netcdf file containing metric and parameter values from the default simulation
     defaultNcFilename = \
         (
-                folder_name + '1_Regional.nc'
+            folder_name + '1_Regional.nc'
         )
 
     # Metrics from the global simulation that uses the tuner-recommended parameter values
     globTunedNcFilename = \
         (
-                folder_name + '69_Regional.nc'
+            folder_name + '69_Regional.nc'
             # defaultNcFilename
         )
 
@@ -232,7 +231,8 @@ def setUpConfig(beVerbose):
     # Read observed values of regional metrics on regular tiled grid into a Python dictionary
     (obsMetricValsDict, obsWeightsDict) = \
         (
-            setUp_x_ObsMetricValsDict(varPrefixes, suffix="_[0-9]+_", obsPathAndFilename=folder_name + "20241011_20.0_OBS.nc")
+            setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',
+                                      obsPathAndFilename='Regional_files/20241022_1yr_20x20regs/20.0sens1022_' + '20241011_20.0_OBS.nc')
         )
 
     # Set metricsNorms to be a global average
