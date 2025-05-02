@@ -427,8 +427,10 @@ def setUpConfig(beVerbose):
         )
 
     # Comment out if not using 20x20reg files
-    varPrefixes = ["SWCF", "PRECT", "TMQ"]
-    #varPrefixes = ["SWCF", "LWCF", "PRECT"]
+    varPrefixes = ['SWCF', 'PRECT', 'TMQ']
+    #varPrefixes = ['SWCF', 'LWCF', 'PRECT']
+    # mapVarIdx is the field is plotted in the 20x20 maps created by PcSensMap.
+    mapVarIdx = varPrefixes.index('TMQ')
     metricsNamesWeightsAndNorms, metricGlobalValsFromFile \
         = setUp_x_MetricsList(varPrefixes, defaultNcFilename)
     # Split up the list above into metric names and the corresponding weights.
@@ -597,7 +599,7 @@ def setUpConfig(beVerbose):
 
     return (numMetricsNoCustom,
             metricsNames, metricsNamesNoprefix,
-            varPrefixes,
+            varPrefixes, mapVarIdx,
             highlightedMetricsToPlot, createPlotType,
             metricsWeights, metricsNorms,
             obsMetricValsDict,

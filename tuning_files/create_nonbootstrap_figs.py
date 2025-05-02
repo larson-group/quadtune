@@ -36,7 +36,7 @@ from re import match
 ########################################################################################################
 
 def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
-               varPrefixes,
+               varPrefixes, mapVarIdx,
                highlightedMetricsToPlot,
                paramsNames, transformedParamsNames, paramsScales,
                metricsWeights, obsMetricValsCol, normMetricValsCol, magParamValsRow,
@@ -865,24 +865,28 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
 
     if createPlotType['PcSensMap']:
 
+        # We only plot one field, and we don't plot extra "Special" fields
         numBoxes = int(numMetricsNoSpecial / len(varPrefixes))
 
-        # This will only plot the first varPrefix.  Need to generalize.
+        mapVarName = varPrefixes[mapVarIdx]
+
+        # Plot maps of variable denoted by mapVarIdx (i.e., mapVarName).
         BiasParamsDashboardChildren, U0U3DashboardChildren \
         = createMapGallery(
-            normlzdDefaultBiasesCol[:numBoxes,:],
-            normlzdResid[:numBoxes],
-            normlzdGlobTunedBiasesCol[:numBoxes, :],
-            defaultLossCol[:numBoxes, :],
-            tunedLossChange[:numBoxes, :],
-            globTunedLossChange[:numBoxes, :],
-            normlzdLinplusSensMatrixPoly[:numBoxes, :],
-            normlzdLinplusSensMatrixPolyColCenter[:numBoxes, :],
-            paramsAbbrv,
-            downloadConfig,
-            useLongTitle,
-            plotWidth=500, boxSize=20)
-            #plotWidth=500, boxSize=20)
+           normlzdDefaultBiasesCol[mapVarIdx * numBoxes:(mapVarIdx + 1) * numBoxes, :],
+           normlzdResid[mapVarIdx * numBoxes:(mapVarIdx + 1) * numBoxes],
+           normlzdGlobTunedBiasesCol[mapVarIdx * numBoxes:(mapVarIdx + 1) * numBoxes, :],
+           defaultLossCol[mapVarIdx * numBoxes:(mapVarIdx + 1) * numBoxes, :],
+           tunedLossChange[mapVarIdx * numBoxes:(mapVarIdx + 1) * numBoxes, :],
+           globTunedLossChange[mapVarIdx * numBoxes:(mapVarIdx + 1) * numBoxes, :],
+           normlzdLinplusSensMatrixPoly[mapVarIdx * numBoxes:(mapVarIdx + 1) * numBoxes, :],
+           normlzdLinplusSensMatrixPolyColCenter[mapVarIdx * numBoxes:(mapVarIdx + 1) * numBoxes, :],
+           paramsAbbrv,
+           downloadConfig,
+           mapVarName,
+           useLongTitle,
+           plotWidth=500, boxSize=20)
+           #plotWidth=500, boxSize=20)
 
 
         # Now combine the matrix and column sub-figures into one figure
@@ -952,6 +956,7 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
         html.Div(children=''' ''')]
 
     if createPlotType['PcSensMap']:
+        dashboardChildren.append(html.H2(children=mapVarName, style={'text-indent': '450px'}))
         dashboardChildren.extend(BiasParamsDashboardChildren)
         dashboardChildren.extend(U0U3DashboardChildren)
         #dashboardChildren.append(dcc.Graph(id='PcMapFig', figure=PcMapFig))
@@ -1071,6 +1076,7 @@ def createMapGallery(
     normlzdLinplusSensMatrixPolyColCenter,
     paramsAbbrv,
     downloadConfig,
+    mapVarName,
     useLongTitle,
     plotWidth, boxSize):
     """Create a set of global maps for display on plotly dash."""

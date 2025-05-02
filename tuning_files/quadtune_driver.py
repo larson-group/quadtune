@@ -37,7 +37,7 @@ def main():
     # The user should input all tuning configuration info into file set_up_inputs.py
     (numMetricsNoSpecial,
      metricsNames, metricsNamesNoprefix,
-     varPrefixes,
+     varPrefixes, mapVarIdx,
      highlightedMetricsToPlot, createPlotType,
      metricsWeights, metricsNorms,
      obsMetricValsDict,
@@ -270,11 +270,11 @@ def main():
     #                                          @ normlzdLinplusSensMatrixPoly
 
     createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
-               varPrefixes,
+               varPrefixes, mapVarIdx,
                highlightedMetricsToPlot,
                paramsNames, transformedParamsNames, paramsScales,
                metricsWeights, obsMetricValsCol, normMetricValsCol, magParamValsRow,
-               defaultBiasesCol, defaultBiasesApproxNonlin, defaultBiasesApproxElastic, 
+               defaultBiasesCol, defaultBiasesApproxNonlin, defaultBiasesApproxElastic,
                defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv,
                normlzdDefaultBiasesCol,
                normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix,
@@ -288,7 +288,7 @@ def main():
                paramsSolnElastic, dnormlzdParamsSolnElastic,
                sensNcFilenames, sensNcFilenamesExt, defaultNcFilename,
                createPlotType,
-               beVerbose=False,useLongTitle=False, param_bounds_boot=param_bounds_boot)
+               beVerbose=False, useLongTitle=False, param_bounds_boot=param_bounds_boot)
 
     return
 

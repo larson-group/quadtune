@@ -26,12 +26,6 @@ def setUpConfig(beVerbose):
     doBootstrapSampling = False
     numBootstrapSamples = 2
 
-    # Number of metrics to tune.
-    # If there are more metrics than this, then
-    #   the metrics in the list beyond this number
-    #   will appear in plots but not be counted in the tuning.
-    numMetricsToTune = 162
-
     # L1 regularization coefficient, i.e., penalty on param perturbations in objFnc
     # Increase this value to 0.1 or 0.5 or so if you want to eliminate
     # unimportant parameters.
@@ -193,8 +187,10 @@ def setUpConfig(beVerbose):
         )
 
     # Comment out if not using 20x20reg files
-    varPrefixes = ["SWCF"]
-    # varPrefixes = ["SWCF", "LWCF", "PRECT"]
+    varPrefixes = ['SWCF']
+    #varPrefixes = ['SWCF', 'LWCF', 'PRECT']
+    # mapVarIdx is the field is plotted in the 20x20 maps created by PcSensMap.
+    mapVarIdx = varPrefixes.index('SWCF')
     metricsNamesWeightsAndNorms, metricGlobalValsFromFile \
         = setUp_x_MetricsList(varPrefixes, defaultNcFilename)
     # Split up the list above into metric names and the corresponding weights.
@@ -203,6 +199,12 @@ def setUpConfig(beVerbose):
     metricsNames = dfMetricsNamesWeightsAndNorms[['metricsNames']].to_numpy().astype(str)[:, 0]
     metricsWeights = dfMetricsNamesWeightsAndNorms[['metricsWeights']].to_numpy().astype(float)
     # metricsNorms = dfMetricsNamesWeightsAndNorms[['metricsNorms']].to_numpy().astype(float)
+
+    # Number of metrics to tune.
+    # If there are more metrics than this, then
+    #   the metrics in the list beyond this number
+    #   will appear in plots but not be counted in the tuning.
+    numMetricsToTune = 162*len(varPrefixes)
 
     # Set up a column vector of metric values from the default simulation
     defaultMetricValsCol = \
@@ -313,7 +315,7 @@ def setUpConfig(beVerbose):
 
     return (numMetricsNoCustom,
             metricsNames, metricsNamesNoprefix,
-            varPrefixes,
+            varPrefixes, mapVarIdx,
             highlightedMetricsToPlot, createPlotType,
             metricsWeights, metricsNorms,
             obsMetricValsDict,
