@@ -54,7 +54,7 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                paramsSolnElastic, dnormlzdParamsSolnElastic,
                sensNcFilenames, sensNcFilenamesExt, defaultNcFilename,
                createPlotType,
-               beVerbose, useLongTitle, param_bounds_boot):
+               beVerbose, useLongTitle, paramBoundsBoot):
     """
     Create figures for display on a plotly dash dashboard.
     The figures are based on a single optimal parameter set,
@@ -272,7 +272,7 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                                      paramsLowValsPCBound, paramsHiValsPCBound,
                                      paramsSolnLin, dnormlzdParamsSolnLin,
                                      paramsSolnNonlin, dnormlzdParamsSolnNonlin,
-                                     paramsSolnElastic, dnormlzdParamsSolnElastic, param_bounds_boot)
+                                     paramsSolnElastic, dnormlzdParamsSolnElastic, paramBoundsBoot)
 
     if createPlotType['threeDotFig']:
         print("Creating threeDotFig . . .")
@@ -2573,7 +2573,7 @@ def createParamsErrorBarsFig(paramsAbbrv, defaultParamValsOrigRow, paramsScales,
                              paramsLowValsPCBound, paramsHiValsPCBound,
                              paramsSolnLin, dnormlzdParamsSolnLin,
                              paramsSolnNonlin, dnormlzdParamsSolnNonlin,
-                             paramsSolnElastic, dnormlzdParamsSolnElastic, param_bounds_boot):
+                             paramsSolnElastic, dnormlzdParamsSolnElastic, paramBoundsBoot):
     """
     Create a fig that plots optimal parameter values plus error bars on those parameters.
     """
@@ -2592,10 +2592,10 @@ def createParamsErrorBarsFig(paramsAbbrv, defaultParamValsOrigRow, paramsScales,
         marker=dict(color='black', size=14),
         error_y=dict(color='black', thickness=2, width=10)
     ))
-    if param_bounds_boot is not None:
-        upperBoundBootScaled = param_bounds_boot[0] * paramsScales
-        meadianBootScaled = param_bounds_boot[1] * paramsScales
-        lowerBoundBootScaled = param_bounds_boot[2] * paramsScales
+    if paramBoundsBoot is not None:
+        upperBoundBootScaled = paramBoundsBoot[1, 0] * paramsScales
+        meadianBootScaled = paramBoundsBoot[1, 1] * paramsScales
+        lowerBoundBootScaled = paramBoundsBoot[1, 2] * paramsScales
         paramsErrorBarsFig.add_trace(
             go.Scatter(
                 x=df.index,

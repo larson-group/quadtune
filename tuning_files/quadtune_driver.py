@@ -28,8 +28,8 @@ def main():
 
 
     from create_nonbootstrap_figs import createFigs
-    from create_bootstrap_figs import bootstrap_plots
-    from do_bootstrap_calcs import bootstrap_calculations
+    from create_bootstrap_figs import bootstrapPlots
+    from do_bootstrap_calcs import bootstrapCalculations
 
 
     print("Set up inputs . . .")
@@ -134,8 +134,9 @@ def main():
     #######################################################################################################
 
     if doBootstrapSampling:
-        paramsSolnNonlin, residualsFullDataCol, residualsBootstrapMatrix, param_bounds_boot, lossesDrop, lossesFullData, lossesLeftOut, lossesInSample =\
-        bootstrap_calculations(numBootstrapSamples,
+        print("Starting boostrap sampling . . .")
+        paramsBoot, paramsTuned, residualsDefaultCol, residualsTunedCol, residualsBootstrapMatrix, paramBoundsBoot,normResidualPairsMatrix, tradeoffBinaryMatrix =\
+        bootstrapCalculations(numBootstrapSamples,
                                    metricsWeights,
                                    metricsNames,
                                    paramsNames,
@@ -150,21 +151,20 @@ def main():
                                    reglrCoef,
                                    defaultBiasesCol)
 
-        bootstrap_plots(numBootstrapSamples,
-                        numMetrics,
-                        numMetricsToTune,
-                        metricsNames,
-                        residualsBootstrapMatrix,
-                        residualsFullDataCol,
-                        defaultBiasesCol,
-                        lossesLeftOut,
-                        lossesInSample,
-                        paramsNames,
-                        paramsSolnNonlin,
-                        lossesDrop,
-                        lossesFullData)
+        bootstrapPlots(numMetricsToTune,
+                       metricsNames,
+                       residualsBootstrapMatrix,
+                       residualsTunedCol,
+                       residualsDefaultCol,
+                       paramsNames,
+                       paramsBoot,
+                       paramsTuned,
+                       defaultParamValsOrigRow,
+                       paramBoundsBoot,
+                       normResidualPairsMatrix,
+                       tradeoffBinaryMatrix)
     else:
-        param_bounds_boot = None
+        paramBoundsBoot = None
 
     ########################################
     #
@@ -288,7 +288,7 @@ def main():
                paramsSolnElastic, dnormlzdParamsSolnElastic,
                sensNcFilenames, sensNcFilenamesExt, defaultNcFilename,
                createPlotType,
-               beVerbose=False, useLongTitle=False, param_bounds_boot=param_bounds_boot)
+               beVerbose=False, useLongTitle=False, paramBoundsBoot=paramBoundsBoot)
 
     return
 
