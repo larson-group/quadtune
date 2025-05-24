@@ -21,7 +21,8 @@ def main():
     create diagnostic plots.
     """
 
-    from config_default import setUpConfig
+    #from config_default import setUpConfig
+    from config_example import setUpConfig
     from set_up_inputs \
         import setUpColAndRowVectors, \
                setupDefaultMetricValsCol
@@ -369,13 +370,15 @@ def solveUsingNonlin(metricsNames,
     # Perform nonlinear optimization
     #normlzdDefaultBiasesCol = defaultBiasesCol/np.abs(normMetricValsCol)
     #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=np.ones_like(np.transpose(defaultParamValsOrigRow)), \
-    dnormlzdParamsSolnNonlin = minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])), \
+    dnormlzdParamsSolnNonlin = (minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])), \
                                         #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=x0TwoYr, \
                                         #dnormlzdParamsSolnNonlin = minimize(lossFnc,dnormlzdParamsSoln, \
                                         args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
                                normlzdCurvMatrix, reglrCoef, numMetrics), \
-                                        method='Powell', tol=1e-12,
-                                        bounds=Bounds(lb=lowerBoundsCol))
+                                        method='Powell', tol=1e-12
+                                        ))
+                                #,)
+                                #        bounds=Bounds(lb=lowerBoundsCol))
     dnormlzdParamsSolnNonlin = np.atleast_2d(dnormlzdParamsSolnNonlin.x).T
 
 

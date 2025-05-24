@@ -146,11 +146,25 @@ def setUpConfig(beVerbose):
     #highlightedMetricsToPlot = np.array(['SWCF_5_9', 'SWCF_8_13', 'SWCF_6_15', 'SWCF_9_5', 'SWCF_3_6', 'SWCF_3_12', 'SWCF_1_6'])
     #highlightedMetricsToPlot = np.array(['SWCF_6_14', 'SWCF_6_18', 'SWCF_8_13', 'SWCF_6_15', 'SWCF_1_14', 'SWCF_3_6', 'SWCF_1_6', 'SWCF_3_14', 'SWCF_6_2', 'SWCF_8_10', 'SWCF_5_9'])
     #highlightedMetricsToPlot = np.array(['SWCF_5_5', 'SWCF_5_1', 'SWCF_5_18',
-    #                                     'SWCF_3_14', 'SWCF_6_13', 'SWCF_7_3', 'SWCF_6_14'])
+    #                                     'SWCF_3_14', 'SWCF_6_13', 'SWCF_7_3',
+    #                                     'SWCF_6_18', 'SWCF_6_12', 'SWCF_6_5',
+    #                                     'SWCF_6_14', 'SWCF_4_8'])
+    highlightedMetricsToPlot = np.array(['PRECT_5_5', 'PRECT_5_1', 'PRECT_5_18',
+                                         'PRECT_3_14', 'PRECT_6_13', 'PRECT_7_3',
+                                         'PRECT_6_18', 'PRECT_6_12', 'PRECT_6_5',
+                                         'PRECT_6_14', 'PRECT_4_8'])
+    #highlightedMetricsToPlot = np.array(['LWCF_5_5', 'LWCF_5_1', 'LWCF_5_18',
+    #                                     'LWCF_3_14', 'LWCF_6_13', 'LWCF_7_3',
+    #                                     'LWCF_6_18', 'LWCF_6_12', 'LWCF_6_5',
+    #                                     'LWCF_6_14', 'LWCF_4_8'])
+    #highlightedMetricsToPlot = np.array(['TMQ_5_5', 'TMQ_5_1', 'TMQ_5_18',
+    #                                     'TMQ_3_14', 'TMQ_6_13', 'TMQ_7_3',
+    #                                     'TMQ_6_18', 'TMQ_6_12', 'TMQ_6_5',
+    #                                     'TMQ_4_8', 'TMQ_6_14'])
     #highlightedMetricsToPlot = np.array(['PRECT_5_5', 'PRECT_5_1', 'PRECT_5_18',
     #                                     'PRECT_3_14', 'PRECT_6_13', 'PRECT_7_3', 'PRECT_6_14'])
-    highlightedMetricsToPlot = np.array(['TMQ_5_5', 'TMQ_5_1', 'TMQ_5_18',
-                                         'TMQ_3_14', 'TMQ_6_13', 'TMQ_7_3', 'TMQ_6_14'])
+    #highlightedMetricsToPlot = np.array(['TMQ_5_5', 'TMQ_5_1', 'TMQ_5_18',
+    #                                     'TMQ_3_14', 'TMQ_6_13', 'TMQ_7_3', 'TMQ_6_14'])
     #highlightedMetricsToPlot = np.concatenate((highlightedMetricsToPlot,
     #                                           ['SWCF_5_4', 'SWCF_5_5', 'SWCF_5_9']))
     #highlightedMetricsToPlot = np.array(['PSL_6_14', 'PSL_6_18', 'PSL_8_13', 'PSL_3_14', 'PSL_1_14', 'PSL_3_6', 'PSL_1_6'])
@@ -164,7 +178,8 @@ def setUpConfig(beVerbose):
 
 
     # Directory where the regional files are stored (plus possibly a filename prefix)
-    folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
+    folder_name = 'Regional_files/20250523_1yr_20x20_ANN_CAM/20.0cam078_'
+    #folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
     #folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_take3/20.0sens1022_'
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_msq/20.0sens1022_'
@@ -189,15 +204,15 @@ def setUpConfig(beVerbose):
         ['clubb_c8', 1.0,
          folder_name + 'clubb_c8m_Regional.nc',
          folder_name + 'clubb_c8p_Regional.nc'],
-        #['clubb_c_k10', 1.0, \
-        # folder_name + '12_Regional.nc', \
-        # folder_name + '13_Regional.nc'], \
+        #['clubb_up2_sfc_coef', 1.0,
+        # folder_name + 'clubb_up2_sfc_coefm_Regional.nc',
+        # folder_name + 'clubb_up2_sfc_coefp_Regional.nc'],
         #['clubb_c_invrs_tau_n2', 1.0,
         # folder_name + '10_Regional.nc',
         # folder_name + '11_Regional.nc'],
         #['clubb_altitude_threshold', 0.001, \
-        # folder_name + '20_Regional.nc',
-        # folder_name + '21_Regional.nc'], \
+        # folder_name + 'clubb_altitude_thresholdm_Regional.nc',
+        # folder_name + 'clubb_altitude_thresholdp_Regional.nc'], \
         #['clubb_c_invrs_tau_sfc', 1.0,
         # folder_name + '6_Regional.nc',
         # folder_name + '7_Regional.nc'],
@@ -216,24 +231,24 @@ def setUpConfig(beVerbose):
         #['clubb_c11', 1.0, \
         #  folder_name + 'clubb_c11m_Regional.nc',  \
         #  folder_name + 'clubb_c11p_Regional.nc'], \
-        ['clubb_c1', 1.0, \
-          folder_name + 'clubb_c1m_Regional.nc',  \
-          folder_name + 'clubb_c1p_Regional.nc'], \
+        ###['clubb_c1', 1.0, \
+        ###  folder_name + 'clubb_c1m_Regional.nc',  \
+        ###  folder_name + 'clubb_c1p_Regional.nc'], \
         #['clubb_gamma_coef', 1.0, \
         # folder_name + 'clubb_gamma_coefm_Regional.nc',  \
         # folder_name + 'clubb_gamma_coefp_Regional.nc'], \
-        #['clubb_c8', 1.0, \
-        # folder_name + 'c8p3_Regional.nc',  \
-        # folder_name + 'c8p7_Regional.nc'], \
-        ['clubb_c4', 1.0, \
-         folder_name + 'clubb_c4m_Regional.nc',  \
-         folder_name + 'clubb_c4p_Regional.nc'], \
+        #['clubb_c4', 1.0, \
+        # folder_name + 'clubb_c4m_Regional.nc',  \
+        # folder_name + 'clubb_c4p_Regional.nc'], \
         ['clubb_c14', 1.0, \
          folder_name + 'clubb_c14m_Regional.nc', \
          folder_name + 'clubb_c14p_Regional.nc'], \
-        #['clubb_c_invrs_tau_wpxp_n2_thresh', 1.e3, \
-        # folder_name + 'thresp24_Regional.nc', \
-        # folder_name + 'thresp28_Regional.nc'], \
+        #['clubb_wpxp_l_thresh', 1.0e-2,
+        # folder_name + 'clubb_wpxp_l_threshm_Regional.nc',
+        # folder_name + 'clubb_wpxp_l_threshp_Regional.nc'],
+        #['clubb_c6rt_lscale0', 0.1,
+        # folder_name + 'clubb_c6rt_lscale0m_Regional.nc',
+        # folder_name + 'clubb_c6rt_lscale0p_Regional.nc'],
         #['clubb_c_invrs_tau_n2', 1.0, \
         # folder_name + 'n2p55_Regional.nc', \
         # folder_name + 'n2p75_Regional.nc'], \
@@ -258,9 +273,9 @@ def setUpConfig(beVerbose):
         #['clubb_bv_efold', 1.0, \
         # folder_name + 'clubb_bv_efoldm_Regional.nc', \
         # folder_name + 'clubb_bv_efoldp_Regional.nc'], \
-        #['clubb_c_uu_shr', 1.0, \
-        # folder_name + 'clubb_c_uu_shrm_Regional.nc', \
-        # folder_name + 'clubb_c_uu_shrp_Regional.nc'], \
+        #['clubb_c_uu_shr', 1.0,
+        # folder_name + 'clubb_c_uu_shrm_Regional.nc',
+        # folder_name + 'clubb_c_uu_shrp_Regional.nc'],
         #['clubb_c_invrs_tau_bkgnd', 1.0, \
         # folder_name + 'bkg1_Regional.nc',
         # folder_name + 'bkg2_Regional.nc'], \
@@ -270,27 +285,45 @@ def setUpConfig(beVerbose):
         #['clubb_c_invrs_tau_shear', 1.0, \
         #  folder_name + 'shr0_Regional.nc', \
         #  folder_name + 'shrp3_Regional.nc'], \
-        #['clubb_altitude_threshold', 0.01, \
-        #  folder_name + 'alt50_Regional.nc', \
-        #  folder_name + 'alt150_Regional.nc'], \
         #['clubb_z_displace', 0.01, \
         #  folder_name + 'zd10_Regional.nc', \
         #  folder_name + 'zd100_Regional.nc'], \
-        #['cldfrc_dp1', 1.0, \
-        # folder_name + 'cldfrc_dp1m_Regional.nc', \
-        # folder_name + 'cldfrc_dp1p_Regional.nc'], \
+        #['clubb_detliq_rad', 1.0,
+        # folder_name + 'clubb_detliq_radm_Regional.nc',
+        # folder_name + 'clubb_detliq_radp_Regional.nc'],
+        ['clubb_detice_rad', 1.0,
+         folder_name + 'clubb_detice_radm_Regional.nc',
+         folder_name + 'clubb_detice_radp_Regional.nc'],
+        #['cldfrc2m_rhmini', 1.0,
+        # folder_name + 'cldfrc2m_rhminim_Regional.nc',
+        # folder_name + 'cldfrc2m_rhminip_Regional.nc'],
+        ['cldfrc_dp1', 1.0, \
+         folder_name + 'cldfrc_dp1m_Regional.nc', \
+         folder_name + 'cldfrc_dp1p_Regional.nc'], \
         #['cldfrc_dp2', 1e-3, \
         # folder_name + 'cldfrc_dp2m_Regional.nc', \
         # folder_name + 'cldfrc_dp2p_Regional.nc'], \
-        #['micro_mg_autocon_lwp_exp', 1., \
-        # folder_name + 'auto2p3_Regional.nc', \
-        # folder_name + 'auto2p6_Regional.nc'], \
-        #['micro_mg_dcs', 1000., \
-        # folder_name + 'dcs4h_Regional.nc', \
-        # folder_name + 'dcs6h_Regional.nc'], \
-        #['micro_mg_vtrmi_factor', 1.0, \
-        #  folder_name + 'micro_mg_vtrmi_factorm_Regional.nc',
-        #  folder_name + 'micro_mg_vtrmi_factorp_Regional.nc'], \
+        ###['micro_mg_autocon_lwp_exp', 1.,
+        ### folder_name + 'micro_mg_autocon_lwp_expm_Regional.nc',
+        ### folder_name + 'micro_mg_autocon_lwp_expp_Regional.nc'],
+        #['micro_mg_accre_enhan_fact', 1.,
+        # folder_name + 'micro_mg_accre_enhan_factm_Regional.nc',
+        # folder_name + 'micro_mg_accre_enhan_factp_Regional.nc'],
+        #['micro_mg_dcs', 1000.,
+        # folder_name + 'micro_mg_dcsm_Regional.nc',
+        # folder_name + 'micro_mg_dcsp_Regional.nc'],
+        #['micro_mg_berg_eff_factor', 1.,
+        # folder_name + 'micro_mg_berg_eff_factorm_Regional.nc',
+        # folder_name + 'micro_mg_berg_eff_factorp_Regional.nc'],
+        ['micro_mg_vtrmi_factor', 1.0,
+          folder_name + 'micro_mg_vtrmi_factorm_Regional.nc',
+          folder_name + 'micro_mg_vtrmi_factorp_Regional.nc'],
+        #['micro_mg_vtrms_factor', 1.0, \
+        #     folder_name + 'micro_mg_vtrms_factorm_Regional.nc',
+        #     folder_name + 'micro_mg_vtrms_factorp_Regional.nc'], \
+        #['micro_mg_evap_scl_ifs', 1.0, \
+        # folder_name + 'micro_mg_evap_scl_ifsm_Regional.nc',
+        # folder_name + 'micro_mg_evap_scl_ifsp_Regional.nc'], \
         #['microp_aero_wsub_scale', 1.0, \
         # folder_name + 'microp_aero_wsub_scalem_Regional.nc',
         # folder_name + 'microp_aero_wsub_scalep_Regional.nc'], \
@@ -303,15 +336,24 @@ def setUpConfig(beVerbose):
         #['zmconv_c0_ocn', 10.0, \
         # folder_name + 'zmconv_c0_ocnm_Regional.nc',
         # folder_name + 'zmconv_c0_ocnp_Regional.nc'], \
-        #['zmconv_dmpdz', 1000., \
-        # folder_name + 'zmconv_dmpdzm_Regional.nc',
-        # folder_name + 'zmconv_dmpdzp_Regional.nc'], \
-        #['zmconv_ke', 1e5, \
+        ['zmconv_dmpdz', 1000.,
+         folder_name + 'zmconv_dmpdzm_Regional.nc',
+         folder_name + 'zmconv_dmpdzp_Regional.nc'],
+        ['zmconv_tau', 1.0e-3,
+         folder_name + 'zmconv_taum_Regional.nc',
+         folder_name + 'zmconv_taup_Regional.nc'],
+        #['zmconv_ke', 1e5,
         # folder_name + 'zmconv_kem_Regional.nc',
-        # folder_name + 'zmconv_kep_Regional.nc'], \
+        # folder_name + 'zmconv_kep_Regional.nc'],
         #['zmconv_ke_lnd', 1e5, \
         # folder_name + 'zmconv_ke_lndm_Regional.nc',
         # folder_name + 'zmconv_ke_lndp_Regional.nc'], \
+        ['dust_emis_fact', 1.0,
+         folder_name + 'dust_emis_factm_Regional.nc',
+         folder_name + 'dust_emis_factp_Regional.nc'],
+        #['hetfrz_dust_scalfac', 1.0,
+        # folder_name + 'hetfrz_dust_scalfacm_Regional.nc',
+        # folder_name + 'hetfrz_dust_scalfacp_Regional.nc'],
         ]
 
     # Split up the above list into parameter names, scales, and filenames.
@@ -344,7 +386,7 @@ def setUpConfig(beVerbose):
                     #['clubb_c8', 1.0, 0.4, \
                     # folder_name + 'clubb_c8m_Regional.nc',  \
                     # folder_name + 'clubb_c8p_Regional.nc'], \
-#                     ['clubb_wpxp_ri_exp', 1.0, 0.5, \
+#                   ['clubb_wpxp_ri_exp', 1.0, 0.5, \
 #                     folder_name + 'clubb_wpxp_ri_expm_Regional.nc', \
 #                     folder_name + 'clubb_wpxp_ri_expp_Regional.nc'], \
 #                    ['clubb_c8', 1.0, 0.4, \
@@ -412,8 +454,9 @@ def setUpConfig(beVerbose):
     # Metrics from the global simulation that uses the tuner-recommended parameter values
     globTunedNcFilename = \
         (
-            #folder_name + 'dflt_Regional.nc'
-            defaultNcFilename
+            #'Regional_files/20250502_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt1_Regional.nc'
+            'Regional_files/20250514_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt2_Regional.nc'
+            #defaultNcFilename
     #    'Regional_files/20231211_20x20regs/20sens0707_61_Regional.nc'
     #    'Regional_files/20degree_CAM_TAUS_202404_DJF/20.0Tuner_20240702_20d_DJF_Regional.nc'
     #    'Regional_files/stephens_20240131/btune_regional_files/b1850.076base.n2th1b_Regional.nc'
@@ -427,10 +470,10 @@ def setUpConfig(beVerbose):
         )
 
     # Comment out if not using 20x20reg files
-    varPrefixes = ['SWCF', 'PRECT', 'TMQ']
-    #varPrefixes = ['SWCF', 'LWCF', 'PRECT']
+    varPrefixes = ['SWCF', 'PRECT', 'TMQ', 'LWCF']
+    #varPrefixes = ['TMQ']
     # mapVarIdx is the field is plotted in the 20x20 maps created by PcSensMap.
-    mapVarIdx = varPrefixes.index('TMQ')
+    mapVarIdx = varPrefixes.index('PRECT')
     metricsNamesWeightsAndNorms, metricGlobalValsFromFile \
         = setUp_x_MetricsList(varPrefixes, defaultNcFilename)
     # Split up the list above into metric names and the corresponding weights.

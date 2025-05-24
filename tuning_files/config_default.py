@@ -24,7 +24,7 @@ def setUpConfig(beVerbose):
 
     # Flag for using bootstrap sampling
     doBootstrapSampling = False
-    numBootstrapSamples = 2
+    numBootstrapSamples = 100
 
     # L1 regularization coefficient, i.e., penalty on param perturbations in objFnc
     # Increase this value to 0.1 or 0.5 or so if you want to eliminate

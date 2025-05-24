@@ -1090,6 +1090,14 @@ def createMapGallery(
     plotHeight = np.rint(plotWidth * (300 / 700))
     blankFig.update_layout(width=plotWidth, height=plotHeight)
 
+    # Use same color range in residual plot as in bias plot
+    minFieldBias = np.minimum.reduce([ np.min(normlzdDefaultBiasesCol),
+                                       np.min(normlzdGlobTunedBiasesCol),
+                                       np.min(-normlzdResid)])
+    maxFieldBias = np.maximum.reduce([ np.max(normlzdDefaultBiasesCol),
+                                       np.max(normlzdGlobTunedBiasesCol),
+                                       np.max(-normlzdResid)])
+
     if useLongTitle:
         plotTitle="Normalized Default Atmospheric-Model Bias, normlzdDefaultBiasesCol"
     else:
@@ -1100,11 +1108,10 @@ def createMapGallery(
                        plotTitle=plotTitle,
                        boxSize=boxSize,
                        colorScale='RdBu_r',
+                       minField=minFieldBias,
+                       maxField=maxFieldBias,
                        panelLabel='(a)')
 
-    # Use same color range in residual plot as in bias plot
-    minFieldBias = np.min(normlzdDefaultBiasesCol)
-    maxFieldBias = np.max(normlzdDefaultBiasesCol)
 
     if useLongTitle:
         plotTitle="Normalized Residual Bias, -normlzdResid"
@@ -1150,6 +1157,19 @@ def createMapGallery(
 
     sqrtDefaultLoss = -1e3*np.sqrt(defaultLossCol)
 
+    sqrtTunedLossChange = \
+        1e3 * np.sign(tunedLossChange) * np.sqrt(np.abs(tunedLossChange))
+
+    sqrtGlobTunedLossChange = 1e3*np.sign(globTunedLossChange)*np.sqrt(np.abs(globTunedLossChange))
+
+    # Use same color range in globTunedLoss plot as in tunedLoss plot
+    minFieldBias = np.minimum.reduce([ np.min(sqrtDefaultLoss),
+                                       np.min(sqrtTunedLossChange),
+                                       np.min(sqrtGlobTunedLossChange) ])
+    maxFieldBias = np.maximum.reduce([ np.max(sqrtDefaultLoss),
+                                       np.max(sqrtTunedLossChange),
+                                       np.max(sqrtGlobTunedLossChange) ])
+
     if useLongTitle:
         plotTitle="-Sqrt Default Loss (x 1e3), sqrtDefaultLoss"
     else:
@@ -1160,14 +1180,11 @@ def createMapGallery(
                        plotTitle=plotTitle,
                        boxSize=boxSize,
                        colorScale='RdBu_r',
+                       minField=minFieldBias,
+                       maxField=maxFieldBias,
                        panelLabel='')
 
-    # Use same color range in globTunedLoss plot as in tunedLoss plot
-    minFieldBias = np.min(sqrtDefaultLoss)
-    maxFieldBias = np.max(sqrtDefaultLoss)
 
-    sqrtTunedLossChange = \
-        1e3 * np.sign(tunedLossChange) * np.sqrt(np.abs(tunedLossChange))
 
     if useLongTitle:
         plotTitle="Signed Sqrt Tuned Loss Change (x 1e3), sqrtTunedLossChange"
@@ -1190,8 +1207,6 @@ def createMapGallery(
             dcc.Graph(figure=PcMapPanelTunedLossChange, style={'display': 'inline-block'},
                       config=downloadConfig)
         ]))
-
-    sqrtGlobTunedLossChange = 1e3*np.sign(globTunedLossChange)*np.sqrt(np.abs(globTunedLossChange))
 
     PcMapPanelGlobTunedLossChange = \
         createMapPanel(fieldToPlotCol=sqrtGlobTunedLossChange,
