@@ -169,6 +169,7 @@ def setUp_x_ObsMetricValsDict(varPrefixes, suffix="", obsPathAndFilename=""):
                 varEntry = f_obs[varName]
                 varVal = varEntry[:].data[:][0]
                 obsMetricValsDict[varName] = varVal
+                #obsMetricValsDict[varName] = varVal[25]
                 #print((varName, varVal))
             # Extract observational weights,
             #     which are effectively numpy scalars (0d arrays)

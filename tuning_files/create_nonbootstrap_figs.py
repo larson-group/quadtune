@@ -883,7 +883,6 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
            normlzdLinplusSensMatrixPolyColCenter[mapVarIdx * numBoxes:(mapVarIdx + 1) * numBoxes, :],
            paramsAbbrv,
            downloadConfig,
-           mapVarName,
            useLongTitle,
            plotWidth=500, boxSize=20)
            #plotWidth=500, boxSize=20)
@@ -1076,7 +1075,6 @@ def createMapGallery(
     normlzdLinplusSensMatrixPolyColCenter,
     paramsAbbrv,
     downloadConfig,
-    mapVarName,
     useLongTitle,
     plotWidth, boxSize):
     """Create a set of global maps for display on plotly dash."""
