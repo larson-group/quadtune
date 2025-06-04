@@ -271,6 +271,7 @@ def main():
     #                                          @ normlzdLinplusSensMatrixPoly
 
     createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
+               numMetricsToTune,
                varPrefixes, mapVarIdx,
                highlightedMetricsToPlot,
                paramsNames, transformedParamsNames, paramsScales,

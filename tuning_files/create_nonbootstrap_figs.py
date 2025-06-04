@@ -36,6 +36,7 @@ from re import match
 ########################################################################################################
 
 def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
+               numMetricsToTune,
                varPrefixes, mapVarIdx,
                highlightedMetricsToPlot,
                paramsNames, transformedParamsNames, paramsScales,
@@ -451,6 +452,15 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                                               normMetricValsCol,
                                               metricsNames)
 
+    if ( len(varPrefixes) == 2 ):
+        dmetric1VsDmetric2Scatterplot = \
+            createDmetric1VsDmetric2Scatterplot(defaultBiasesApproxNonlin[:numMetricsToTune],
+                                                defaultBiasesApproxNonlin[numMetricsToTune:],
+                                                normMetricValsCol[:numMetricsToTune],
+                                                normMetricValsCol[numMetricsToTune:],
+                                                metricsNames[:numMetricsToTune],
+                                                varPrefixes)
+
     if createPlotType['biasesVsDiagnosticScatterplot']:
 
         diagnosticPrefix = ['PSL'] # Doesn't work if try two prefixes, e.g., ["U10", "SWCF"]
@@ -513,9 +523,9 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                               colorScale='Spectral_r',
                               plotBgColor='lightgrey',
                               pointLabels=metricsNamesNoprefix, pointLabelsHeader='Metric',
-                              plotTitle="""Regional normalized biases vs. signed magnitude of sensitivity.""",
-                              xaxisTitle="Signed magnitude of sensitivity of regional metrics to parameter changes",
-                              yaxisTitle="Regional biases",
+                              plotTitle="""Regional normalized biases vs.<br>     signed magnitude of sensitivity""",
+                              xaxisTitle="Signed magnitude of sensitivity<br>     of regional metrics to parameter changes",
+                              yaxisTitle="Default simulation regional biases",
                               panelLabel="",
                               showLegend=False, hoverMode="closest",
                               plotWidth=700, plotHeight=500)
@@ -996,6 +1006,9 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                                            config=downloadConfig))
     if False:
         dashboardChildren.append(dcc.Graph(id='biasVsBiasApproxScatterplot', figure=biasVsBiasApproxScatterplot,
+                                           config=downloadConfig))
+    if ( len(varPrefixes) == 2 ):
+        dashboardChildren.append(dcc.Graph(id='dmetric1VsDmetric2Scatterplot', figure=dmetric1VsDmetric2Scatterplot,
                                            config=downloadConfig))
     #config= { 'toImageButtonOptions': { 'scale': 6 } }
     if createPlotType['biasesVsDiagnosticScatterplot']:
@@ -3129,6 +3142,41 @@ def createBiasVsBiasApproxScatterplot(defaultBiasesApproxNonlin, defaultBiasesCo
     biasVsBiasApproxScatterplot.update_layout(title="Bias approx vs bias")
 
     return biasVsBiasApproxScatterplot
+
+def createDmetric1VsDmetric2Scatterplot(dmetric1, dmetric2,
+                                        normMetricValsCol1, normMetricValsCol2,
+                                        metricsNames,
+                                        varPrefixes):
+    """
+    Create scatterplot of the perturbation in one metric versus the perturbation in a second metric.
+    Each region is a distinct scatterpoint.
+    :param dmetric1:
+    :param dmetric2:
+    :param normMetricValsCol:
+    :param normMetricValsCol2:
+    :param metricsNames:
+    :return:
+    """
+    biasSensDirMatrix = np.concatenate((dmetric1 / np.abs(normMetricValsCol1),
+                                        (dmetric2 / np.abs(normMetricValsCol2))), axis=1)
+    metric1AndMetric2Names = ["dmetric1", "dmetric2"]
+
+    df = pd.DataFrame(biasSensDirMatrix,
+                      index=metricsNames,
+                      columns=metric1AndMetric2Names)
+    dmetric1VsDmetric2Scatterplot = px.scatter(df, x="dmetric1", y="dmetric2",
+                                                   text=metricsNames)
+    dmetric1VsDmetric2Scatterplot.update_xaxes(title="d" + varPrefixes[0])
+    dmetric1VsDmetric2Scatterplot.update_yaxes(title="d" + varPrefixes[1])
+    dmetric1VsDmetric2Scatterplot.update_traces(textposition='top center')
+    dmetric1VsDmetric2Scatterplot.update_yaxes(visible=True, zeroline=True, zerolinewidth=2,
+                                             zerolinecolor='lightyellow')  # Plot x axis
+    dmetric1VsDmetric2Scatterplot.update_xaxes(visible=True, zeroline=True, zerolinewidth=2,
+                                             zerolinecolor='lightyellow')  # Plot y axis
+    dmetric1VsDmetric2Scatterplot.update_layout(width=800, height=500)
+    dmetric1VsDmetric2Scatterplot.update_layout(title="d" + varPrefixes[0] + " vs d" + varPrefixes[1])
+
+    return dmetric1VsDmetric2Scatterplot
 
 
 def createBiasVsDiagnosticScatterplot(diagnosticPrefix, defaultBiasesCol,

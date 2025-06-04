@@ -140,11 +140,17 @@ def setUpConfig(beVerbose):
     metricsWeightsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsWeightsCustom']].to_numpy().astype(float)
     metricsNormsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsNormsCustom']].to_numpy().astype(float)
 
-    #varPrefixes = ['SWCF', 'PRECT', 'TMQ', 'LWCF']
-    varPrefixes = ['PRECT']
+    varPrefixes = ['PRECT', 'SWCF', 'TMQ', 'LWCF']
+    #varPrefixes = ['PRECT']
     # mapVarIdx is the field is plotted in the 20x20 maps created by PcSensMap.
-    mapVar = 'PRECT'
+    mapVar = 'SWCF'
     mapVarIdx = varPrefixes.index(mapVar)
+    # Number of metrics to tune.
+    # If there are more metrics than this, then
+    #   the metrics in the list beyond this number
+    #   will appear in plots but not be counted in the tuning.
+    #numMetricsToTune = 162*len(varPrefixes)
+    numMetricsToTune = 162
 
     # These are a selected subset of the tunable metrics that we want to include
     #      in the metrics bar-chart, 3-dot plot, etc.
@@ -450,7 +456,7 @@ def setUpConfig(beVerbose):
         (
             #'Regional_files/20250502_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt1_Regional.nc'
             #'Regional_files/20250514_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt2_Regional.nc'
-            'Regional_files/20250530_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt3_Regional.nc'
+            'Regional_files/20250530_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt4_Regional.nc'
             #defaultNcFilename
     #    'Regional_files/20231211_20x20regs/20sens0707_61_Regional.nc'
     #    'Regional_files/20degree_CAM_TAUS_202404_DJF/20.0Tuner_20240702_20d_DJF_Regional.nc'
@@ -474,11 +480,7 @@ def setUpConfig(beVerbose):
     metricsWeights = dfMetricsNamesWeightsAndNorms[['metricsWeights']].to_numpy().astype(float)
     # metricsNorms = dfMetricsNamesWeightsAndNorms[['metricsNorms']].to_numpy().astype(float)
 
-    # Number of metrics to tune.
-    # If there are more metrics than this, then
-    #   the metrics in the list beyond this number
-    #   will appear in plots but not be counted in the tuning.
-    numMetricsToTune = 162*len(varPrefixes)
+
 
     # Set up a column vector of metric values from the default simulation
     defaultMetricValsCol = \

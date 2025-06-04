@@ -168,8 +168,10 @@ def setUp_x_ObsMetricValsDict(varPrefixes, suffix="", obsPathAndFilename=""):
                 #and not "MSWCF" in varName
                 varEntry = f_obs[varName]
                 varVal = varEntry[:].data[:][0]
-                obsMetricValsDict[varName] = varVal
-                #obsMetricValsDict[varName] = varVal[25]
+                if varPrefix == 'O500':
+                    obsMetricValsDict[varName] = varVal[16]
+                else:
+                    obsMetricValsDict[varName] = varVal
                 #print((varName, varVal))
             # Extract observational weights,
             #     which are effectively numpy scalars (0d arrays)
