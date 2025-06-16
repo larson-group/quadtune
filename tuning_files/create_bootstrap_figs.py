@@ -284,9 +284,18 @@ def plot_tradeoff_scatter(tradeoffBinaryMatrix, residualsBootstrapMatrix, metric
 
     for i in range(n_metrics):
         for j in range(i):
-            if tradeoffBinaryMatrix[i, j]:
+            #if tradeoffBinaryMatrix[i, j]:
+            #if (i+1==106 and j+1==73) or (i+1==106 and j+1==75) or (i+1==106 and j+1==77) or \
+            #   (i+1==104 and j+1==73) or (i+1==104 and j+1==75) or (i+1==104 and j+1==77):
+            if (i+1==106 and j+1==73) or (i+1==106 and j+1==75) or (i+1==106 and j+1==77) or \
+               (i+1==104 and j+1==73) or (i+1==104 and j+1==75) or (i+1==104 and j+1==77) or \
+               (i+1==104 and j+1==81) or (i+1==104 and j+1==86) or (i+1==104 and j+1==90) or \
+               (i+1==104 and j+1==103) or (i+1==104 and j+1==89) or (i+1==104 and j+1==62) or \
+               (i+1==113 and j+1==104):
             #if (i+1==81 and j+1==67) or (i+1==77 and j+1==67) or (i+1==67 and j+1==62) or \
             #   (i+1==105 and j+1==81) or (i+1==105 and j+1==77) or (i+1==105 and j+1==62):
+            #if (i+1==86 and j+1==77) or (i+1==89 and j+1==77) or (i+1==77 and j+1==62) or (i+1==77 and j+1==76) or (i+1==77 and j+1==58) or (i+1==77 and j+1==62) or \
+            #   (i+1==87 and j+1==81) or (i+1==81 and j+1==74) or (i+1==81 and j+1==67) or (i+1==81 and j+1==74) or (i+1==81 and j+1==58) or (i+1==81 and j+1==62):
                 x = residualsBootstrapMatrix[:, i]
                 y = residualsBootstrapMatrix[:, j]
 

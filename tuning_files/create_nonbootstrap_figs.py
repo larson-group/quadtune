@@ -95,6 +95,8 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     metricsSens = np.linalg.norm(normlzdWeightedSensMatrixPoly, axis=1)  # measure of sensitivity of each metric
     # metricsSensOrder = (rankdata(metricsSens) - 1).astype(int)  # this ordering doesn't work as an index
     metricsSensOrder = metricsSens.argsort()
+    #metricsSensOrder = np.arange(len(metricsSens))
+    #metricsSensOrder = np.array([3, 0, 1, 2])
     metricsNamesOrdered = metricsNames[metricsSensOrder]  # list of metrics names, ordered from least to most sensitive
 
     # Estimated loss function values in the global simulation upon tuning.
@@ -212,6 +214,8 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     # metricsNamesMasked[metricsSensMaskedOrder]
     # metricsNames[whitelistedMetricsMask] gives the same list, but in a different order
     metricsSensMaskedOrder = metricsSensMasked.argsort()
+    #metricsSensMaskedOrder = np.arange(len(metricsSensMasked))
+    #metricsSensMaskedOrder = np.array([3, 0, 1, 2])
 
     #metricsSensMaskedOrder = np.argsort(np.argsort(highlightedMetricsToPlot))
 
