@@ -38,7 +38,7 @@ def main():
     # The user should input all tuning configuration info into file set_up_inputs.py
     (numMetricsNoSpecial,
      metricsNames, metricsNamesNoprefix,
-     varPrefixes, mapVarIdx,
+     varPrefixes, mapVarIdx, boxSize,
      highlightedMetricsToPlot, createPlotType,
      metricsWeights, metricsNorms,
      obsMetricValsDict,
@@ -136,7 +136,9 @@ def main():
 
     if doBootstrapSampling:
         print("Starting boostrap sampling . . .")
-        paramsBoot, paramsTuned, residualsDefaultCol, residualsTunedCol, residualsBootstrapMatrix, paramBoundsBoot,normResidualPairsMatrix, tradeoffBinaryMatrix =\
+        ( paramsBoot, paramsTuned, residualsDefaultCol, residualsTunedCol,
+          residualsBootstrapMatrix, paramBoundsBoot, normResidualPairsMatrix,
+          tradeoffBinaryMatrix ) = \
         bootstrapCalculations(numBootstrapSamples,
                                    metricsWeights,
                                    metricsNames,
@@ -153,6 +155,7 @@ def main():
                                    defaultBiasesCol)
 
         bootstrapPlots(numMetricsToTune,
+                       boxSize,
                        metricsNames,
                        residualsBootstrapMatrix,
                        residualsTunedCol,
@@ -272,7 +275,7 @@ def main():
 
     createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                numMetricsToTune,
-               varPrefixes, mapVarIdx,
+               varPrefixes, mapVarIdx, boxSize,
                highlightedMetricsToPlot,
                paramsNames, transformedParamsNames, paramsScales,
                metricsWeights, obsMetricValsCol, normMetricValsCol, magParamValsRow,

@@ -152,6 +152,7 @@ def setUpConfig(beVerbose):
     numMetricsToTune = 162*len(varPrefixes)
     #numMetricsToTune = 162 * (len(varPrefixes)-1)
     #numMetricsToTune = 162
+    boxSize = 30
 
     # These are a selected subset of the tunable metrics that we want to include
     #      in the metrics bar-chart, 3-dot plot, etc.
@@ -513,7 +514,7 @@ def setUpConfig(beVerbose):
     if beVerbose:
         print("defaultMetricValsCol printed as array = ")
         # Calculate number of regions in the east-west (X) and north-south (Y) directions
-        boxSize = 20
+        #boxSize = 20
         numXBoxes = np.rint(360 / boxSize).astype(int)  # 18
         numYBoxes = np.rint(180 / boxSize).astype(int)  # 9
         defaultMetricValsReshaped = defaultMetricValsCol.reshape((numYBoxes, numXBoxes))
@@ -651,7 +652,7 @@ def setUpConfig(beVerbose):
 
     return (numMetricsNoCustom,
             metricsNames, metricsNamesNoprefix,
-            varPrefixes, mapVarIdx,
+            varPrefixes, mapVarIdx, boxSize,
             highlightedMetricsToPlot, createPlotType,
             metricsWeights, metricsNorms,
             obsMetricValsDict,

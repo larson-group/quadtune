@@ -37,7 +37,7 @@ from re import match
 
 def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                numMetricsToTune,
-               varPrefixes, mapVarIdx,
+               varPrefixes, mapVarIdx, boxSize,
                highlightedMetricsToPlot,
                paramsNames, transformedParamsNames, paramsScales,
                metricsWeights, obsMetricValsCol, normMetricValsCol, magParamValsRow,
@@ -898,7 +898,7 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
            paramsAbbrv,
            downloadConfig,
            useLongTitle,
-           plotWidth=500, boxSize=20)
+           plotWidth=500, boxSize=boxSize)
            #plotWidth=500, boxSize=20)
 
 

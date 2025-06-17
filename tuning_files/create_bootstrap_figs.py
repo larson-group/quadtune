@@ -35,6 +35,7 @@ def create_folder(folder_name):
 
 
 def bootstrapPlots(numMetricsToTune,
+                   boxSize,
                    metricsNames,
                    residualsBootstrapMatrix,
                    residualsTunedCol,
@@ -73,8 +74,8 @@ def bootstrapPlots(numMetricsToTune,
     plot_confidence_intervals(paramsNames, paramBoundsBoot, folderName)
     plot_residuals_distributions(residualsBootstrapMatrix, residualsDefaultCol, residualsTunedCol, metricsNames,
                                  folderName)
-    plot_regional_variances(residualsBootstrapMatrix, folderName)
-    plot_regional_msr(residualsBootstrapMatrix, folderName)
+    plot_regional_variances(residualsBootstrapMatrix, boxSize, folderName)
+    plot_regional_msr(residualsBootstrapMatrix, boxSize, folderName)
     plot_residual_map(normResidualPairsMatrix, metricsNames, False, "Residual_norm_heatmap", folderName)
     plot_residual_map(tradeoffBinaryMatrix, metricsNames, True, "Tradeoff_map", folderName)
     plot_tradeoff_scatter(tradeoffBinaryMatrix, residualsBootstrapMatrix, metricsNames, folderName)
@@ -181,7 +182,7 @@ def plot_residuals_distributions(residualsBootstrapMatrix, residualsDefaultCol, 
         plt.close("all")
 
 
-def plot_regional_variances(residualsBootstrapMatrix, folderName):
+def plot_regional_variances(residualsBootstrapMatrix, boxSize, folderName):
     """
     Computes and saves a plot of the variance of residuals per region.
 
@@ -189,22 +190,25 @@ def plot_regional_variances(residualsBootstrapMatrix, folderName):
         residualsBootstrapMatrix (np.ndarray): Bootstrap residuals with shape (n_samples, n_metrics).
         folderName (str): Subdirectory within "Outputs" where the plot will be saved.
     """
-    variances = np.var(residualsBootstrapMatrix, axis=0).reshape(9, 18)
+    variances = np.var(residualsBootstrapMatrix, axis=0) \
+                  .reshape(np.rint(180/boxSize).astype(int), np.rint(360/boxSize).astype(int))
 
     plt.figure(figsize=(12, 6))
     plt.imshow(variances, aspect='equal')
     plt.colorbar(label='Variance')
 
     # Set x-ticks to start at 1 instead of 0
-    plt.xticks(ticks=np.arange(18), labels=np.arange(1, 19))
-    plt.yticks(ticks=np.arange(9), labels=np.arange(1, 10))
+    plt.xticks(ticks=np.arange(np.rint(360/boxSize).astype(int)),
+               labels=np.arange(1, np.rint(360/boxSize).astype(int)+1))
+    plt.yticks(ticks=np.arange(np.rint(180/boxSize).astype(int)),
+               labels=np.arange(1, np.rint(180/boxSize).astype(int)+1))
 
     plt.tight_layout()
     plt.savefig(f"Outputs/{folderName}/Residuals/Variances.png", dpi=300)
     plt.close("all")
 
 
-def plot_regional_msr(residualsBootstrapMatrix, folderName):
+def plot_regional_msr(residualsBootstrapMatrix, boxSize, folderName):
     """
     Computes and saves a plot of the Mean Squared Residual (MSR) per region.
 
@@ -212,15 +216,18 @@ def plot_regional_msr(residualsBootstrapMatrix, folderName):
         residualsBootstrapMatrix (np.ndarray): Bootstrap residuals with shape (n_samples, n_metrics).
         folderName (str): Subdirectory within "Outputs" where the plot will be saved.
     """
-    msr = np.mean(np.power(residualsBootstrapMatrix, 2), axis=0).reshape(9, 18)
+    msr = np.mean(np.power(residualsBootstrapMatrix, 2), axis=0) \
+            .reshape(np.rint(180/boxSize).astype(int), np.rint(360/boxSize).astype(int))
 
     plt.figure(figsize=(12, 6))
     plt.imshow(msr, aspect='equal')
     plt.colorbar(label='MSR')
 
     # Set x-ticks to start at 1 instead of 0
-    plt.xticks(ticks=np.arange(18), labels=np.arange(1, 19))
-    plt.yticks(ticks=np.arange(9), labels=np.arange(1, 10))
+    plt.xticks(ticks=np.arange(np.rint(360/boxSize).astype(int)),
+               labels=np.arange(1, np.rint(360/boxSize).astype(int)+1))
+    plt.yticks(ticks=np.arange(np.rint(360/boxSize).astype(int)),
+               labels=np.arange(1, np.rint(360/boxSize).astype(int)+1))
 
     plt.tight_layout()
     plt.savefig(f"Outputs/{folderName}/Residuals/MSR.png", dpi=300)
