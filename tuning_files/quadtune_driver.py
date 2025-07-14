@@ -23,6 +23,7 @@ def main():
 
     #from config_default import setUpConfig
     from config_example import setUpConfig
+    #from config_example_eam import setUpConfig
     from set_up_inputs \
         import setUpColAndRowVectors, \
                setupDefaultMetricValsCol
@@ -590,7 +591,6 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
                       np.array2string(normlzdSens2ParamValsRow, formatter={'float_kind': lambda x: f"{x:12.8f}"}) )
                 print( "normlzdDefaultParamValsRow= ",
                       np.array2string(normlzdDefaultParamValsRow, formatter={'float_kind': lambda x: f"{x:12.8f}"}) )
-                pdb.set_trace()
                 quit()
 
             normlzdOrdDparamsMin[arrayRow,arrayCol] = np.min(normlzdOrdDparams)
