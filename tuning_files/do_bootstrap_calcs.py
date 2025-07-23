@@ -25,7 +25,7 @@ def bootstrapCalculations(numSamples,
         metricsWeights (np.ndarray): Metric weights, with shape (n_metrics, 1).
         metricsNames (np.ndarray): Names of the metrics, with shape (n_metrics,).
         paramsNames (np.ndarray): Names of the parameters, with shape (n_params,).
-        numMetrics (int): Total number of metrics.
+        numMetrics (int): Total number of metrics, including those we're not tuning.
         numMetricsToTune (int): Number of metrics used for tuning (sampled during bootstrapping).
         normMetricValsCol (np.ndarray): Normalized observed metric values, with shape (n_metrics, 1).
         magParamValsRow (np.ndarray): Magnitudes of parameter values, with shape (1, n_params).
@@ -55,15 +55,20 @@ def bootstrapCalculations(numSamples,
     metricsSampleIdxMatrix = np.random.randint(0, numMetricsToTune, size=(numSamples, numMetricsToTune))
 
     paramsBoot = np.zeros((numSamples, len(paramsNames), 1))
+    # Include all regional metrics, even those we're not tuning:
     defaultBiasesApproxNonlinMatrix = np.full((numSamples, numMetrics, 1), np.nan)
 
-    # Loop through every bootstrap sample and calculate parameter values
+    # Loop through every bootstrap sample and calculate parameter values.
+    # sampleIdx loops in order through the sample number:   0, 1, 2, . . .
+    # metricsSampleIdxRow is a sample row vector with shape (1, numMetricsToTune)
+    #   that samples the tunable regional metric with replacement.
+    #   So matrix[metricsSampleIdxRow,:] is a version of matrix with the rows resampled.
     for sampleIdx, metricsSampleIdxRow in enumerate(metricsSampleIdxMatrix):
         if sampleIdx % 10 == 0:
             print(f"Progress: {sampleIdx}/{numSamples}")
         defaultBiasesApproxNonlin, dnormlzdParamsSolnNonlin, paramsBoot[sampleIdx], \
-            dnormlzdParamsSolnLin, paramsSolnLin, defaultBiasesApproxNonlin2x, \
-            defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv = (
+        dnormlzdParamsSolnLin, paramsSolnLin, defaultBiasesApproxNonlin2x, \
+        defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv = (
             solveUsingNonlin(metricsNames[metricsSampleIdxRow],
                              metricsWeights[metricsSampleIdxRow],
                              normMetricValsCol[metricsSampleIdxRow],
@@ -75,13 +80,19 @@ def bootstrapCalculations(numSamples,
                              reglrCoef,
                              beVerbose=False))
 
-        defaultBiasesApproxNonlinMatrix[sampleIdx, :] = fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
-                                                               normlzdCurvMatrix, numMetrics) * np.abs(
-            normMetricValsCol)
+        # Do a forward calculation of the biases in which the sensitivity matrix
+        #   is in the order of the original metrics.
+        #   The output of fwdFnc, which is a column vector, is assigned to a row of a matrix (somehow).
+        defaultBiasesApproxNonlinMatrix[sampleIdx, :, :] = fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
+                                                               normlzdCurvMatrix, numMetrics) \
+                                                         * np.abs(normMetricValsCol)
+
     print(f"Progress: {numSamples}/{numSamples}")
     paramsBoot = paramsBoot[:, :, 0]
 
-    # get solution of the full dataset
+    # Get biases and tuned parameter values from the full (non-resampled) sensitivity matrix.
+    #   (This seems to duplicate the call to solveUsingNonlin in quadtune_driver and could be
+    #   avoided with some restructuring.)
     biasesTuned, _, paramsTuned, *_ = solveUsingNonlin(metricsNames,
                                                        metricsWeights,
                                                        normMetricValsCol,
@@ -92,10 +103,19 @@ def bootstrapCalculations(numSamples,
                                                        normlzdCurvMatrix,
                                                        reglrCoef,
                                                        beVerbose=False)
+
     paramsTuned = paramsTuned[:, 0]
-    # compute residuals
+
+    # Compute residuals
+    #
+    # residualsDefaultCol =  ( y_i - f0 ) ,
+    #   where y_i is the obs and f0 is the (non-bootstrapped, untuned) default model prediction
     residualsDefaultCol = - defaultBiasesCol
+    # residualsTunedCol = (  y_i -  y_hat_i  ) ,
+    #   where y_hat_i is the non-bootstrapped, tuned model prediction using all regions.
     residualsTunedCol = -biasesTuned - defaultBiasesCol
+    # residualsBootstrapMatrix = (  y_i -  y_hat_i  ) ,
+    #   where y_hat_i is a bootstrapped, tuned model prediction.
     residualsBootstrapMatrix = -defaultBiasesApproxNonlinMatrix[:, :, 0] - defaultBiasesCol.T
 
     # lower and upper bounds for error pars plot

@@ -140,8 +140,8 @@ def setUpConfig(beVerbose):
     metricsWeightsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsWeightsCustom']].to_numpy().astype(float)
     metricsNormsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsNormsCustom']].to_numpy().astype(float)
 
-    varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
-    #varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
+    #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
+    varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
     #varPrefixes = ['SWCF']
     # mapVarIdx is the field is plotted in the 20x20 maps created by PcSensMap.
     mapVar = 'SWCF'
@@ -152,9 +152,11 @@ def setUpConfig(beVerbose):
     #   will appear in plots but not be counted in the tuning.
     boxSize = 20
     numBoxesInMap = np.rint( (360/boxSize) * (180/boxSize) )
+    # numMetricsToTune includes all (e.g., 20x20 regions) and as many
+    #   variables as we want to tune, up to all varPrefixes.
     numMetricsToTune = numBoxesInMap * len(varPrefixes)
-    #numMetricsToTune = numBoxesInMap * (len(varPrefixes)-1)
-    #numMetricsToTune = numBoxesInMap
+    #numMetricsToTune = numBoxesInMap * (len(varPrefixes)-1)  # Omit a variable from tuning.
+    #numMetricsToTune = numBoxesInMap  # Only tune for first variable in varPrefixes
     numMetricsToTune = numMetricsToTune.astype(int)
 
     # These are a selected subset of the tunable metrics that we want to include
@@ -503,6 +505,8 @@ def setUpConfig(beVerbose):
     # Split up the list above into metric names and the corresponding weights.
     dfMetricsNamesWeightsAndNorms = \
         pd.DataFrame(metricsNamesWeightsAndNorms, columns=['metricsNames', 'metricsWeights', 'metricsNorms'])
+    # Here we initialize metricsNames to all the standard (e.g., 20x20) regions for all varPrefixes
+    #    Later down, we'll append any custom regions, e.g., DYCOMS
     metricsNames = dfMetricsNamesWeightsAndNorms[['metricsNames']].to_numpy().astype(str)[:, 0]
     metricsWeights = dfMetricsNamesWeightsAndNorms[['metricsWeights']].to_numpy().astype(float)
     # metricsNorms = dfMetricsNamesWeightsAndNorms[['metricsNorms']].to_numpy().astype(float)
@@ -593,10 +597,11 @@ def setUpConfig(beVerbose):
     # rmse = np.sqrt(mse)
     # print("rmse between default and obs =", rmse)
 
-    # The special regions are tacked onto the end of
-    #     the usual metrics vectors
+    # Any special "custom" regions, e.g. DYCOMS, will be tacked onto the end of
+    #     the usual metrics vectors.  But we exclude those regions from numMetricsNoCustom.
     numMetricsNoCustom = len(metricsNames)
 
+    # Include custom regions in metricsNames:
     metricsNames = np.append(metricsNames, metricsNamesCustom)
     metricsWeights = np.vstack((metricsWeights, metricsWeightsCustom))
     #numMetricsCustom = len(metricsNames) - numMetricsNoCustom
@@ -651,15 +656,15 @@ def setUpConfig(beVerbose):
         'PSL_CAF': 100941.7890625
         }
 
-    obsMetricValsDictCustom = {
-        'RESTOM_GLB': 5.0 }
+    #obsMetricValsDictCustom = {
+    #    'RESTOM_GLB': 5.0 }
     # For custom regions, make simulated values a numpy float,
     #     like the other metrics
-    obsMetricValsDictCustom = {key: np.float32(value) \
-                               for key, value in obsMetricValsDictCustom.items()}
+    #obsMetricValsDictCustom = {key: np.float32(value) \
+    #                           for key, value in obsMetricValsDictCustom.items()}
 
     # Add obs of custom metrics to obs dictionary
-    obsMetricValsDict.update(obsMetricValsDictCustom)
+    #obsMetricValsDict.update(obsMetricValsDictCustom)
 
     # Sanity check: is highlightedMetricsToPlot a subset of metricsNames?
     if np.setdiff1d(highlightedMetricsToPlot, metricsNames).size != 0:

@@ -149,7 +149,7 @@ def setUpConfig(beVerbose):
     # If there are more metrics than this, then
     #   the metrics in the list beyond this number
     #   will appear in plots but not be counted in the tuning.
-    boxSize = 30
+    boxSize = 20
     numBoxesInMap = np.rint( (360/boxSize) * (180/boxSize) )
     numMetricsToTune = numBoxesInMap * len(varPrefixes)
     #numMetricsToTune = numBoxesInMap * (len(varPrefixes)-1)
@@ -174,10 +174,11 @@ def setUpConfig(beVerbose):
     #                                     'O500_5_14', ])
 
     # Directory where the regional files are stored (plus possibly a filename prefix)
-    folder_name = 'Regional_files/20241022_1yr_20x20regs/30.0sens1022_'
+    folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
+    #folder_name = 'Regional_files/20241022_1yr_sst4k_20x20/20p4k1022_'
     #folder_name = 'Regional_files/20241022_1yr_sst4k_30x30/30p4k1022_'
+    # folder_name = 'Regional_files/20241022_1yr_20x20regs/30.0sens1022_'
     #folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
-    #folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_take3/20.0sens1022_'
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_msq/20.0sens1022_'
     #folder_name = 'Regional_files/20231211_20x20regs/sens0707_'
@@ -528,10 +529,10 @@ def setUpConfig(beVerbose):
     # Read observed values of regional metrics on regular tiled grid into a Python dictionary
     (obsMetricValsDict, obsWeightsDict) = \
         (
-        #    setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',
-        #                              obsPathAndFilename='Regional_files/20250429_1yr_20x20_ANN_CAM/' + '20.0sens1022_20241011_20.0_OBS.nc')
             setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',
-                                      obsPathAndFilename='Regional_files/20231204_30x30regs/' + 'sens0707_20241011_30.0_OBS.nc')
+                                      obsPathAndFilename='Regional_files/20250429_1yr_20x20_ANN_CAM/' + '20.0sens1022_20241011_20.0_OBS.nc')
+        #    setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',
+        #                              obsPathAndFilename='Regional_files/20231204_30x30regs/' + 'sens0707_20241011_30.0_OBS.nc')
         #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "20241011_20.0_OBS.nc")
         #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "20.0_OBS.nc")
         #setUp_x_ObsMetricValsDict(varPrefixes, "Regional_files/stephens_20240131/btune_regional_files/b1850.075plus_Regional.nc")
@@ -579,10 +580,11 @@ def setUpConfig(beVerbose):
     # rmse = np.sqrt(mse)
     # print("rmse between default and obs =", rmse)
 
-    # The special regions are tacked onto the end of
-    #     the usual metrics vectors
+    # Any special "custom" regions, e.g. DYCOMS, will be tacked onto the end of
+    #     the usual metrics vectors.  But we exclude those regions from numMetricsNoCustom.
     numMetricsNoCustom = len(metricsNames)
 
+    # Include custom regions in metricsNames:
     metricsNames = np.append(metricsNames, metricsNamesCustom)
     metricsWeights = np.vstack((metricsWeights, metricsWeightsCustom))
     #numMetricsCustom = len(metricsNames) - numMetricsNoCustom
@@ -595,10 +597,10 @@ def setUpConfig(beVerbose):
     # Observed values of our metrics, from, e.g., CERES-EBAF.
     # These observed metrics will be matched as closely as possible by analyzeSensMatrix.
     # NOTE: PRECT is in the unit of m/s
-    (obsMetricValsDictCustom, obsWeightsDictCustom) = \
-        (
-            setUp_x_ObsMetricValsDict(metricsNamesCustom, suffix="", obsPathAndFilename="Regional_files/20250429_1yr_20x20_ANN_CAM/" + "20.0sens1022_20241011_20.0_OBS.nc")
-        )
+    #(obsMetricValsDictCustom, obsWeightsDictCustom) = \
+    #    (
+    #        setUp_x_ObsMetricValsDict(metricsNamesCustom, suffix="", obsPathAndFilename="Regional_files/20250429_1yr_20x20_ANN_CAM/" + "20.0sens1022_20241011_20.0_OBS.nc")
+    #    )
     if False:
         obsMetricValsDictCustom = {
         'RESTOM_GLB': 1.5,
@@ -645,7 +647,7 @@ def setUpConfig(beVerbose):
     #                           for key, value in obsMetricValsDictCustom.items()}
 
     # Add obs of custom metrics to obs dictionary
-    obsMetricValsDict.update(obsMetricValsDictCustom)
+    #obsMetricValsDict.update(obsMetricValsDictCustom)
 
     # Sanity check: is highlightedMetricsToPlot a subset of metricsNames?
     if np.setdiff1d(highlightedMetricsToPlot, metricsNames).size != 0:

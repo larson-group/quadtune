@@ -55,7 +55,7 @@ def main():
     = \
         setUpConfig(beVerbose=False)
 
-    # Number of regional metrics
+    # Number of regional metrics, including those we're not tuning, and including custom regions.
     numMetrics = len(metricsNames)
 
     # We apply a tiny weight to the final metrics.
@@ -141,19 +141,21 @@ def main():
           residualsBootstrapMatrix, paramBoundsBoot, normResidualPairsMatrix,
           tradeoffBinaryMatrix ) = \
         bootstrapCalculations(numBootstrapSamples,
-                                   metricsWeights,
-                                   metricsNames,
-                                   paramsNames,
-                                   numMetrics,
-                                   numMetricsToTune,
-                                   normMetricValsCol,
-                                   magParamValsRow,
-                                   defaultParamValsOrigRow,
-                                   normlzdSensMatrixPolySvd,
-                                   normlzdDefaultBiasesCol,
-                                   normlzdCurvMatrixSvd,
-                                   reglrCoef,
-                                   defaultBiasesCol)
+                              metricsWeights,
+                              metricsNames,
+                              paramsNames,
+                              numMetrics,
+                              numMetricsToTune,
+                              normMetricValsCol,
+                              magParamValsRow,
+                              defaultParamValsOrigRow,
+                              normlzdSensMatrixPolySvd,
+                              normlzdDefaultBiasesCol,
+                              normlzdCurvMatrixSvd,
+                              reglrCoef,
+                              defaultBiasesCol)
+
+        print(f"Sample avg of paramsBoot = {np.mean(paramsBoot, axis=0)}")
 
         bootstrapPlots(numMetricsToTune,
                        boxSize,
