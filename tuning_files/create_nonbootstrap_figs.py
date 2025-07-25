@@ -1981,7 +1981,7 @@ def createThreeDotFig(metricsNames, paramsNames, transformedParamsNames,
 
     from set_up_inputs import setupSensArrays
     from set_up_inputs import setupDefaultParamVectors, \
-        setupDefaultMetricValsCol
+        setUpDefaultMetricValsCol
 
     #    if ( len(paramsNames) != len(sens1NcFilenames)   ):
     #        print("Number of parameters must equal number of netcdf files.")
@@ -2002,7 +2002,7 @@ def createThreeDotFig(metricsNames, paramsNames, transformedParamsNames,
 
     # Set up a column vector of metric values from the default simulation
     defaultMetricValsCol = \
-        setupDefaultMetricValsCol(metricsNames, defaultNcFilename)
+        setUpDefaultMetricValsCol(metricsNames, defaultNcFilename)
     defaultMetricValsMatrix = defaultMetricValsCol @ np.ones((1, numParams))
 
     # Based on the numParams sensitivity simulations,
@@ -2194,7 +2194,7 @@ def calcParamsBounds(metricsNames, paramsNames, transformedParamsNames,
     """
 
     from set_up_inputs import setupDefaultParamVectors, \
-        setupDefaultMetricValsCol, setupSensArrays
+        setUpDefaultMetricValsCol, setupSensArrays
 
     if (len(paramsNames) != len(sensNcFilenames)):
         print("Number of parameters must equal number of netcdf files.")
@@ -2208,7 +2208,7 @@ def calcParamsBounds(metricsNames, paramsNames, transformedParamsNames,
 
     # Set up a column vector of metric values from the default simulation
     defaultMetricValsCol = \
-        setupDefaultMetricValsCol(metricsNames, defaultNcFilename)
+        setUpDefaultMetricValsCol(metricsNames, defaultNcFilename)
 
     # Based on the default simulation,
     #    set up a column vector of metrics and a row vector of parameter values.
@@ -3188,7 +3188,7 @@ def createBiasVsDiagnosticScatterplot(diagnosticPrefix, defaultBiasesCol,
                                       defaultNcFilename):
 
     from set_up_inputs import setUp_x_MetricsList, \
-        setupDefaultMetricValsCol
+        setUpDefaultMetricValsCol
 
     diagnosticNamesWeightsAndNorms, dfdiagnosticMetricGlobalVal = setUp_x_MetricsList(diagnosticPrefix,
                                                                                       defaultNcFilename)
@@ -3200,7 +3200,7 @@ def createBiasVsDiagnosticScatterplot(diagnosticPrefix, defaultBiasesCol,
 
     # Set up a column vector of metric values from the default simulation
     diagnosticValsCol = \
-        setupDefaultMetricValsCol(diagnosticNames, defaultNcFilename)
+        setUpDefaultMetricValsCol(diagnosticNames, defaultNcFilename)
 
     # Plot a scatterplot of default-simulation bias and SVD approximation of that bias.
     # Each column tells us how all metrics vary with a single parameter.

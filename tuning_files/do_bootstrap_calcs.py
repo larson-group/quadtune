@@ -20,9 +20,12 @@ def bootstrapCalculations(numSamples,
     Performs bootstrap resampling on the metric set and solves for parameter values for each bootstrap sample.
     Also computes confidence intervals, residuals, and trade-off diagnostics.
 
+    In the arrays below, n_metrics = numMetrics = len(metricsNames).
+
     Parameters:
         numSamples (int): Number of bootstrap samples to generate.
-        metricsWeights (np.ndarray): Metric weights, with shape (n_metrics, 1).
+        metricsWeights (np.ndarray): Metric weights, with shape (n_metrics, 1),
+                                       but set to eps for un-tuned metrics.
         metricsNames (np.ndarray): Names of the metrics, with shape (n_metrics,).
         paramsNames (np.ndarray): Names of the parameters, with shape (n_params,).
         numMetrics (int): Total number of metrics, including those we're not tuning.
@@ -87,10 +90,17 @@ def bootstrapCalculations(numSamples,
                                                                normlzdCurvMatrix, numMetrics) \
                                                          * np.abs(normMetricValsCol)
 
+        # If we feed in normlzdSensMatrixPoly, etc., for SST4K runs, then we can calc spread for SST4K.
+        #   This would come from constructNormlzdSensCurvMatrices.
+        # If we want the difference SST=SST4K, then we need normlzdSensMatrixPoly from SST too,
+        #   but we already have that.
+        # We also need to subtract off the default values (f0 = defaultBiasesCol + obsMetricValsCol) from the difference.
+
     print(f"Progress: {numSamples}/{numSamples}")
     paramsBoot = paramsBoot[:, :, 0]
 
-    # Get biases and tuned parameter values from the full (non-resampled) sensitivity matrix.
+    # Get biases and tuned parameter values from the full (non-resampled) sensitivity matrix,
+    #   with metricsWeights set to eps for non-tuned metrics.
     #   (This seems to duplicate the call to solveUsingNonlin in quadtune_driver and could be
     #   avoided with some restructuring.)
     biasesTuned, _, paramsTuned, *_ = solveUsingNonlin(metricsNames,
@@ -118,7 +128,7 @@ def bootstrapCalculations(numSamples,
     #   where y_hat_i is a bootstrapped, tuned model prediction.
     residualsBootstrapMatrix = -defaultBiasesApproxNonlinMatrix[:, :, 0] - defaultBiasesCol.T
 
-    # lower and upper bounds for error pars plot
+    # Lower and upper bounds for error params plot
     ciLowerPercentile, ciUpperPercentile = percentileIntervals(paramsBoot)
     jackknife_params = computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetricValsCol,
                                               magParamValsRow, defaultParamValsOrigRow, normlzdSensMatrixPoly,
@@ -190,6 +200,7 @@ def bcaIntervals(paramsBoot, paramsTuned, jackknifeParams, alpha=0.05):
     ciLower = np.zeros(p)
     ciUpper = np.zeros(p)
 
+    # Loop over parameters
     for j in range(p):
         thetaBoot = paramsBoot[:, j]
         thetaHat = paramsTuned[j]

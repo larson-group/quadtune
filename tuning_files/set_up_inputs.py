@@ -93,7 +93,7 @@ def setUpColAndRowVectors(metricsNames, metricsNorms,
 
     # Set up a column vector of metric values from the default simulation
     defaultMetricValsCol = \
-        setupDefaultMetricValsCol(metricsNames, defaultNcFilename)
+        setUpDefaultMetricValsCol(metricsNames, defaultNcFilename)
 
     #print("defaultMetricValsCol=", defaultMetricValsCol)
 
@@ -338,7 +338,7 @@ def setupSensArrays(metricsNames, paramsNames, transformedParamsNames,
     return (sensMetricValsMatrix, sensParamValsRow, sensParamValsOrigRow)
 
 
-def setupDefaultMetricValsCol(metricsNames, defaultNcFilename):
+def setUpDefaultMetricValsCol(metricsNames, defaultNcFilename):
     """
     Input: Filename containing default-simulation metrics.
     Output: Column vector of default-sim metrics.

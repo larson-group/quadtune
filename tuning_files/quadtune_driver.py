@@ -26,7 +26,7 @@ def main():
     #from config_example_eam import setUpConfig
     from set_up_inputs \
         import setUpColAndRowVectors, \
-               setupDefaultMetricValsCol
+               setUpDefaultMetricValsCol
 
 
     from create_nonbootstrap_figs import createFigs
@@ -37,7 +37,7 @@ def main():
     print("Set up inputs . . .")
 
     # The user should input all tuning configuration info into file set_up_inputs.py
-    (numMetricsNoSpecial,
+    (numMetricsNoCustom, numMetricsToTune,
      metricsNames, metricsNamesNoprefix,
      varPrefixes, mapVarIdx, boxSize,
      highlightedMetricsToPlot, createPlotType,
@@ -51,11 +51,11 @@ def main():
      prescribedSensNcFilenames, prescribedSensNcFilenamesExt,
      sensNcFilenames, sensNcFilenamesExt,
      defaultNcFilename, globTunedNcFilename,
-     reglrCoef, doBootstrapSampling, numBootstrapSamples, numMetricsToTune) \
+     reglrCoef, doBootstrapSampling, numBootstrapSamples) \
     = \
         setUpConfig(beVerbose=False)
 
-    # Number of regional metrics, including those we're not tuning, and including custom regions.
+    # Number of regional metrics, including all of varPrefixes including the metrics we're not tuning, plus custom regions.
     numMetrics = len(metricsNames)
 
     # We apply a tiny weight to the final metrics.
@@ -85,8 +85,8 @@ def main():
     # Also construct a linear sensitivity matrix, dmetrics/dparams.
     normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix, \
     normlzdOrdDparamsMin, normlzdOrdDparamsMax = \
-        constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParamsNames, \
-                                   normMetricValsCol, magParamValsRow, \
+        constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParamsNames,
+                                   normMetricValsCol, magParamValsRow,
                                    sensNcFilenames, sensNcFilenamesExt, defaultNcFilename)
 
     # In order to weight certain metrics, multiply each row of normlzdSensMatrixPoly
@@ -97,8 +97,8 @@ def main():
     # The derivatives are normalized by observed metric values and max param values.
     normlzdPrescribedCurvMatrix, normlzdPrescribedSensMatrixPoly, normlzdPrescribedConstMatrix, \
     normlzdPrescribedOrdDparamsMin, normlzdPrescribedOrdDparamsMax = \
-        constructNormlzdSensCurvMatrices(metricsNames, prescribedParamsNames, prescribedTransformedParamsNames, \
-                                   normMetricValsCol, magPrescribedParamValsRow, \
+        constructNormlzdSensCurvMatrices(metricsNames, prescribedParamsNames, prescribedTransformedParamsNames,
+                                   normMetricValsCol, magPrescribedParamValsRow,
                                    prescribedSensNcFilenames, prescribedSensNcFilenamesExt, defaultNcFilename)
 
     # This is the prescribed correction to the metrics that appears on the left-hand side of the Taylor equation.
@@ -136,7 +136,9 @@ def main():
     #######################################################################################################
 
     if doBootstrapSampling:
+
         print("Starting boostrap sampling . . .")
+
         ( paramsBoot, paramsTuned, residualsDefaultCol, residualsTunedCol,
           residualsBootstrapMatrix, paramBoundsBoot, normResidualPairsMatrix,
           tradeoffBinaryMatrix ) = \
@@ -144,7 +146,7 @@ def main():
                               metricsWeights,
                               metricsNames,
                               paramsNames,
-                              numMetrics,
+                              numMetrics,  # numMetrics is redundant, given that we're feeding in metricsNames
                               numMetricsToTune,
                               normMetricValsCol,
                               magParamValsRow,
@@ -157,7 +159,7 @@ def main():
 
         print(f"Sample avg of paramsBoot = {np.mean(paramsBoot, axis=0)}")
 
-        bootstrapPlots(numMetricsToTune,
+        bootstrapPlots(numMetricsToTune,  # Should we feed in numMetrics instead??
                        boxSize,
                        metricsNames,
                        residualsBootstrapMatrix,
@@ -172,6 +174,8 @@ def main():
                        tradeoffBinaryMatrix)
     else:
         paramBoundsBoot = None
+
+    #end if doBootstrapSampling
 
     ########################################
     #
@@ -209,27 +213,28 @@ def main():
     #normlzdWeightedDefaultBiasesCol = metricsWeights * normlzdDefaultBiasesCol
     chisqdZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                          normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
-                         normlzdCurvMatrix, reglrCoef, numMetrics)
+                         normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
+                                                                    #   But metricsWeights is already set to eps for un-tuned metrics.
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
     chisqdMin = lossFnc(dnormlzdParamsSolnNonlin.T,
                         normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
-                        normlzdCurvMatrix, reglrCoef, numMetrics)
+                        normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdMinRatio =", chisqdMin/chisqdZero)
 
-    chisqdUnweightedZero = lossFnc(np.zeros_like(defaultParamValsOrigRow), \
-                                   normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights), \
-                                   normlzdCurvMatrix, reglrCoef, numMetrics)
+    chisqdUnweightedZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
+                                   normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
+                                   normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
-    chisqdUnweightedMin = lossFnc(dnormlzdParamsSolnNonlin.T, \
-                                  normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights), \
-                                  normlzdCurvMatrix, reglrCoef, numMetrics)
+    chisqdUnweightedMin = lossFnc(dnormlzdParamsSolnNonlin.T,
+                                  normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
+                                  normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdUnweightedMinRatio =", chisqdUnweightedMin/chisqdUnweightedZero)
 
     # Set up a column vector of metric values from the global simulation based on optimized
     #     parameter values.
-    globTunedMetricValsCol = setupDefaultMetricValsCol(metricsNames, globTunedNcFilename)
+    globTunedMetricValsCol = setUpDefaultMetricValsCol(metricsNames, globTunedNcFilename)
 
     # Store biases in default simulation, ( global_model - obs )
     globTunedBiasesCol = np.subtract(globTunedMetricValsCol, obsMetricValsCol)
@@ -238,15 +243,15 @@ def main():
     # Check whether the minimizer actually reduces chisqd
     # Initial value of chisqd, which assumes parameter perturbations are zero
     normlzdGlobTunedBiasesCol = globTunedBiasesCol/np.abs(normMetricValsCol)
-    chisqdGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow), \
-                                 normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, metricsWeights, \
-                                 normlzdCurvMatrix, reglrCoef, numMetrics)
+    chisqdGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow),
+                                 normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, metricsWeights,
+                                 normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdGlobTunedMinRatio =", chisqdGlobTunedMin/chisqdZero)
 
-    chisqdUnweightedGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow), \
-                                           normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, np.ones_like(metricsWeights), \
-                                           normlzdCurvMatrix, reglrCoef, numMetrics)
+    chisqdUnweightedGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow),
+                                           normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, np.ones_like(metricsWeights),
+                                           normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdUnweightedGlobTunedMinRatio =", chisqdUnweightedGlobTunedMin/chisqdUnweightedZero)
     print("-----------------------------------------------------")
@@ -276,7 +281,7 @@ def main():
     #normlzdWeightedLinplusSensMatrixPoly = np.diag(np.transpose(metricsWeights)[0]) \
     #                                          @ normlzdLinplusSensMatrixPoly
 
-    createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
+    createFigs(numMetricsNoCustom, metricsNames, metricsNamesNoprefix,
                numMetricsToTune,
                varPrefixes, mapVarIdx, boxSize,
                highlightedMetricsToPlot,
@@ -327,7 +332,7 @@ def lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
 
     weightedBiasDiffSqdCol = \
         np.square( (-normlzdDefaultBiasesCol
-                    - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) \
+                    - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics)
          ) * metricsWeights )
 
     return weightedBiasDiffSqdCol
@@ -377,11 +382,11 @@ def solveUsingNonlin(metricsNames,
     # Perform nonlinear optimization
     #normlzdDefaultBiasesCol = defaultBiasesCol/np.abs(normMetricValsCol)
     #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=np.ones_like(np.transpose(defaultParamValsOrigRow)), \
-    dnormlzdParamsSolnNonlin = (minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])), \
+    dnormlzdParamsSolnNonlin = (minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])),
                                         #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=x0TwoYr, \
                                         #dnormlzdParamsSolnNonlin = minimize(lossFnc,dnormlzdParamsSoln, \
                                         args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-                               normlzdCurvMatrix, reglrCoef, numMetrics), \
+                               normlzdCurvMatrix, reglrCoef, numMetrics),
                                         method='Powell', tol=1e-12
                                         ))
                                 #,)
@@ -437,20 +442,20 @@ def solveUsingNonlin(metricsNames,
 
 
 
-    dnormlzdParamsSolnLin = minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])), \
+    dnormlzdParamsSolnLin = minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])),
                                      args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-                               0*normlzdCurvMatrix, reglrCoef, numMetrics), \
+                               0*normlzdCurvMatrix, reglrCoef, numMetrics),
                                      method='Powell')
     dnormlzdParamsSolnLin = np.atleast_2d(dnormlzdParamsSolnLin.x).T
     dparamsSolnLin = dnormlzdParamsSolnLin * np.transpose(magParamValsRow)
     paramsSolnLin = np.transpose(defaultParamValsOrigRow) + dparamsSolnLin
 
 
-    return (defaultBiasesApproxNonlin, \
-            dnormlzdParamsSolnNonlin, paramsSolnNonlin, \
-            dnormlzdParamsSolnLin, paramsSolnLin, \
-            defaultBiasesApproxNonlin2x, \
-            defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv \
+    return (defaultBiasesApproxNonlin,
+            dnormlzdParamsSolnNonlin, paramsSolnNonlin,
+            dnormlzdParamsSolnLin, paramsSolnLin,
+            defaultBiasesApproxNonlin2x,
+            defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv
            )
 
 
@@ -468,7 +473,7 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
 
     from set_up_inputs import setupSensArrays
     from set_up_inputs import setupDefaultParamVectors, \
-                                        setupDefaultMetricValsCol
+                              setUpDefaultMetricValsCol
 
 
     if ( len(paramsNames) != len(sens1NcFilenames)   ):
@@ -486,7 +491,7 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
 
     # Set up a column vector of metric values from the default simulation
     defaultMetricValsCol = \
-        setupDefaultMetricValsCol(metricsNames, defaultNcFilename)
+        setUpDefaultMetricValsCol(metricsNames, defaultNcFilename)
     defaultMetricValsMatrix = defaultMetricValsCol @ np.ones((1,numParams))
     normlzdDefaultMetricValsMatrix = defaultMetricValsMatrix * invrsObsMatrix
 
@@ -618,7 +623,7 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
             normlzdSensMatrixPoly[arrayRow,arrayCol] = polyCoefs[1]
             normlzdConstMatrixPoly[arrayRow,arrayCol] = polyCoefs[2]
 
-    return ( normlzdCurvMatrixPoly, normlzdSensMatrixPoly, normlzdConstMatrixPoly, \
+    return ( normlzdCurvMatrixPoly, normlzdSensMatrixPoly, normlzdConstMatrixPoly,
              normlzdOrdDparamsMin, normlzdOrdDparamsMax )
 
 
@@ -695,7 +700,7 @@ def calcNormlzdRadiusCurv(metricsNames, paramsNames, transformedParamsNames, par
 
     from set_up_inputs import setupDefaultParamVectors, \
                                            setupSensArrays
-    from set_up_inputs import setupDefaultMetricValsCol
+    from set_up_inputs import setUpDefaultMetricValsCol
 
     if ( len(paramsNames) != len(sensNcFilenames)   ):
         print("Number of parameters must equal number of netcdf files.")
@@ -709,7 +714,7 @@ def calcNormlzdRadiusCurv(metricsNames, paramsNames, transformedParamsNames, par
 
     # Set up a column vector of metric values from the default simulation
     defaultMetricValsCol = \
-        setupDefaultMetricValsCol(metricsNames, defaultNcFilename)
+        setUpDefaultMetricValsCol(metricsNames, defaultNcFilename)
 
     # Based on the default simulation,
     #    set up a column vector of metrics and a row vector of parameter values.
@@ -804,7 +809,7 @@ def calcNormlzdRadiusCurv(metricsNames, paramsNames, transformedParamsNames, par
 
     return
 
-def findOutliers(normlzdSensMatrix, normlzdWeightedSensMatrix, \
+def findOutliers(normlzdSensMatrix, normlzdWeightedSensMatrix,
                  defaultBiasesCol, normMetricValsCol, magParamValsRow, defaultParamValsOrigRow):
     """Find outliers in bias-senstivity scatterplot based on the RANSAC method."""
 
@@ -852,14 +857,14 @@ def findOutliers(normlzdSensMatrix, normlzdWeightedSensMatrix, \
 
     #pdb.set_trace()
 
-    return (outlier_mask, defaultBiasesApproxRansac, normlzdWeightedDefaultBiasesApproxRansac, \
+    return (outlier_mask, defaultBiasesApproxRansac, normlzdWeightedDefaultBiasesApproxRansac,
             dnormlzdParamsSolnRansac, paramsSolnRansac)
 
 
 
-def findParamsUsingElastic(normlzdSensMatrix, normlzdWeightedSensMatrix, \
-                 defaultBiasesCol, normMetricValsCol, metricsWeights, \
-                 magParamValsRow, defaultParamValsOrigRow, \
+def findParamsUsingElastic(normlzdSensMatrix, normlzdWeightedSensMatrix,
+                 defaultBiasesCol, normMetricValsCol, metricsWeights,
+                 magParamValsRow, defaultParamValsOrigRow,
                  normlzdCurvMatrix,
                  beVerbose):
     """Do linear regression with L1 (lasso or elastic net) regularization"""
@@ -895,7 +900,7 @@ def findParamsUsingElastic(normlzdSensMatrix, normlzdWeightedSensMatrix, \
 
     #pdb.set_trace()
 
-    return (defaultBiasesApproxElastic, defaultBiasesApproxElasticNonlin, \
+    return (defaultBiasesApproxElastic, defaultBiasesApproxElasticNonlin,
             dnormlzdParamsSolnElastic, paramsSolnElastic)
 
 

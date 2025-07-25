@@ -18,7 +18,7 @@ import pandas as pd
 def setUpConfig(beVerbose):
     from set_up_inputs import (
         setUp_x_MetricsList,
-        setupDefaultMetricValsCol, setUp_x_ObsMetricValsDict,
+        setUpDefaultMetricValsCol, setUp_x_ObsMetricValsDict,
         setUpObsCol
     )
 
@@ -208,7 +208,7 @@ def setUpConfig(beVerbose):
 
     # Set up a column vector of metric values from the default simulation
     defaultMetricValsCol = \
-        setupDefaultMetricValsCol(metricsNames, defaultNcFilename)
+        setUpDefaultMetricValsCol(metricsNames, defaultNcFilename)
 
     metricGlobalAvgs = np.diag(np.dot(metricsWeights.reshape(-1, len(varPrefixes), order='F').T,
                                       defaultMetricValsCol.reshape(-1, len(varPrefixes), order='F')))

@@ -18,7 +18,7 @@ import pandas as pd
 def setUpConfig(beVerbose):
     from set_up_inputs import (
         setUp_x_MetricsList,
-        setupDefaultMetricValsCol, setUp_x_ObsMetricValsDict,
+        setUpDefaultMetricValsCol, setUp_x_ObsMetricValsDict,
         setUpObsCol
     )
 
@@ -53,92 +53,6 @@ def setUpConfig(beVerbose):
         'PcSensMap': True,                         # Maps showing sensitivities to parameters and left singular vectors
         'vhMatrixFig': True,                       # Color-coded matrix of right singular vectors
     }
-
-    # These are metrics from customized regions that differ from the standard 20x20 degree tiles.
-    # Metrics are observed quantities that we want a tuned simulation to match.
-    #    The first column is the metric name.
-    #    The order of metricNames determines the order of rows in sensMatrix.
-    # The second column is a vector of (positive) weights.  A small value de-emphasizes
-    #   the corresponding metric in the fitting process.
-    #   Use a large weight for global (GLB) metrics.
-    # The third column is a vector of normalization values for metrics.  
-    #   If a value in the 3rd column is set to -999, then the metric is simply normalized by the observed value.
-    #   Otherwise, the value in the 3rd column is itself the normalization value for the metric.  
-    metricsNamesWeightsAndNormsCustom = \
-        [
-# #                        ['TMQ_RMSE', 1.00, 15.], \
-# #                        ['PSL_RMSE', 1.00, 1000.], \
-# #                        ['TS_RMSE', 1.00, 15.], \
-# #                        ['LHFLX_RMSE', 1.00, 15.], \
-# #                        ['SHFLX_RMSE', 1.00, 15.], \
-# #                        ['CLDLOW_RMSE', 1.00, 15.], \
-#                         #['SWCF_RACC', 0.01, 0.2], \
-#                         #['SWCF_RMSEP', 8.01, 15.], \
-#                         #['SWCF_RMSE', 0.01, 15.], \
-#                         ['RESTOM_GLB', 4.0, 10.], \
-#                         #['RESTOM_GLB', 4.0e-3, -999], \
-#                         ['SWCF_GLB', 16.0e-6, -999], \
-#                         ['SWCF_DYCOMS', 4.0e-6, -999], \
-#                         ['SWCF_HAWAII', 4.00e-6, -999], \
-#                         ['SWCF_VOCAL', 4.00e-6, -999], \
-#                         ['SWCF_VOCAL_near', 1.00e-6, -999], \
-#                         ['SWCF_LBA', 1.00e-6, -999], \
-#                         ['SWCF_WP', 1.00e-6, -999], \
-#                         ['SWCF_EP', 1.00e-6, -999], \
-#                         ['SWCF_NP', 1.00e-6, -999], \
-#                         ['SWCF_SP', 1.00e-6, -999],  \
-# ##                        ['SWCF_PA', 1.01, -999], \
-# #                        ['SWCF_CAF', 1.00, -999], \
-#                         ['SWCF_Namibia', 4.00e-6, -999], \
-#                         ['SWCF_Namibia_near', 1.00e-6, -999], \
-#                         #['LWCF_GLB',1.00e-6, -999], \
-# ###                        ['LWCF_DYCOMS', 1.01, -999], \
-# ###                        ['LWCF_HAWAII', 1.01, -999], \
-# ###                        ['LWCF_VOCAL', 1.01, -999], \
-# ##                        ['LWCF_LBA', 1.00, -999], \
-# ##                       ['LWCF_WP', 1.00, -999], \
-# ###                        ['LWCF_EP', 1.01, -999], \
-# ##                        ['LWCF_NP', 1.01, -999], \
-# ##                        ['LWCF_SP', 1.01, -999], \
-# ####                        ['LWCF_PA',  1.01, -999], \
-# ###                        ['LWCF_CAF', 1.01, -999], \
-#                         #['PRECT_GLB', 1.00, -999], \
-#                         #['PRECT_RACC', 0.01, 1.0], \
-#                         #['PRECT_RMSEP', 0.01, 1.0], \
-#                         #['PRECT_RMSE', 0.01, 1.0], \
-# ##                        ['PRECT_LBA', 1.00, -999], \
-# ##                        ['PRECT_WP', 1.00, -999], \
-# ###                        ['PRECT_EP', 1.01, -999], \
-# ###                        ['PRECT_NP', 1.01, -999], \
-# ###                        ['PRECT_SP', 1.01, -999], \
-# ####                        ['PRECT_PA', 1.01, -999], \
-# ##                        ['PRECT_CAF', 1.00, -999], \
-# #                        ['PSL_DYCOMS', 1.e0, 1e3], \
-# #                        ['PSL_HAWAII', 1.e0, 1e3], \
-# #                        ['PSL_VOCAL', 1.e0, 1e3], \
-# #                        ['PSL_VOCAL_near', 1.00, 1e3], \
-# #                        ['PSL_LBA', 1.e0, 1e3], \
-# #                        ['PSL_WP', 1.e0, 1e3], \
-# #                        ['PSL_EP', 1.e0, 1e3], \
-# #                        ['PSL_NP', 1.e0, 1e3], \
-# #                        ['PSL_SP', 1.e0, 1e3],  \
-# #                        ['PSL_PA', 1.00, 1e3], \
-# #                        ['PSL_CAF', 1.e0, 1e3], \
-# ##                        ['PSL_Namibia', 1.00, 1e3], \
-# ##                        ['PSL_Namibia_near', 1.00, 1e3], \
-        ]
-
-#                        ['PRECT_DYCOMS', 0.01, -999], \
-#                        ['PRECT_HAWAII', 0.01, -999], \
-#                        ['PRECT_VOCAL', 0.01, -999], \
-
-    # Split up the list above into metric names and the corresponding weights.
-    dfMetricsNamesWeightsAndNormsCustom = \
-        pd.DataFrame(metricsNamesWeightsAndNormsCustom,
-                     columns=['metricsNamesCustom', 'metricsWeightsCustom', 'metricsNormsCustom'])
-    metricsNamesCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsNamesCustom']].to_numpy().astype(str)[:, 0]
-    metricsWeightsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsWeightsCustom']].to_numpy().astype(float)
-    metricsNormsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsNormsCustom']].to_numpy().astype(float)
 
     #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
     varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
@@ -192,6 +106,37 @@ def setUpConfig(beVerbose):
     #folder_name = 'Regional_files/20240614_e3sm_20x20regs/thresp26_'
     #folder_name = 'Regional_files/20240409updated/thresp26_'
     #folder_name = 'Regional_files/stephens_20240131/btune_regional_files/btune_'
+
+    # Netcdf file containing metric and parameter values from the default simulation
+    #defaultNcFilename = \
+    #    folder_name + 'Regional.nc'
+    #    'Regional_files/stephens_20240131/btune_regional_files/b1850.076base.n2th1b_Regional.nc'
+    #    'Regional_files/20240409updated/thresp26_Regional.nc'
+    #    'Regional_files/stephens_20230920/117.f2c.taus_new_base_latest_mods6e_Regional.nc'
+    defaultNcFilename = \
+        (
+            folder_name + 'dflt_Regional.nc'
+            #folder_name + '1_Regional.nc'
+        )
+
+    # Metrics from the global simulation that uses the tuner-recommended parameter values
+    globTunedNcFilename = \
+        (
+            #'Regional_files/20250502_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt1_Regional.nc'
+            #'Regional_files/20250514_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt2_Regional.nc'
+            #'Regional_files/20250530_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt4_Regional.nc'
+            defaultNcFilename
+    #    'Regional_files/20231211_20x20regs/20sens0707_61_Regional.nc'
+    #    'Regional_files/20degree_CAM_TAUS_202404_DJF/20.0Tuner_20240702_20d_DJF_Regional.nc'
+    #    'Regional_files/stephens_20240131/btune_regional_files/b1850.076base.n2th1b_Regional.nc'
+    #    'Regional_files/20240409updated/thresp26_Regional.nc'
+    # 'Regional_files/stephens_20230920/117.f2c.taus_new_base_latest_mods6e_Regional.nc'
+    #globTunedNcFilename = \
+    #       folder_name + 'sens0707_25_Regional.nc'
+           #folder_name + 'sens0707_29_Regional.nc'
+           # folder_name + 'chrysalis.bmg20220630.sens1107_30.ne30pg2_r05_oECv3_Regional.nc'
+    #        folder_name + 'chrysalis.bmg20220630.sens1107_23.ne30pg2_r05_oECv3_Regional.nc'
+        )
 
     # Parameters are tunable model parameters, e.g. clubb_C8.
     # The float listed below after the parameter name is a factor that is used below for scaling plots.
@@ -468,36 +413,6 @@ def setUpConfig(beVerbose):
                                        ['prescribedSensNcFilenamesExt']].to_numpy().astype(str)[:, 0]
     prescribedTransformedParamsNames = np.array([''])
 
-    # Netcdf file containing metric and parameter values from the default simulation
-    #defaultNcFilename = \
-    #    folder_name + 'Regional.nc'
-    #    'Regional_files/stephens_20240131/btune_regional_files/b1850.076base.n2th1b_Regional.nc'
-    #    'Regional_files/20240409updated/thresp26_Regional.nc'
-    #    'Regional_files/stephens_20230920/117.f2c.taus_new_base_latest_mods6e_Regional.nc'
-    defaultNcFilename = \
-        (
-            folder_name + 'dflt_Regional.nc'
-            #folder_name + '1_Regional.nc'
-        )
-
-    # Metrics from the global simulation that uses the tuner-recommended parameter values
-    globTunedNcFilename = \
-        (
-            #'Regional_files/20250502_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt1_Regional.nc'
-            #'Regional_files/20250514_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt2_Regional.nc'
-            #'Regional_files/20250530_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt4_Regional.nc'
-            defaultNcFilename
-    #    'Regional_files/20231211_20x20regs/20sens0707_61_Regional.nc'
-    #    'Regional_files/20degree_CAM_TAUS_202404_DJF/20.0Tuner_20240702_20d_DJF_Regional.nc'
-    #    'Regional_files/stephens_20240131/btune_regional_files/b1850.076base.n2th1b_Regional.nc'
-    #    'Regional_files/20240409updated/thresp26_Regional.nc'
-    # 'Regional_files/stephens_20230920/117.f2c.taus_new_base_latest_mods6e_Regional.nc'
-    #globTunedNcFilename = \
-    #       folder_name + 'sens0707_25_Regional.nc'
-           #folder_name + 'sens0707_29_Regional.nc'
-           # folder_name + 'chrysalis.bmg20220630.sens1107_30.ne30pg2_r05_oECv3_Regional.nc'
-    #        folder_name + 'chrysalis.bmg20220630.sens1107_23.ne30pg2_r05_oECv3_Regional.nc'
-        )
 
     # Comment out if not using 20x20reg files
     metricsNamesWeightsAndNorms, metricGlobalValsFromFile \
@@ -515,7 +430,7 @@ def setUpConfig(beVerbose):
 
     # Set up a column vector of metric values from the default simulation
     defaultMetricValsCol = \
-        setupDefaultMetricValsCol(metricsNames, defaultNcFilename)
+        setUpDefaultMetricValsCol(metricsNames, defaultNcFilename)
 
     #metricGlobalAvg = np.dot(metricsWeights.T, defaultMetricValsCol)
     metricGlobalAvgs = np.diag(np.dot(metricsWeights.reshape(-1, len(varPrefixes), order='F').T,
@@ -568,6 +483,7 @@ def setUpConfig(beVerbose):
         obsWeights = obsWeightsUnnormlzd / np.sum(obsWeightsUnnormlzd)
         # metricsWeights = obsWeights
         # obsWeights = np.vstack([obsWeights] * len(varPrefixes))
+        # For the current element of varPrefix, e.g. 'SWCF', select the corresponding regions, e.g. 'SWCF_1_1' . . . 'SWCF_9_18':
         metricsNamesVarPrefix = [key for key in obsMetricValsDict.keys() if varPrefix in key]
         obsMetricValsColVarPrefix = setUpObsCol(obsMetricValsDict, metricsNamesVarPrefix)
         obsGlobalStdObsWeights[idx] = np.std(obsMetricValsColVarPrefix)
@@ -600,6 +516,92 @@ def setUpConfig(beVerbose):
     # Any special "custom" regions, e.g. DYCOMS, will be tacked onto the end of
     #     the usual metrics vectors.  But we exclude those regions from numMetricsNoCustom.
     numMetricsNoCustom = len(metricsNames)
+
+    # These are metrics from customized regions that differ from the standard 20x20 degree tiles.
+    # Metrics are observed quantities that we want a tuned simulation to match.
+    #    The first column is the metric name.
+    #    The order of metricNames determines the order of rows in sensMatrix.
+    # The second column is a vector of (positive) weights.  A small value de-emphasizes
+    #   the corresponding metric in the fitting process.
+    #   Use a large weight for global (GLB) metrics.
+    # The third column is a vector of normalization values for metrics.
+    #   If a value in the 3rd column is set to -999, then the metric is simply normalized by the observed value.
+    #   Otherwise, the value in the 3rd column is itself the normalization value for the metric.
+    metricsNamesWeightsAndNormsCustom = \
+        [
+            # #                        ['TMQ_RMSE', 1.00, 15.], \
+            # #                        ['PSL_RMSE', 1.00, 1000.], \
+            # #                        ['TS_RMSE', 1.00, 15.], \
+            # #                        ['LHFLX_RMSE', 1.00, 15.], \
+            # #                        ['SHFLX_RMSE', 1.00, 15.], \
+            # #                        ['CLDLOW_RMSE', 1.00, 15.], \
+            #                         #['SWCF_RACC', 0.01, 0.2], \
+            #                         #['SWCF_RMSEP', 8.01, 15.], \
+            #                         #['SWCF_RMSE', 0.01, 15.], \
+            #                         ['RESTOM_GLB', 4.0, 10.], \
+            #                         #['RESTOM_GLB', 4.0e-3, -999], \
+            #                         ['SWCF_GLB', 16.0e-6, -999], \
+            #                         ['SWCF_DYCOMS', 4.0e-6, -999], \
+            #                         ['SWCF_HAWAII', 4.00e-6, -999], \
+            #                         ['SWCF_VOCAL', 4.00e-6, -999], \
+            #                         ['SWCF_VOCAL_near', 1.00e-6, -999], \
+            #                         ['SWCF_LBA', 1.00e-6, -999], \
+            #                         ['SWCF_WP', 1.00e-6, -999], \
+            #                         ['SWCF_EP', 1.00e-6, -999], \
+            #                         ['SWCF_NP', 1.00e-6, -999], \
+            #                         ['SWCF_SP', 1.00e-6, -999],  \
+            # ##                        ['SWCF_PA', 1.01, -999], \
+            # #                        ['SWCF_CAF', 1.00, -999], \
+            #                         ['SWCF_Namibia', 4.00e-6, -999], \
+            #                         ['SWCF_Namibia_near', 1.00e-6, -999], \
+            #                         #['LWCF_GLB',1.00e-6, -999], \
+            # ###                        ['LWCF_DYCOMS', 1.01, -999], \
+            # ###                        ['LWCF_HAWAII', 1.01, -999], \
+            # ###                        ['LWCF_VOCAL', 1.01, -999], \
+            # ##                        ['LWCF_LBA', 1.00, -999], \
+            # ##                       ['LWCF_WP', 1.00, -999], \
+            # ###                        ['LWCF_EP', 1.01, -999], \
+            # ##                        ['LWCF_NP', 1.01, -999], \
+            # ##                        ['LWCF_SP', 1.01, -999], \
+            # ####                        ['LWCF_PA',  1.01, -999], \
+            # ###                        ['LWCF_CAF', 1.01, -999], \
+            #                         #['PRECT_GLB', 1.00, -999], \
+            #                         #['PRECT_RACC', 0.01, 1.0], \
+            #                         #['PRECT_RMSEP', 0.01, 1.0], \
+            #                         #['PRECT_RMSE', 0.01, 1.0], \
+            # ##                        ['PRECT_LBA', 1.00, -999], \
+            # ##                        ['PRECT_WP', 1.00, -999], \
+            # ###                        ['PRECT_EP', 1.01, -999], \
+            # ###                        ['PRECT_NP', 1.01, -999], \
+            # ###                        ['PRECT_SP', 1.01, -999], \
+            # ####                        ['PRECT_PA', 1.01, -999], \
+            # ##                        ['PRECT_CAF', 1.00, -999], \
+            # #                        ['PSL_DYCOMS', 1.e0, 1e3], \
+            # #                        ['PSL_HAWAII', 1.e0, 1e3], \
+            # #                        ['PSL_VOCAL', 1.e0, 1e3], \
+            # #                        ['PSL_VOCAL_near', 1.00, 1e3], \
+            # #                        ['PSL_LBA', 1.e0, 1e3], \
+            # #                        ['PSL_WP', 1.e0, 1e3], \
+            # #                        ['PSL_EP', 1.e0, 1e3], \
+            # #                        ['PSL_NP', 1.e0, 1e3], \
+            # #                        ['PSL_SP', 1.e0, 1e3],  \
+            # #                        ['PSL_PA', 1.00, 1e3], \
+            # #                        ['PSL_CAF', 1.e0, 1e3], \
+            # ##                        ['PSL_Namibia', 1.00, 1e3], \
+            # ##                        ['PSL_Namibia_near', 1.00, 1e3], \
+        ]
+
+    #                        ['PRECT_DYCOMS', 0.01, -999], \
+    #                        ['PRECT_HAWAII', 0.01, -999], \
+    #                        ['PRECT_VOCAL', 0.01, -999], \
+
+    # Split up the list above into metric names and the corresponding weights.
+    dfMetricsNamesWeightsAndNormsCustom = \
+        pd.DataFrame(metricsNamesWeightsAndNormsCustom,
+                     columns=['metricsNamesCustom', 'metricsWeightsCustom', 'metricsNormsCustom'])
+    metricsNamesCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsNamesCustom']].to_numpy().astype(str)[:, 0]
+    metricsWeightsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsWeightsCustom']].to_numpy().astype(float)
+    metricsNormsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsNormsCustom']].to_numpy().astype(float)
 
     # Include custom regions in metricsNames:
     metricsNames = np.append(metricsNames, metricsNamesCustom)
@@ -672,7 +674,7 @@ def setUpConfig(beVerbose):
               "does not appear in metricsNames:")
         print(np.setdiff1d(highlightedMetricsToPlot, metricsNames))
 
-    return (numMetricsNoCustom,
+    return (numMetricsNoCustom, numMetricsToTune,
             metricsNames, metricsNamesNoprefix,
             varPrefixes, mapVarIdx, boxSize,
             highlightedMetricsToPlot, createPlotType,
@@ -686,7 +688,7 @@ def setUpConfig(beVerbose):
             prescribedSensNcFilenames, prescribedSensNcFilenamesExt,
             sensNcFilenames, sensNcFilenamesExt,
             defaultNcFilename, globTunedNcFilename,
-            reglrCoef, doBootstrapSampling, numBootstrapSamples, numMetricsToTune)
+            reglrCoef, doBootstrapSampling, numBootstrapSamples)
 
 
 def abbreviateParamsNames(paramsNames):
