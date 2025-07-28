@@ -55,6 +55,8 @@ def main():
     = \
         setUpConfig(beVerbose=False)
 
+    # SST4K:  Output sensNcFilenamesSST4K etc.
+
     # Number of regional metrics, including all of varPrefixes including the metrics we're not tuning, plus custom regions.
     numMetrics = len(metricsNames)
 
@@ -139,6 +141,10 @@ def main():
 
         print("Starting boostrap sampling . . .")
 
+        # SST4K:  call constructNormlzdSensCurvMatrices with SST4K sensFiles.
+
+        # SST4K: Here feed normlzdSensMatrixPoly and normlzdCurvMatrix from SST4K runs into bootstrapCalculations.
+
         ( paramsBoot, paramsTuned, residualsDefaultCol, residualsTunedCol,
           residualsBootstrapMatrix, paramBoundsBoot, normResidualPairsMatrix,
           tradeoffBinaryMatrix ) = \
@@ -220,7 +226,7 @@ def main():
                         normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
                         normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
 
-    print("chisqdMinRatio =", chisqdMin/chisqdZero)
+    print("chisqdMinRatio (all metrics, non-unity metricsWeights) =", chisqdMin/chisqdZero)
 
     chisqdUnweightedZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                                    normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
@@ -230,7 +236,7 @@ def main():
                                   normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
                                   normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
 
-    print("chisqdUnweightedMinRatio =", chisqdUnweightedMin/chisqdUnweightedZero)
+    print("chisqdUnweightedMinRatio (all metrics, metricsWeights=1) =", chisqdUnweightedMin/chisqdUnweightedZero)
 
     # Set up a column vector of metric values from the global simulation based on optimized
     #     parameter values.

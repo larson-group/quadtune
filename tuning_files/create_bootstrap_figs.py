@@ -65,17 +65,21 @@ def bootstrapPlots(numMetricsToTune,
         normResidualPairsMatrix (np.ndarray): Pairwise min norm matrix of residuals, with shape (n_metrics, n_metrics).
         tradeoffBinaryMatrix (np.ndarray): Binary matrix indicating trade-offs, with shape (n_metrics, n_metrics).
     """
+
     print("Creating bootstrap plots . . .")
+
     # create folders to save in
     folderName = get_folder_name(numMetricsToTune)
     create_folder(folderName)
+
+    numBoxesInMap = np.rint( (360 / boxSize) * (180 / boxSize) ).astype(int)
 
     plot_param_distributions(paramsBoot, paramsNames, defaultParamValsOrigRow, paramsTuned, folderName)
     plot_confidence_intervals(paramsNames, paramBoundsBoot, folderName)
     plot_residuals_distributions(residualsBootstrapMatrix, residualsDefaultCol, residualsTunedCol, metricsNames,
                                  folderName)
-    plot_regional_variances(residualsBootstrapMatrix, boxSize, folderName)
-    plot_regional_msr(residualsBootstrapMatrix, boxSize, folderName)
+    plot_regional_variances(residualsBootstrapMatrix[:,:numBoxesInMap], boxSize, folderName)
+    plot_regional_msr(residualsBootstrapMatrix[:,:numBoxesInMap], boxSize, folderName)
     plot_residual_map(normResidualPairsMatrix, metricsNames, False, "Residual_norm_heatmap", folderName)
     plot_residual_map(tradeoffBinaryMatrix, metricsNames, True, "Tradeoff_map", folderName)
     plot_tradeoff_scatter(tradeoffBinaryMatrix, residualsBootstrapMatrix, metricsNames, folderName)
@@ -133,13 +137,40 @@ def plot_confidence_intervals(paramsNames, paramBoundsBoot, folderName):
     fig, axes = plt.subplots(len(paramsTuned), 1, figsize=(8, 2.2 * len(paramsTuned)), sharex=False)
 
     for i, ax in enumerate(axes):
+
+        if paramsTuned[i] < bcaLower[i]:
+            print(f"Warning: bca error bar is negative because paramsTuned[i] < bcaLower[i]")
+            print(f"i = {i}")
+            print(f"paramsTuned[i] = {paramsTuned[i]}")
+            print(f"bcaLower[i] = {bcaLower[i]}")
+
+        if paramsTuned[i] > bcaUpper[i]:
+            print(f"Warning: bca error bar is negative because paramsTuned[i] > bcaUpper[i]")
+            print(f"i = {i}")
+            print(f"paramsTuned[i] = {paramsTuned[i]}")
+            print(f"bcaUpper[i] = {bcaUpper[i]}")
+
         # Plot BCa interval
-        ax.errorbar(paramsTuned[i], 0.2,
+        if paramsTuned[i] >= bcaLower[i] and paramsTuned[i] <= bcaUpper[i]:
+            ax.errorbar(paramsTuned[i], 0.2,
                     xerr=[[paramsTuned[i] - bcaLower[i]], [bcaUpper[i] - paramsTuned[i]]],
                     fmt='o', capsize=4, color='C0', label='BCa')
 
+        if paramsTuned[i] < percLower[i]:
+            print(f"Warning: percentile error bar is negative because paramsTuned[i] < percLower[i]")
+            print(f"i = {i}")
+            print(f"paramsTuned[i] = {paramsTuned[i]}")
+            print(f"percLower[i] = {percLower[i]}")
+
+        if paramsTuned[i] > percUpper[i]:
+            print(f"Warning: percentile error bar is negative because paramsTuned[i] > percUpper[i]")
+            print(f"i = {i}")
+            print(f"paramsTuned[i] = {paramsTuned[i]}")
+            print(f"percUpper[i] = {percUpper[i]}")
+
         # Plot Percentile interval
-        ax.errorbar(paramsTuned[i], -0.2,
+        if paramsTuned[i] >= percLower[i] and paramsTuned[i] <= percUpper[i]:
+            ax.errorbar(paramsTuned[i], -0.2,
                     xerr=[[paramsTuned[i] - percLower[i]], [percUpper[i] - paramsTuned[i]]],
                     fmt='o', capsize=4, color='C1', label='Percentile')
 

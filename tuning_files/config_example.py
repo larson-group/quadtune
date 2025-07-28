@@ -55,10 +55,10 @@ def setUpConfig(beVerbose):
     }
 
     #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
-    varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
-    #varPrefixes = ['SWCF']
+    #varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
+    varPrefixes = ['RESTOM', 'FLNTC']
     # mapVarIdx is the field is plotted in the 20x20 maps created by PcSensMap.
-    mapVar = 'SWCF'
+    mapVar = 'FLNTC'
     mapVarIdx = varPrefixes.index(mapVar)
     # Number of metrics to tune.
     # If there are more metrics than this, then
@@ -68,9 +68,9 @@ def setUpConfig(beVerbose):
     numBoxesInMap = np.rint( (360/boxSize) * (180/boxSize) )
     # numMetricsToTune includes all (e.g., 20x20 regions) and as many
     #   variables as we want to tune, up to all varPrefixes.
-    numMetricsToTune = numBoxesInMap * len(varPrefixes)
+    #numMetricsToTune = numBoxesInMap * len(varPrefixes)
     #numMetricsToTune = numBoxesInMap * (len(varPrefixes)-1)  # Omit a variable from tuning.
-    #numMetricsToTune = numBoxesInMap  # Only tune for first variable in varPrefixes
+    numMetricsToTune = numBoxesInMap  # Only tune for first variable in varPrefixes
     numMetricsToTune = numMetricsToTune.astype(int)
 
     # These are a selected subset of the tunable metrics that we want to include
@@ -91,7 +91,7 @@ def setUpConfig(beVerbose):
     #                                     'O500_5_14', ])
 
     # Directory where the regional files are stored (plus possibly a filename prefix)
-    folder_name = 'Regional_files/20250711_2yr_20x20_ANN_BCASE/20.0beta06_'
+    folder_name = 'Regional_files/20250725_2yr_20x20_ANN_BCASE/20.0beta06_'
     #folder_name = 'Regional_files/20241022_1yr_20x20regs/30.0sens1022_'
     #folder_name = 'Regional_files/20241022_1yr_sst4k_30x30/30p4k1022_'
     #folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
@@ -345,6 +345,9 @@ def setUpConfig(beVerbose):
     sensNcFilenames = dfparamsNamesScalesAndFilenames[['sensNcFilenames']].to_numpy().astype(str)[:, 0]
     sensNcFilenamesExt = dfparamsNamesScalesAndFilenames[['sensNcFilenamesExt']].to_numpy().astype(str)[:, 0]
 
+    # SST4K: Output just the filename suffixes here.  Then prepend the normal-SST and SST4K folder names separately.
+    #        Create sensNcFilenamesSST4K, etc.
+
     # Below we designate the subset of paramsNames that vary from [0,1] (e.g., C5)
     #    and hence will be transformed to [0,infinity] in order to make
     #    the relationship between parameters and metrics more linear:
@@ -470,6 +473,28 @@ def setUpConfig(beVerbose):
         #setUp_x_ObsMetricValsDict(varPrefixes, "Regional_files/stephens_20240131/btune_regional_files/b1850.075plus_Regional.nc")
         )
 
+    # Add on RESTOM separately, since we typically want to prescribe its "observed" value
+    if 'RESTOM' in varPrefixes:
+
+        obsRESTOMValsDict = {}
+        obsRESTOMWeightsDict = {}
+
+        # Calculate number of regions in the east-west (X) and north-south (Y) directions
+        numXBoxes = np.rint(360 / boxSize).astype(int)  # 18
+        numYBoxes = np.rint(180 / boxSize).astype(int)  # 9
+
+        for xBox in range(1, numXBoxes + 1):
+            for yBox in range(1, numYBoxes + 1):
+
+                varName = f"RESTOM_{yBox}_{xBox}"
+
+                obsRESTOMValsDict[varName] = 0.0
+                obsRESTOMWeightsDict[varName] = 1.0
+
+        # Append RESTOM values to existing dictionaries
+        obsMetricValsDict.update(obsRESTOMValsDict)
+        obsWeightsDict.update(obsRESTOMWeightsDict)
+
     # Set metricsNorms to be a global average
     obsGlobalAvgObsWeights = np.zeros(len(varPrefixes))
     obsGlobalStdObsWeights = np.zeros(len(varPrefixes))
@@ -491,6 +516,8 @@ def setUpConfig(beVerbose):
         # For sea-level pressure, the global avg is too large to serve as a representative normalization
         if varPrefix == 'PSL':
             obsGlobalAvgObsWeights[idx] = 1e-3 * obsGlobalAvgObsWeights[idx]
+        if varPrefix == 'RESTOM':
+            obsGlobalAvgObsWeights[idx] = 50.0
         print(f"obsGlobalAvgObsWeights for {varPrefix} =", obsGlobalAvgObsWeights[idx])
         obsGlobalAvgCol = np.vstack((obsGlobalAvgCol,
                                      obsGlobalAvgObsWeights[idx] * np.ones((len(obsWeights), 1))
@@ -690,6 +717,7 @@ def setUpConfig(beVerbose):
             defaultNcFilename, globTunedNcFilename,
             reglrCoef, doBootstrapSampling, numBootstrapSamples)
 
+    # SST4K: Output defaultNcFilenameSST4K, etc.
 
 def abbreviateParamsNames(paramsNames):
     """

@@ -90,7 +90,7 @@ def bootstrapCalculations(numSamples,
                                                                normlzdCurvMatrix, numMetrics) \
                                                          * np.abs(normMetricValsCol)
 
-        # If we feed in normlzdSensMatrixPoly, etc., for SST4K runs, then we can calc spread for SST4K.
+        # SST4K: If we feed in normlzdSensMatrixPoly, etc., for SST4K runs, then we can calc spread for SST4K.
         #   This would come from constructNormlzdSensCurvMatrices.
         # If we want the difference SST=SST4K, then we need normlzdSensMatrixPoly from SST too,
         #   but we already have that.
@@ -195,19 +195,28 @@ def bcaIntervals(paramsBoot, paramsTuned, jackknifeParams, alpha=0.05):
         ciLower (np.ndarray): Lower bounds of the BCa confidence intervals, with shape (n_params,).
         ciUpper (np.ndarray): Upper bounds of the BCa confidence intervals, with shape (n_params,).
     """
-    B, p = paramsBoot.shape
+    B, numParams = paramsBoot.shape
 
-    ciLower = np.zeros(p)
-    ciUpper = np.zeros(p)
+    ciLower = np.zeros(numParams)
+    ciUpper = np.zeros(numParams)
 
     # Loop over parameters
-    for j in range(p):
+    for j in range(numParams):
         thetaBoot = paramsBoot[:, j]
         thetaHat = paramsTuned[j]
         thetaJack = jackknifeParams[:, j]
 
         # 1. Bias correction z0
         proportion = np.mean(thetaBoot < thetaHat)
+        # Put lower and upper limit on proportion in case thetaHat is outside of the range of
+        #   all the bootstrap samples
+        eps = 1.0/len(thetaBoot)
+        if proportion < eps:
+            print(f"Warning: In bcaIntervals, thetaHat < all thetaBoot samples.")
+            proportion = eps
+        if proportion > (1.0 - eps):
+            print(f"Warning: In bcaIntervals, thetaHat > all thetaBoot samples.")
+            proportion = 1.0 - eps
         z0 = norm.ppf(proportion)
 
         # 2. Acceleration a (jackknife skewness)

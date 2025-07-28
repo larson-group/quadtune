@@ -129,6 +129,8 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
 
     globTunedLossChange = globTunedLossCol - defaultLossCol
 
+    numBoxesInMap = np.rint((360 / boxSize) * (180 / boxSize)).astype(int)
+
     # The whitelisted variables are the metrics that we want to include in the plots.
     # I.e., set whitelistedMetricsMask=T for variables that we want to plot.
     whitelistedMetricsMask = np.zeros_like(metricsNames, dtype=bool) # Initialize to False
@@ -458,11 +460,11 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
 
     if ( len(varPrefixes) == 2 ):
         dmetric1VsDmetric2Scatterplot = \
-            createDmetric1VsDmetric2Scatterplot(defaultBiasesApproxNonlin[:numMetricsToTune],
-                                                defaultBiasesApproxNonlin[numMetricsToTune:],
-                                                normMetricValsCol[:numMetricsToTune],
-                                                normMetricValsCol[numMetricsToTune:],
-                                                metricsNames[:numMetricsToTune],
+            createDmetric1VsDmetric2Scatterplot(defaultBiasesApproxNonlin[:numBoxesInMap],
+                                                defaultBiasesApproxNonlin[numBoxesInMap:],
+                                                normMetricValsCol[:numBoxesInMap],
+                                                normMetricValsCol[numBoxesInMap:],
+                                                metricsNames[:numBoxesInMap],
                                                 varPrefixes)
 
     if createPlotType['biasesVsDiagnosticScatterplot']:
