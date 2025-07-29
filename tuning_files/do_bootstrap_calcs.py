@@ -12,8 +12,10 @@ def bootstrapCalculations(numSamples,
                           magParamValsRow,
                           defaultParamValsOrigRow,
                           normlzdSensMatrixPoly,
+                          normlzdSensMatrixPolySST4K,
                           normlzdDefaultBiasesCol,
                           normlzdCurvMatrix,
+                          normlzdCurvMatrixSST4K,
                           reglrCoef,
                           defaultBiasesCol):
     """
@@ -60,6 +62,7 @@ def bootstrapCalculations(numSamples,
     paramsBoot = np.zeros((numSamples, len(paramsNames), 1))
     # Include all regional metrics, even those we're not tuning:
     defaultBiasesApproxNonlinMatrix = np.full((numSamples, numMetrics, 1), np.nan)
+    defaultBiasesApproxNonlinMatrixSST4K = np.full((numSamples, numMetrics, 1), np.nan)
 
     # Loop through every bootstrap sample and calculate parameter values.
     # sampleIdx loops in order through the sample number:   0, 1, 2, . . .
@@ -88,6 +91,13 @@ def bootstrapCalculations(numSamples,
         #   The output of fwdFnc, which is a column vector, is assigned to a row of a matrix (somehow).
         defaultBiasesApproxNonlinMatrix[sampleIdx, :, :] = fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
                                                                normlzdCurvMatrix, numMetrics) \
+                                                         * np.abs(normMetricValsCol)
+
+        # Do a forward calculation of the biases in which the sensitivity matrix
+        #   is in the order of the original metrics.
+        #   The output of fwdFnc, which is a column vector, is assigned to a row of a matrix (somehow).
+        defaultBiasesApproxNonlinMatrixSST4K[sampleIdx, :, :] = fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPolySST4K,
+                                                               normlzdCurvMatrixSST4K, numMetrics) \
                                                          * np.abs(normMetricValsCol)
 
         # SST4K: If we feed in normlzdSensMatrixPoly, etc., for SST4K runs, then we can calc spread for SST4K.
@@ -127,6 +137,8 @@ def bootstrapCalculations(numSamples,
     # residualsBootstrapMatrix = (  y_i -  y_hat_i  ) ,
     #   where y_hat_i is a bootstrapped, tuned model prediction.
     residualsBootstrapMatrix = -defaultBiasesApproxNonlinMatrix[:, :, 0] - defaultBiasesCol.T
+    dDefaultBiasesApproxNonlinMatrixSST4K = \
+        defaultBiasesApproxNonlinMatrixSST4K[:, :, 0] - defaultBiasesApproxNonlinMatrix[:, :, 0]
 
     # Lower and upper bounds for error params plot
     ciLowerPercentile, ciUpperPercentile = percentileIntervals(paramsBoot)
@@ -140,7 +152,12 @@ def bootstrapCalculations(numSamples,
     normResidualPairsMatrix = computeNormResidualPairsMatrix(residualsBootstrapMatrix)
     tradeoffBinaryMatrix = computeTradeoffBinaryMatrix(residualsBootstrapMatrix, normResidualPairsMatrix)
 
-    return paramsBoot, paramsTuned, residualsDefaultCol, residualsTunedCol, residualsBootstrapMatrix, paramBoundsBoot, normResidualPairsMatrix, tradeoffBinaryMatrix
+    return (paramsBoot, paramsTuned, residualsDefaultCol, residualsTunedCol,
+            residualsBootstrapMatrix,
+            defaultBiasesApproxNonlinMatrixSST4K,
+            dDefaultBiasesApproxNonlinMatrixSST4K,
+            paramBoundsBoot,
+            normResidualPairsMatrix, tradeoffBinaryMatrix)
 
 
 def computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetricValsCol, magParamValsRow,

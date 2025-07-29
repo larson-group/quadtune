@@ -38,6 +38,8 @@ def bootstrapPlots(numMetricsToTune,
                    boxSize,
                    metricsNames,
                    residualsBootstrapMatrix,
+                   defaultBiasesApproxNonlinMatrixSST4K,
+                   dDefaultBiasesApproxNonlinMatrixSST4K,
                    residualsTunedCol,
                    residualsDefaultCol,
                    paramsNames,
@@ -77,8 +79,13 @@ def bootstrapPlots(numMetricsToTune,
     plot_param_distributions(paramsBoot, paramsNames, defaultParamValsOrigRow, paramsTuned, folderName)
     plot_confidence_intervals(paramsNames, paramBoundsBoot, folderName)
     plot_residuals_distributions(residualsBootstrapMatrix, residualsDefaultCol, residualsTunedCol, metricsNames,
-                                 folderName)
-    plot_regional_variances(residualsBootstrapMatrix[:,:numBoxesInMap], boxSize, folderName)
+                                 folderName, 'resid')
+    plot_residuals_distributions(dDefaultBiasesApproxNonlinMatrixSST4K, residualsDefaultCol, residualsTunedCol, metricsNames,
+                                 folderName, 'dBias')
+    plot_regional_variances(residualsBootstrapMatrix[:,:numBoxesInMap], boxSize, folderName, 'Variances')
+    plot_regional_variances(defaultBiasesApproxNonlinMatrixSST4K[:, :numBoxesInMap], boxSize, folderName, 'biasesApproxSST4K')
+    plot_regional_variances(dDefaultBiasesApproxNonlinMatrixSST4K[:, :numBoxesInMap], boxSize, folderName,
+                            'dBiasesApproxSST4K')
     plot_regional_msr(residualsBootstrapMatrix[:,:numBoxesInMap], boxSize, folderName)
     plot_residual_map(normResidualPairsMatrix, metricsNames, False, "Residual_norm_heatmap", folderName)
     plot_residual_map(tradeoffBinaryMatrix, metricsNames, True, "Tradeoff_map", folderName)
@@ -188,7 +195,7 @@ def plot_confidence_intervals(paramsNames, paramBoundsBoot, folderName):
 
 
 def plot_residuals_distributions(residualsBootstrapMatrix, residualsDefaultCol, residualsTunedCol, metricsNames,
-                                 folderName):
+                                 folderName, outputFileName):
     """
     Plots and saves the distribution of bootstrap residuals for each metric.
 
@@ -209,11 +216,11 @@ def plot_residuals_distributions(residualsBootstrapMatrix, residualsDefaultCol, 
         plt.xlabel(metricsNames[i])
         plt.title(f"Mean: {np.mean(residualsSample):.2g}, Variance: {np.var(residualsSample):.2g}")
         plt.tight_layout()
-        plt.savefig(f"Outputs/{folderName}/Residuals/Distribution_{metricsNames[i]}.png", dpi=300)
+        plt.savefig(f"Outputs/{folderName}/Residuals/Distribution_{outputFileName}_{metricsNames[i]}.png", dpi=300)
         plt.close("all")
 
 
-def plot_regional_variances(residualsBootstrapMatrix, boxSize, folderName):
+def plot_regional_variances(residualsBootstrapMatrix, boxSize, folderName, outputFileName):
     """
     Computes and saves a plot of the variance of residuals per region.
 
@@ -235,7 +242,7 @@ def plot_regional_variances(residualsBootstrapMatrix, boxSize, folderName):
                labels=np.arange(1, np.rint(180/boxSize).astype(int)+1))
 
     plt.tight_layout()
-    plt.savefig(f"Outputs/{folderName}/Residuals/Variances.png", dpi=300)
+    plt.savefig(f"Outputs/{folderName}/Residuals/{outputFileName}.png", dpi=300)
     plt.close("all")
 
 

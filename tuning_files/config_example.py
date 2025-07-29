@@ -56,9 +56,9 @@ def setUpConfig(beVerbose):
 
     #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
     #varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
-    varPrefixes = ['RESTOM', 'FLNTC']
+    varPrefixes = ['RESTOM']
     # mapVarIdx is the field is plotted in the 20x20 maps created by PcSensMap.
-    mapVar = 'FLNTC'
+    mapVar = 'RESTOM'
     mapVarIdx = varPrefixes.index(mapVar)
     # Number of metrics to tune.
     # If there are more metrics than this, then
@@ -68,9 +68,9 @@ def setUpConfig(beVerbose):
     numBoxesInMap = np.rint( (360/boxSize) * (180/boxSize) )
     # numMetricsToTune includes all (e.g., 20x20 regions) and as many
     #   variables as we want to tune, up to all varPrefixes.
-    #numMetricsToTune = numBoxesInMap * len(varPrefixes)
+    numMetricsToTune = numBoxesInMap * len(varPrefixes)
     #numMetricsToTune = numBoxesInMap * (len(varPrefixes)-1)  # Omit a variable from tuning.
-    numMetricsToTune = numBoxesInMap  # Only tune for first variable in varPrefixes
+    #numMetricsToTune = numBoxesInMap  # Only tune for first variable in varPrefixes
     numMetricsToTune = numMetricsToTune.astype(int)
 
     # These are a selected subset of the tunable metrics that we want to include
@@ -95,7 +95,7 @@ def setUpConfig(beVerbose):
     #folder_name = 'Regional_files/20241022_1yr_20x20regs/30.0sens1022_'
     #folder_name = 'Regional_files/20241022_1yr_sst4k_30x30/30p4k1022_'
     #folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
-    #folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
+    ###folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_take3/20.0sens1022_'
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_msq/20.0sens1022_'
     #folder_name = 'Regional_files/20231211_20x20regs/sens0707_'
@@ -107,6 +107,10 @@ def setUpConfig(beVerbose):
     #folder_name = 'Regional_files/20240409updated/thresp26_'
     #folder_name = 'Regional_files/stephens_20240131/btune_regional_files/btune_'
 
+    # Directory where the SST4K regional files are stored (plus possibly a filename prefix)
+    folder_name_SST4K = folder_name
+    ###folder_name_SST4K = 'Regional_files/20241022_1yr_sst4k_20x20/20p4k1022_'
+
     # Netcdf file containing metric and parameter values from the default simulation
     #defaultNcFilename = \
     #    folder_name + 'Regional.nc'
@@ -116,8 +120,15 @@ def setUpConfig(beVerbose):
     defaultNcFilename = \
         (
             folder_name + 'dflt_Regional.nc'
-            #folder_name + '1_Regional.nc'
+            ###folder_name + '1_Regional.nc'
         )
+
+    defaultSST4KNcFilename = \
+        (
+            folder_name_SST4K + 'dflt_Regional.nc'
+            ###folder_name_SST4K + '1_Regional.nc'
+        )
+
 
     # Metrics from the global simulation that uses the tuner-recommended parameter values
     globTunedNcFilename = \
@@ -148,202 +159,207 @@ def setUpConfig(beVerbose):
     paramsNamesScalesAndFilenames = \
         [
         ['clubb_c8', 1.0e-1,
-         folder_name + 'clubb_c8m_Regional.nc',
-         folder_name + 'clubb_c8p_Regional.nc'],
-        #['clubb_c8', 1.0e0,
-        # folder_name + '14_Regional.nc',
-        # folder_name + '15_Regional.nc'],
+         'clubb_c8m_Regional.nc',
+         'clubb_c8p_Regional.nc'],
+        ###['clubb_c8', 1.0e0,
+        ### '14_Regional.nc',
+        ### '15_Regional.nc'],
         #['clubb_up2_sfc_coef', 1.0,
-        # folder_name + 'clubb_up2_sfc_coefm_Regional.nc',
-        # folder_name + 'clubb_up2_sfc_coefp_Regional.nc'],
-        #['clubb_c_invrs_tau_n2', 1.0,
-        # folder_name + '10_Regional.nc',
-        # folder_name + '11_Regional.nc'],
+        # 'clubb_up2_sfc_coefm_Regional.nc',
+        # 'clubb_up2_sfc_coefp_Regional.nc'],
+        ###['clubb_c_invrs_tau_n2', 1.0,
+        ### '10_Regional.nc',
+        ### '11_Regional.nc'],
         #['clubb_altitude_threshold', 0.001, \
-        # folder_name + 'clubb_altitude_thresholdm_Regional.nc',
-        # folder_name + 'clubb_altitude_thresholdp_Regional.nc'], \
+        # 'clubb_altitude_thresholdm_Regional.nc',
+        # 'clubb_altitude_thresholdp_Regional.nc'], \
         #['clubb_c_invrs_tau_sfc', 1.0,
-        # folder_name + '6_Regional.nc',
-        # folder_name + '7_Regional.nc'],
+        # '6_Regional.nc',
+        # '7_Regional.nc'],
         #['clubb_c_invrs_tau_wpxp_n2_thresh', 1.e3,
-        # folder_name + '8_Regional.nc',
-        # folder_name + '9_Regional.nc'],
+        # '8_Regional.nc',
+        # '9_Regional.nc'],
         #['clubb_c_invrs_tau_n2_wp2', 1.0,
-        # folder_name + '4_Regional.nc',
-        # folder_name + '5_Regional.nc'],
+        # '4_Regional.nc',
+        # '5_Regional.nc'],
         #['clubb_c_invrs_tau_shear', 1.0, \
-        # folder_name + '2_Regional.nc', \
-        # folder_name + '3_Regional.nc'], \
+        # '2_Regional.nc', \
+        # '3_Regional.nc'], \
         #['clubb_c_invrs_tau_bkgnd', 1.0, \
-        # folder_name + '16_Regional.nc',
-        # folder_name + '17_Regional.nc'], \
+        # '16_Regional.nc',
+        # '17_Regional.nc'], \
         #['clubb_c11', 1.0, \
-        #  folder_name + 'clubb_c11m_Regional.nc',  \
-        #  folder_name + 'clubb_c11p_Regional.nc'], \
+        #  'clubb_c11m_Regional.nc',  \
+        #  'clubb_c11p_Regional.nc'], \
         ###['clubb_c1', 1.0,
-        ###  folder_name + 'clubb_c1m_Regional.nc',
-        ###  folder_name + 'clubb_c1p_Regional.nc'],
+        ###  'clubb_c1m_Regional.nc',
+        ###  'clubb_c1p_Regional.nc'],
         ###['clubb_gamma_coef', 1.0,
-        ### folder_name + 'clubb_gamma_coefm_Regional.nc',
-        ### folder_name + 'clubb_gamma_coefp_Regional.nc'],
+        ### 'clubb_gamma_coefm_Regional.nc',
+        ### 'clubb_gamma_coefp_Regional.nc'],
         #['clubb_c4', 1.0, \
-        # folder_name + 'clubb_c4m_Regional.nc',  \
-        # folder_name + 'clubb_c4p_Regional.nc'], \
+        # 'clubb_c4m_Regional.nc',  \
+        # 'clubb_c4p_Regional.nc'], \
         ###['clubb_c14', 1.0, \
-        ### folder_name + 'clubb_c14m_Regional.nc', \
-        ### folder_name + 'clubb_c14p_Regional.nc'], \
+        ### 'clubb_c14m_Regional.nc', \
+        ### 'clubb_c14p_Regional.nc'], \
         ['clubb_wpxp_l_thresh', 1.0e-2,
-         folder_name + 'clubb_wpxp_l_threshm_Regional.nc',
-         folder_name + 'clubb_wpxp_l_threshp_Regional.nc'],
+         'clubb_wpxp_l_threshm_Regional.nc',
+         'clubb_wpxp_l_threshp_Regional.nc'],
         #['clubb_c6rt_lscale0', 0.1,
-        # folder_name + 'clubb_c6rt_lscale0m_Regional.nc',
-        # folder_name + 'clubb_c6rt_lscale0p_Regional.nc'],
+        # 'clubb_c6rt_lscale0m_Regional.nc',
+        # 'clubb_c6rt_lscale0p_Regional.nc'],
         ###['clubb_c2rt', 0.1,
-        ### folder_name + 'clubb_c2rtm_Regional.nc',
-        ### folder_name + 'clubb_c2rtp_Regional.nc'],
+        ### 'clubb_c2rtm_Regional.nc',
+        ### 'clubb_c2rtp_Regional.nc'],
         #['clubb_c6rt', 0.1,
-        # folder_name + 'clubb_c6rtm_Regional.nc',
-        # folder_name + 'clubb_c6rtp_Regional.nc'],
+        # 'clubb_c6rtm_Regional.nc',
+        # 'clubb_c6rtp_Regional.nc'],
         #['clubb_c6rtb', 0.1,
-        # folder_name + 'clubb_c6rtbm_Regional.nc',
-        # folder_name + 'clubb_c6rtbp_Regional.nc'],
+        # 'clubb_c6rtbm_Regional.nc',
+        # 'clubb_c6rtbp_Regional.nc'],
         #['clubb_c_invrs_tau_n2', 1.0, \
-        # folder_name + 'n2p55_Regional.nc', \
-        # folder_name + 'n2p75_Regional.nc'], \
+        # 'n2p55_Regional.nc', \
+        # 'n2p75_Regional.nc'], \
         #['clubb_c_invrs_tau_n2_xp2', 1.0, \
-        # folder_name + 'clubb_c_invrs_tau_n2_xp2m_Regional.nc', \
-        # folder_name + 'clubb_c_invrs_tau_n2_xp2p_Regional.nc'], \
+        # 'clubb_c_invrs_tau_n2_xp2m_Regional.nc', \
+        # 'clubb_c_invrs_tau_n2_xp2p_Regional.nc'], \
         #['clubb_c_invrs_tau_n2_wp2', 1.0, \
-        # folder_name + 'wp20_Regional.nc', \
-        # folder_name + 'wp24_Regional.nc'], \
+        # 'wp20_Regional.nc', \
+        # 'wp24_Regional.nc'], \
         #['clubb_c_invrs_tau_wpxp_ri', 1.0, \
-        # folder_name + 'clubb_c_invrs_tau_wpxp_rim_Regional.nc', \
-        # folder_name + 'clubb_c_invrs_tau_wpxp_rip_Regional.nc'], \
+        # 'clubb_c_invrs_tau_wpxp_rim_Regional.nc', \
+        # 'clubb_c_invrs_tau_wpxp_rip_Regional.nc'], \
         # ['clubb_wpxp_ri_exp', 1.0, \
-        # folder_name + 'clubb_wpxp_ri_expm_Regional.nc', \
-        # folder_name + 'clubb_wpxp_ri_expp_Regional.nc'], \
+        # 'clubb_wpxp_ri_expm_Regional.nc', \
+        # 'clubb_wpxp_ri_expp_Regional.nc'], \
         #['clubb_c_invrs_tau_n2_clear_wp3', 1.0, \
-        # folder_name + 'clubb_c_invrs_tau_n2_clear_wp3m_Regional.nc', \
-        # folder_name + 'clubb_c_invrs_tau_n2_clear_wp3p_Regional.nc'], \
+        # 'clubb_c_invrs_tau_n2_clear_wp3m_Regional.nc', \
+        # 'clubb_c_invrs_tau_n2_clear_wp3p_Regional.nc'], \
         #['clubb_c_k10', 1.0, \
-        # folder_name + '12_Regional.nc', \
-        # folder_name + '13_Regional.nc'], \
+        # '12_Regional.nc', \
+        # '13_Regional.nc'], \
         #['clubb_bv_efold', 1.0, \
-        # folder_name + 'clubb_bv_efoldm_Regional.nc', \
-        # folder_name + 'clubb_bv_efoldp_Regional.nc'], \
+        # 'clubb_bv_efoldm_Regional.nc', \
+        # 'clubb_bv_efoldp_Regional.nc'], \
         #['clubb_c_uu_shr', 1.0,
-        # folder_name + 'clubb_c_uu_shrm_Regional.nc',
-        # folder_name + 'clubb_c_uu_shrp_Regional.nc'],
+        # 'clubb_c_uu_shrm_Regional.nc',
+        # 'clubb_c_uu_shrp_Regional.nc'],
         #['clubb_c_invrs_tau_bkgnd', 1.0, \
-        # folder_name + 'bkg1_Regional.nc',
-        # folder_name + 'bkg2_Regional.nc'], \
+        # 'bkg1_Regional.nc',
+        # 'bkg2_Regional.nc'], \
         #['clubb_c_invrs_tau_sfc', 1.0, \
-        # folder_name + 'sfc0_Regional.nc',
-        # folder_name + 'sfcp3_Regional.nc'], \
+        # 'sfc0_Regional.nc',
+        # 'sfcp3_Regional.nc'], \
         #['clubb_c_invrs_tau_shear', 1.0, \
-        #  folder_name + 'shr0_Regional.nc', \
-        #  folder_name + 'shrp3_Regional.nc'], \
+        #  'shr0_Regional.nc', \
+        #  'shrp3_Regional.nc'], \
         #['clubb_z_displace', 0.01, \
-        #  folder_name + 'zd10_Regional.nc', \
-        #  folder_name + 'zd100_Regional.nc'], \
+        #  'zd10_Regional.nc', \
+        #  'zd100_Regional.nc'], \
         ###['relvar', 1.0e-2,
-        ### folder_name + 'relvarm_Regional.nc',
-        ### folder_name + 'relvarp_Regional.nc'],
+        ### 'relvarm_Regional.nc',
+        ### 'relvarp_Regional.nc'],
         #['clubb_detliq_rad', 1.0,
-        # folder_name + 'clubb_detliq_radm_Regional.nc',
-        # folder_name + 'clubb_detliq_radp_Regional.nc'],
+        # 'clubb_detliq_radm_Regional.nc',
+        # 'clubb_detliq_radp_Regional.nc'],
         ['clubb_detice_rad', 1.0e4,
-         folder_name + 'clubb_detice_radm_Regional.nc',
-         folder_name + 'clubb_detice_radp_Regional.nc'],
+         'clubb_detice_radm_Regional.nc',
+         'clubb_detice_radp_Regional.nc'],
         #['cldfrc2m_rhmini', 1.0,
-        # folder_name + 'cldfrc2m_rhminim_Regional.nc',
-        # folder_name + 'cldfrc2m_rhminip_Regional.nc'],
+        # 'cldfrc2m_rhminim_Regional.nc',
+        # 'cldfrc2m_rhminip_Regional.nc'],
         ['cldfrc_dp1', 1.0e1, \
-         folder_name + 'cldfrc_dp1m_Regional.nc', \
-         folder_name + 'cldfrc_dp1p_Regional.nc'], \
+         'cldfrc_dp1m_Regional.nc', \
+         'cldfrc_dp1p_Regional.nc'], \
         #['cldfrc_dp2', 1e-3, \
-        # folder_name + 'cldfrc_dp2m_Regional.nc', \
-        # folder_name + 'cldfrc_dp2p_Regional.nc'], \
+        # 'cldfrc_dp2m_Regional.nc', \
+        # 'cldfrc_dp2p_Regional.nc'], \
         ['micro_mg_autocon_lwp_exp', 1.,
-         folder_name + 'micro_mg_autocon_lwp_expm_Regional.nc',
-         folder_name + 'micro_mg_autocon_lwp_expp_Regional.nc'],
+         'micro_mg_autocon_lwp_expm_Regional.nc',
+         'micro_mg_autocon_lwp_expp_Regional.nc'],
         #['micro_mg_accre_enhan_fact', 1.,
-        # folder_name + 'micro_mg_accre_enhan_factm_Regional.nc',
-        # folder_name + 'micro_mg_accre_enhan_factp_Regional.nc'],
+        # 'micro_mg_accre_enhan_factm_Regional.nc',
+        # 'micro_mg_accre_enhan_factp_Regional.nc'],
         #['micro_mg_dcs', 1000.,
-        # folder_name + 'micro_mg_dcsm_Regional.nc',
-        # folder_name + 'micro_mg_dcsp_Regional.nc'],
+        # 'micro_mg_dcsm_Regional.nc',
+        # 'micro_mg_dcsp_Regional.nc'],
         #['micro_mg_berg_eff_factor', 1.,
-        # folder_name + 'micro_mg_berg_eff_factorm_Regional.nc',
-        # folder_name + 'micro_mg_berg_eff_factorp_Regional.nc'],
+        # 'micro_mg_berg_eff_factorm_Regional.nc',
+        # 'micro_mg_berg_eff_factorp_Regional.nc'],
         #['micro_mg_vtrmi_factor', 1.0,
-        #  folder_name + 'micro_mg_vtrmi_factorm_Regional.nc',
-        #  folder_name + 'micro_mg_vtrmi_factorp_Regional.nc'],
+        #  'micro_mg_vtrmi_factorm_Regional.nc',
+        #  'micro_mg_vtrmi_factorp_Regional.nc'],
         #['micro_mg_vtrms_factor', 1.0, \
-        #     folder_name + 'micro_mg_vtrms_factorm_Regional.nc',
-        #     folder_name + 'micro_mg_vtrms_factorp_Regional.nc'], \
+        #     'micro_mg_vtrms_factorm_Regional.nc',
+        #     'micro_mg_vtrms_factorp_Regional.nc'], \
         #['micro_mg_evap_scl_ifs', 1.0, \
-        # folder_name + 'micro_mg_evap_scl_ifsm_Regional.nc',
-        # folder_name + 'micro_mg_evap_scl_ifsp_Regional.nc'],
+        # 'micro_mg_evap_scl_ifsm_Regional.nc',
+        # 'micro_mg_evap_scl_ifsp_Regional.nc'],
         #['microp_aero_wsub_scale', 1.0, \
-        # folder_name + 'microp_aero_wsub_scalem_Regional.nc',
-        # folder_name + 'microp_aero_wsub_scalep_Regional.nc'], \
+        # 'microp_aero_wsub_scalem_Regional.nc',
+        # 'microp_aero_wsub_scalep_Regional.nc'], \
         #['microp_aero_wsubi_scale', 1.0, \
-        # folder_name + 'microp_aero_wsubi_scalem_Regional.nc',
-        # folder_name + 'microp_aero_wsubi_scalep_Regional.nc'], \
+        # 'microp_aero_wsubi_scalem_Regional.nc',
+        # 'microp_aero_wsubi_scalep_Regional.nc'], \
         #['zmconv_c0_lnd', 100.0, \
-        # folder_name + 'zmconv_c0_lndm_Regional.nc',
-        # folder_name + 'zmconv_c0_lndp_Regional.nc'], \
+        # 'zmconv_c0_lndm_Regional.nc',
+        # 'zmconv_c0_lndp_Regional.nc'], \
         ['zmconv_dmpdz', 1000.,
-         folder_name + 'zmconv_dmpdzm_Regional.nc',
-         folder_name + 'zmconv_dmpdzp_Regional.nc'],
+         'zmconv_dmpdzm_Regional.nc',
+         'zmconv_dmpdzp_Regional.nc'],
         #['zmconv_tau', 1.0e-4,
-        # folder_name + 'zmconv_taum_Regional.nc',
-        # folder_name + 'zmconv_taup_Regional.nc'],
+        # 'zmconv_taum_Regional.nc',
+        # 'zmconv_taup_Regional.nc'],
         ###['zmconv_num_cin', 1.0,
-        ### folder_name + 'zmconv_num_cinm_Regional.nc',
-        ### folder_name + 'zmconv_num_cinp_Regional.nc'],
+        ### 'zmconv_num_cinm_Regional.nc',
+        ### 'zmconv_num_cinp_Regional.nc'],
         ###['zmconv_capelmt', 1.0e-2,
-        ### folder_name + 'zmconv_capelmtm_Regional.nc',
-        ### folder_name + 'zmconv_capelmtp_Regional.nc'],
+        ### 'zmconv_capelmtm_Regional.nc',
+        ### 'zmconv_capelmtp_Regional.nc'],
         ###['zmconv_parcel_hscale', 1.0,
-        ### folder_name + 'zmconv_parcel_hscalem_Regional.nc',
-        ### folder_name + 'zmconv_parcel_hscalep_Regional.nc'],
+        ### 'zmconv_parcel_hscalem_Regional.nc',
+        ### 'zmconv_parcel_hscalep_Regional.nc'],
         ###['zmconv_tiedke_add', 1.0,
-        ### folder_name + 'zmconv_tiedke_addm_Regional.nc',
-        ### folder_name + 'zmconv_tiedke_addp_Regional.nc'],
+        ### 'zmconv_tiedke_addm_Regional.nc',
+        ### 'zmconv_tiedke_addp_Regional.nc'],
         ###['zmconv_c0_ocn', 1.0e2,
-        ### folder_name + 'zmconv_c0_ocnm_Regional.nc',
-        ### folder_name + 'zmconv_c0_ocnp_Regional.nc'],
+        ### 'zmconv_c0_ocnm_Regional.nc',
+        ### 'zmconv_c0_ocnp_Regional.nc'],
         ###['zmconv_c0_lnd', 1.0e2,
-        ### folder_name + 'zmconv_c0_lndm_Regional.nc',
-        ### folder_name + 'zmconv_c0_lndp_Regional.nc'],
+        ### 'zmconv_c0_lndm_Regional.nc',
+        ### 'zmconv_c0_lndp_Regional.nc'],
         #['zmconv_ke', 1e5,
-        # folder_name + 'zmconv_kem_Regional.nc',
-        # folder_name + 'zmconv_kep_Regional.nc'],
+        # 'zmconv_kem_Regional.nc',
+        # 'zmconv_kep_Regional.nc'],
         #['zmconv_ke_lnd', 1e5, \
-        # folder_name + 'zmconv_ke_lndm_Regional.nc',
-        # folder_name + 'zmconv_ke_lndp_Regional.nc'], \
+        # 'zmconv_ke_lndm_Regional.nc',
+        # 'zmconv_ke_lndp_Regional.nc'], \
         ['dust_emis_fact', 1.0,
-         folder_name + 'dust_emis_factm_Regional.nc',
-         folder_name + 'dust_emis_factp_Regional.nc'],
+         'dust_emis_factm_Regional.nc',
+         'dust_emis_factp_Regional.nc'],
         #['hetfrz_dust_scalfac', 1.0,
-        # folder_name + 'hetfrz_dust_scalfacm_Regional.nc',
-        # folder_name + 'hetfrz_dust_scalfacp_Regional.nc'],
+        # 'hetfrz_dust_scalfacm_Regional.nc',
+        # 'hetfrz_dust_scalfacp_Regional.nc'],
         ]
 
     # Split up the above list into parameter names, scales, and filenames.
     dfparamsNamesScalesAndFilenames = \
         pd.DataFrame(paramsNamesScalesAndFilenames,
                      columns=['paramsNames', 'paramsScales',
-                              'sensNcFilenames', 'sensNcFilenamesExt'])
+                              'sensNcFilenamesSuffix', 'sensNcFilenamesSuffixExt'])
                               #'sensNcFilenamesExt', 'sensNcFilenames'] )
     paramsNames = dfparamsNamesScalesAndFilenames[['paramsNames']].to_numpy().astype(str)[:, 0]
     # Extract scaling factors of parameter values from user-defined list paramsNamesScalesAndFilenames.
     # The scaling is not used for any calculations, but it allows us to avoid plotting very large or small values.
     paramsScales = dfparamsNamesScalesAndFilenames[['paramsScales']].to_numpy().astype(float)[:, 0]
-    sensNcFilenames = dfparamsNamesScalesAndFilenames[['sensNcFilenames']].to_numpy().astype(str)[:, 0]
-    sensNcFilenamesExt = dfparamsNamesScalesAndFilenames[['sensNcFilenamesExt']].to_numpy().astype(str)[:, 0]
+    sensNcFilenamesSuffix = dfparamsNamesScalesAndFilenames[['sensNcFilenamesSuffix']].to_numpy().astype(str)[:, 0]
+    sensNcFilenames = np.char.add(folder_name, sensNcFilenamesSuffix)
+    sensSST4KNcFilenames = np.char.add(folder_name_SST4K, sensNcFilenamesSuffix)
+    sensNcFilenamesSuffixExt = dfparamsNamesScalesAndFilenames[['sensNcFilenamesSuffixExt']].to_numpy().astype(str)[:, 0]
+    sensNcFilenamesExt = np.char.add(folder_name, sensNcFilenamesSuffixExt)
+    sensSST4KNcFilenamesExt = np.char.add(folder_name_SST4K, sensNcFilenamesSuffixExt)
+
 
     # SST4K: Output just the filename suffixes here.  Then prepend the normal-SST and SST4K folder names separately.
     #        Create sensNcFilenamesSST4K, etc.
@@ -357,44 +373,44 @@ def setUpConfig(beVerbose):
     prescribedParamsNamesScalesAndValues = \
         [
             # ['clubb_c11b', 1.0, 0.5,
-            #  folder_name + 'clubb_c11bm_Regional.nc',
-            #  folder_name + 'clubb_c11bp_Regional.nc'],
+            #  'clubb_c11bm_Regional.nc',
+            #  'clubb_c11bp_Regional.nc'],
                     #['clubb_c8', 1.0, 0.4, \
-                    # folder_name + 'clubb_c8m_Regional.nc',  \
-                    # folder_name + 'clubb_c8p_Regional.nc'], \
+                    # 'clubb_c8m_Regional.nc',  \
+                    # 'clubb_c8p_Regional.nc'], \
 #                   ['clubb_wpxp_ri_exp', 1.0, 0.5, \
-#                     folder_name + 'clubb_wpxp_ri_expm_Regional.nc', \
-#                     folder_name + 'clubb_wpxp_ri_expp_Regional.nc'], \
+#                     'clubb_wpxp_ri_expm_Regional.nc', \
+#                     'clubb_wpxp_ri_expp_Regional.nc'], \
 #                    ['clubb_c8', 1.0, 0.4, \
-#                     folder_name + 'clubb_c8m_Regional.nc',  \
-#                     folder_name + 'clubb_c8p_Regional.nc'], \
+#                     'clubb_c8m_Regional.nc',  \
+#                     'clubb_c8p_Regional.nc'], \
 #                    ['clubb_c_invrs_tau_n2_xp2', 1.0, 0.15, \
-#                     folder_name + 'clubb_c_invrs_tau_n2_xp2m_Regional.nc', \
-#                     folder_name + 'clubb_c_invrs_tau_n2_xp2p_Regional.nc'], \
+#                     'clubb_c_invrs_tau_n2_xp2m_Regional.nc', \
+#                     'clubb_c_invrs_tau_n2_xp2p_Regional.nc'], \
 #                    ['clubb_c8', 1.0, 0.7, \
-#                     folder_name + 'sens0707_14_Regional.nc',  \
-#                     folder_name + 'sens0707_15_Regional.nc'], \
+#                     'sens0707_14_Regional.nc',  \
+#                     'sens0707_15_Regional.nc'], \
 #                    ['clubb_c_k10', 1.0, 0.3, \
-#                     folder_name + 'sens0707_12_Regional.nc', \
-#                     folder_name + 'sens0707_13_Regional.nc'], \
+#                     'sens0707_12_Regional.nc', \
+#                     'sens0707_13_Regional.nc'], \
 #                    ['clubb_c_invrs_tau_n2', 1.0, 0.4, \
-#                     folder_name + 'sens0707_10_Regional.nc',
-#                     folder_name + 'sens0707_11_Regional.nc'], \
+#                     'sens0707_10_Regional.nc',
+#                     'sens0707_11_Regional.nc'], \
                     #['clubb_c_invrs_tau_sfc', 1.0, 0.05, \
-                    # folder_name + 'sens0707_6_Regional.nc',
-                    # folder_name + 'sens0707_7_Regional.nc'], \
+                    # 'sens0707_6_Regional.nc',
+                    # 'sens0707_7_Regional.nc'], \
 #                    ['clubb_c_invrs_tau_wpxp_n2_thresh', 1.e3, 0.00045, \
-#                     folder_name + 'sens0707_8_Regional.nc', \
-#                     folder_name + 'sens0707_9_Regional.nc'], \
+#                     'sens0707_8_Regional.nc', \
+#                     'sens0707_9_Regional.nc'], \
 #                    ['clubb_c_invrs_tau_shear', 1.0, 0.22, \
-#                     folder_name + 'sens0707_2_Regional.nc', \
-#                     folder_name + 'sens0707_3_Regional.nc'], \
+#                     'sens0707_2_Regional.nc', \
+#                     'sens0707_3_Regional.nc'], \
 #                    ['clubb_c_invrs_tau_bkgnd', 1.0, 1.1, \
-#                     folder_name + 'sens0707_16_Regional.nc',
-#                     folder_name + 'sens0707_17_Regional.nc'], \
+#                     'sens0707_16_Regional.nc',
+#                     'sens0707_17_Regional.nc'], \
                     #['clubb_c_invrs_tau_n2_wp2', 1.0, 0.1, \
-                    # folder_name + 'sens0707_4_Regional.nc',
-                    # folder_name + 'sens0707_5_Regional.nc'], \
+                    # 'sens0707_4_Regional.nc',
+                    # 'sens0707_5_Regional.nc'], \
         ]
     # Split up the above list into parameter names, scales, and filenames.
     dfprescribedParamsNamesScalesAndValues = \
@@ -402,7 +418,7 @@ def setUpConfig(beVerbose):
                      columns=['prescribedParamsNames',
                               'prescribedParamsScales',
                               'prescribedParamVals',
-                              'prescribedSensNcFilenames', 'prescribedSensNcFilenamesExt'
+                              'prescribedSensNcFilenamesSuffix', 'prescribedSensNcFilenamesSuffixExt'
                               ]
                      )
     prescribedParamsNames = dfprescribedParamsNamesScalesAndValues[['prescribedParamsNames']].to_numpy().astype(str)[:,0]
@@ -411,9 +427,12 @@ def setUpConfig(beVerbose):
     prescribedParamsScales = dfprescribedParamsNamesScalesAndValues[['prescribedParamsScales']].to_numpy().astype(float)[:, 0]
     prescribedParamVals = dfprescribedParamsNamesScalesAndValues[['prescribedParamVals']].to_numpy().astype(float)[:, 0]
     prescribedParamValsRow = prescribedParamVals
-    prescribedSensNcFilenames = dfprescribedParamsNamesScalesAndValues[['prescribedSensNcFilenames']].to_numpy().astype(str)[:, 0]
-    prescribedSensNcFilenamesExt = dfprescribedParamsNamesScalesAndValues[
-                                       ['prescribedSensNcFilenamesExt']].to_numpy().astype(str)[:, 0]
+    prescribedSensNcFilenamesSuffix = dfprescribedParamsNamesScalesAndValues[
+                                    ['prescribedSensNcFilenamesSuffix']].to_numpy().astype(str)[:, 0]
+    prescribedSensNcFilenames = np.char.add(folder_name, prescribedSensNcFilenamesSuffix)
+    prescribedSensNcFilenamesSuffixExt = dfprescribedParamsNamesScalesAndValues[
+                                       ['prescribedSensNcFilenamesSuffixExt']].to_numpy().astype(str)[:, 0]
+    prescribedSensNcFilenamesExt = np.char.add(folder_name, prescribedSensNcFilenamesSuffixExt)
     prescribedTransformedParamsNames = np.array([''])
 
 
@@ -473,27 +492,27 @@ def setUpConfig(beVerbose):
         #setUp_x_ObsMetricValsDict(varPrefixes, "Regional_files/stephens_20240131/btune_regional_files/b1850.075plus_Regional.nc")
         )
 
-    # Add on RESTOM separately, since we typically want to prescribe its "observed" value
-    if 'RESTOM' in varPrefixes:
+#    # Add on RESTOM separately, since we typically want to prescribe its "observed" value
+#    if 'RESTOM' in varPrefixes:
 
-        obsRESTOMValsDict = {}
-        obsRESTOMWeightsDict = {}
+#        obsRESTOMValsDict = {}
+#        obsRESTOMWeightsDict = {}
 
-        # Calculate number of regions in the east-west (X) and north-south (Y) directions
-        numXBoxes = np.rint(360 / boxSize).astype(int)  # 18
-        numYBoxes = np.rint(180 / boxSize).astype(int)  # 9
+#        # Calculate number of regions in the east-west (X) and north-south (Y) directions
+#        numXBoxes = np.rint(360 / boxSize).astype(int)  # 18
+#        numYBoxes = np.rint(180 / boxSize).astype(int)  # 9
 
-        for xBox in range(1, numXBoxes + 1):
-            for yBox in range(1, numYBoxes + 1):
+#        for xBox in range(1, numXBoxes + 1):
+#            for yBox in range(1, numYBoxes + 1):
 
-                varName = f"RESTOM_{yBox}_{xBox}"
+#                varName = f"RESTOM_{yBox}_{xBox}"
 
-                obsRESTOMValsDict[varName] = 0.0
-                obsRESTOMWeightsDict[varName] = 1.0
+#                obsRESTOMValsDict[varName] = 0.0
+#                obsRESTOMWeightsDict[varName] = 1.0
 
         # Append RESTOM values to existing dictionaries
-        obsMetricValsDict.update(obsRESTOMValsDict)
-        obsWeightsDict.update(obsRESTOMWeightsDict)
+#        obsMetricValsDict.update(obsRESTOMValsDict)
+#        obsWeightsDict.update(obsRESTOMWeightsDict)
 
     # Set metricsNorms to be a global average
     obsGlobalAvgObsWeights = np.zeros(len(varPrefixes))
@@ -516,8 +535,8 @@ def setUpConfig(beVerbose):
         # For sea-level pressure, the global avg is too large to serve as a representative normalization
         if varPrefix == 'PSL':
             obsGlobalAvgObsWeights[idx] = 1e-3 * obsGlobalAvgObsWeights[idx]
-        if varPrefix == 'RESTOM':
-            obsGlobalAvgObsWeights[idx] = 50.0
+        #if varPrefix == 'RESTOM':
+        #    obsGlobalAvgObsWeights[idx] = 50.0
         print(f"obsGlobalAvgObsWeights for {varPrefix} =", obsGlobalAvgObsWeights[idx])
         obsGlobalAvgCol = np.vstack((obsGlobalAvgCol,
                                      obsGlobalAvgObsWeights[idx] * np.ones((len(obsWeights), 1))
@@ -714,7 +733,9 @@ def setUpConfig(beVerbose):
             prescribedParamValsRow,
             prescribedSensNcFilenames, prescribedSensNcFilenamesExt,
             sensNcFilenames, sensNcFilenamesExt,
+            sensSST4KNcFilenames, sensSST4KNcFilenamesExt,
             defaultNcFilename, globTunedNcFilename,
+            defaultSST4KNcFilename,
             reglrCoef, doBootstrapSampling, numBootstrapSamples)
 
     # SST4K: Output defaultNcFilenameSST4K, etc.

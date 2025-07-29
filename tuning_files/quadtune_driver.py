@@ -50,7 +50,9 @@ def main():
      prescribedParamValsRow,
      prescribedSensNcFilenames, prescribedSensNcFilenamesExt,
      sensNcFilenames, sensNcFilenamesExt,
+     sensSST4KNcFilenames, sensSST4KNcFilenamesExt,
      defaultNcFilename, globTunedNcFilename,
+     defaultSST4KNcFilename,
      reglrCoef, doBootstrapSampling, numBootstrapSamples) \
     = \
         setUpConfig(beVerbose=False)
@@ -143,11 +145,24 @@ def main():
 
         # SST4K:  call constructNormlzdSensCurvMatrices with SST4K sensFiles.
 
+        # For SST4K runs,
+        #     construct numMetrics x numParams matrix of second derivatives, d2metrics/dparams2.
+        #     The derivatives are normalized by observed metric values and max param values.
+        # Also construct a linear sensitivity matrix, dmetrics/dparams.
+        normlzdCurvMatrixSST4K, normlzdSensMatrixPolySST4K, normlzdConstMatrixSST4K, \
+            normlzdOrdDparamsMinSST4K, normlzdOrdDparamsMaxSST4K = \
+            constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParamsNames,
+                                             normMetricValsCol, magParamValsRow,
+                                             sensSST4KNcFilenames, sensSST4KNcFilenamesExt, defaultSST4KNcFilename)
+
         # SST4K: Here feed normlzdSensMatrixPoly and normlzdCurvMatrix from SST4K runs into bootstrapCalculations.
 
         ( paramsBoot, paramsTuned, residualsDefaultCol, residualsTunedCol,
-          residualsBootstrapMatrix, paramBoundsBoot, normResidualPairsMatrix,
-          tradeoffBinaryMatrix ) = \
+          residualsBootstrapMatrix,
+          defaultBiasesApproxNonlinMatrixSST4K,
+          dDefaultBiasesApproxNonlinMatrixSST4K,
+          paramBoundsBoot,
+          normResidualPairsMatrix, tradeoffBinaryMatrix ) = \
         bootstrapCalculations(numBootstrapSamples,
                               metricsWeights,
                               metricsNames,
@@ -157,9 +172,11 @@ def main():
                               normMetricValsCol,
                               magParamValsRow,
                               defaultParamValsOrigRow,
-                              normlzdSensMatrixPolySvd,
+                              normlzdSensMatrixPoly,
+                              normlzdSensMatrixPolySST4K,
                               normlzdDefaultBiasesCol,
-                              normlzdCurvMatrixSvd,
+                              normlzdCurvMatrix,
+                              normlzdCurvMatrixSST4K,
                               reglrCoef,
                               defaultBiasesCol)
 
@@ -169,6 +186,8 @@ def main():
                        boxSize,
                        metricsNames,
                        residualsBootstrapMatrix,
+                       defaultBiasesApproxNonlinMatrixSST4K,
+                       dDefaultBiasesApproxNonlinMatrixSST4K,
                        residualsTunedCol,
                        residualsDefaultCol,
                        paramsNames,
