@@ -83,7 +83,8 @@ def bootstrapPlots(numMetricsToTune,
     plot_residuals_distributions(dDefaultBiasesApproxNonlinMatrixSST4K, residualsDefaultCol, residualsTunedCol, metricsNames,
                                  folderName, 'dBias')
     plot_regional_variances(residualsBootstrapMatrix[:,:numBoxesInMap], boxSize, folderName, 'Variances')
-    plot_regional_variances(defaultBiasesApproxNonlinMatrixSST4K[:, :numBoxesInMap], boxSize, folderName, 'biasesApproxSST4K')
+    plot_regional_variances(defaultBiasesApproxNonlinMatrixSST4K[:, :numBoxesInMap], boxSize, folderName,
+                            'biasesApproxSST4K')
     plot_regional_variances(dDefaultBiasesApproxNonlinMatrixSST4K[:, :numBoxesInMap], boxSize, folderName,
                             'dBiasesApproxSST4K')
     plot_regional_msr(residualsBootstrapMatrix[:,:numBoxesInMap], boxSize, folderName)

@@ -222,6 +222,9 @@ def main():
                          reglrCoef,
                          beVerbose=False)
 
+    #print("defaultBiasesApproxNonlin = ", defaultBiasesApproxNonlin)
+    #print("normlzdDefaultBiasesCol = ", normlzdDefaultBiasesCol)
+
     # y_hat_i is the un-normalized, unweighted estimate of tuned metric values
     y_hat_i = defaultBiasesApproxNonlin + defaultBiasesCol + obsMetricValsCol
 

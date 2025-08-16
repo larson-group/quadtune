@@ -454,6 +454,8 @@ def setUpConfig(beVerbose):
     defaultMetricValsCol = \
         setUpDefaultMetricValsCol(metricsNames, defaultNcFilename)
 
+    #print("defaultMetricValsCol = ", defaultMetricValsCol)
+
     #metricGlobalAvg = np.dot(metricsWeights.T, defaultMetricValsCol)
     metricGlobalAvgs = np.diag(np.dot(metricsWeights.reshape(-1, len(varPrefixes), order='F').T,
                                       defaultMetricValsCol.reshape(-1, len(varPrefixes), order='F')))
@@ -530,6 +532,7 @@ def setUpConfig(beVerbose):
         # For the current element of varPrefix, e.g. 'SWCF', select the corresponding regions, e.g. 'SWCF_1_1' . . . 'SWCF_9_18':
         metricsNamesVarPrefix = [key for key in obsMetricValsDict.keys() if varPrefix in key]
         obsMetricValsColVarPrefix = setUpObsCol(obsMetricValsDict, metricsNamesVarPrefix)
+        #print("obsMetricValsColVarPrefix = ", obsMetricValsColVarPrefix)
         obsGlobalStdObsWeights[idx] = np.std(obsMetricValsColVarPrefix)
         obsGlobalAvgObsWeights[idx] = np.dot(obsWeights.T, obsMetricValsColVarPrefix)
         # For sea-level pressure, the global avg is too large to serve as a representative normalization
