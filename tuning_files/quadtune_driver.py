@@ -26,8 +26,12 @@ def main():
     #from config_example_eam import setUpConfig
     from set_up_inputs \
         import setUpColAndRowVectors, \
-               setUpDefaultMetricValsCol
-
+               setUpDefaultMetricValsCol, \
+               createInteractIdxs, \
+               calcNormlzdInteractBiasesCols, \
+               readDnormlzdParamsInteract, \
+               calcInteractDerivs, \
+               calc_dnormlzd_dpj_dpk
 
     from create_nonbootstrap_figs import createFigs
     from create_bootstrap_figs import bootstrapPlots
@@ -53,11 +57,10 @@ def main():
      sensSST4KNcFilenames, sensSST4KNcFilenamesExt,
      defaultNcFilename, globTunedNcFilename,
      defaultSST4KNcFilename,
+     interactParamsNamesAndFilenames,
      reglrCoef, doBootstrapSampling, numBootstrapSamples) \
     = \
         setUpConfig(beVerbose=False)
-
-    # SST4K:  Output sensNcFilenamesSST4K etc.
 
     # Number of regional metrics, including all of varPrefixes including the metrics we're not tuning, plus custom regions.
     numMetrics = len(metricsNames)
@@ -96,6 +99,28 @@ def main():
     # In order to weight certain metrics, multiply each row of normlzdSensMatrixPoly
     # by metricsWeights
     normlzdWeightedSensMatrixPoly = np.diag(np.transpose(metricsWeights)[0]) @ normlzdSensMatrixPoly
+
+    # interactIdxs = array of numInteractTerms (j,k) tuples of parameter indices of interaction terms
+    interactIdxs = createInteractIdxs(interactParamsNamesAndFilenames, paramsNames)
+
+    # normlzdInteractBiasesCols = numMetrics x numInteractTerms array
+    normlzdInteractBiasesCols = \
+              calcNormlzdInteractBiasesCols(obsMetricValsCol, normMetricValsCol,
+                              metricsNames,
+                              interactParamsNamesAndFilenames)
+
+    # dnormlzdParamsInteract = array of numInteractTerms tuples of parameter *values*
+    dnormlzdParamsInteract = \
+        readDnormlzdParamsInteract(interactParamsNamesAndFilenames, interactIdxs,
+                               defaultParamValsOrigRow, magParamValsRow,
+                               paramsNames, transformedParamsNames, len(paramsNames))
+
+    # interactDerivs = numMetrics x numInteractTerms array
+    interactDerivs = calcInteractDerivs(interactIdxs,
+                       dnormlzdParamsInteract,
+                       normlzdInteractBiasesCols,
+                       normlzdCurvMatrix, normlzdSensMatrixPoly,
+                       numMetrics)
 
     # For prescribed parameters, construct numMetrics x numParams matrix of second derivatives, d2metrics/dparams2.
     # The derivatives are normalized by observed metric values and max param values.
@@ -222,10 +247,6 @@ def main():
                          reglrCoef,
                          beVerbose=False)
 
-    #print("defaultBiasesApproxNonlin = ", defaultBiasesApproxNonlin)
-    #print("normlzdDefaultBiasesCol = ", normlzdDefaultBiasesCol)
-
-    # y_hat_i is the un-normalized, unweighted estimate of tuned metric values
     y_hat_i = defaultBiasesApproxNonlin + defaultBiasesCol + obsMetricValsCol
 
     #print("Tuned parameter perturbation values (dnormzldParamsSolnNonlin)")
@@ -235,6 +256,10 @@ def main():
     for idx in range(0,len(paramsNames)): \
         print("{:33s} {:7.7g}".format(paramsNames[idx], paramsSolnNonlin[idx][0] ) )
 
+    # dnormlzd_dpj_dpk = ( dp_j * dp_k ) for each interaction term
+    dnormlzd_dpj_dpk = calc_dnormlzd_dpj_dpk(dnormlzdParamsSolnNonlin, interactIdxs)
+
+    interactTerms = np.dot( interactDerivs, dnormlzd_dpj_dpk)
 
     # Check whether the minimizer actually reduces chisqd
     # Initial value of chisqd, which assumes parameter perturbations are zero
@@ -338,9 +363,17 @@ def normlzdSemiLinMatrixFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix
 
     normlzdSemiLinMatrix = \
         normlzdSensMatrix \
-        + 0.5 * normlzdCurvMatrix * ( np.ones((numMetrics,1)) @ dnormlzdParams.T )
+        + 0.5 * normlzdCurvMatrix * ( np.ones((numMetrics,1)) @ dnormlzdParams.T ).reshape(numMetrics,len(dnormlzdParams))
 
     return normlzdSemiLinMatrix
+
+def fwdFncNoInteract(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics):
+    """Calculate forward nonlinear solution, normalized but not weighted"""
+
+    normlzdDefaultBiasesApproxNonlin = \
+        normlzdSemiLinMatrixFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) @ dnormlzdParams
+
+    return normlzdDefaultBiasesApproxNonlin
 
 def fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics):
     """Calculate forward nonlinear solution, normalized but not weighted"""

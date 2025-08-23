@@ -361,6 +361,20 @@ def setUpConfig(beVerbose):
     sensNcFilenamesExt = np.char.add(folder_name, sensNcFilenamesSuffixExt)
     sensSST4KNcFilenamesExt = np.char.add(folder_name_SST4K, sensNcFilenamesSuffixExt)
 
+    interactParamsNamesAndFilenames = \
+    [
+        ('clubb_c_invrs_tau_wpxp_n2_thresh', 'clubb_c_invrs_tau_n2',
+         'Regional_files/20241022_2yr_20x20regs/20sens1022_74_Regional.nc'),
+        ('clubb_c_invrs_tau_wpxp_n2_thresh', 'clubb_c8',
+         'Regional_files/20241022_2yr_20x20regs/20sens1022_75_Regional.nc'),
+        ('clubb_c8', 'clubb_c_invrs_tau_n2',
+         'Regional_files/20241022_2yr_20x20regs/20sens1022_76_Regional.nc')
+    ]
+    interactParamsNamesAndFilenamesType = np.dtype([('jParamName', object),
+                                                    ('kParamName', object),
+                                                    ('filename',   object)])
+    interactParamsNamesAndFilenames = np.array(interactParamsNamesAndFilenames,
+                                               dtype=interactParamsNamesAndFilenamesType)
 
     # SST4K: Output just the filename suffixes here.  Then prepend the normal-SST and SST4K folder names separately.
     #        Create sensNcFilenamesSST4K, etc.
@@ -740,6 +754,7 @@ def setUpConfig(beVerbose):
             sensSST4KNcFilenames, sensSST4KNcFilenamesExt,
             defaultNcFilename, globTunedNcFilename,
             defaultSST4KNcFilename,
+            interactParamsNamesAndFilenames,
             reglrCoef, doBootstrapSampling, numBootstrapSamples)
 
     # SST4K: Output defaultNcFilenameSST4K, etc.

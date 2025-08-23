@@ -363,3 +363,111 @@ def setUpDefaultMetricValsCol(metricsNames, defaultNcFilename):
 
     return defaultMetricValsCol
 
+def calcInteractDerivs(interactIdxs,
+                       dnormlzdParamsInteract,
+                       normlzdInteractBiasesCols,
+                       normlzdCurvMatrix, normlzdSensMatrix,
+                       numMetrics):
+
+    from quadtune_driver import fwdFncNoInteract
+
+    interactDerivs = np.zeros(( numMetrics, len(interactIdxs) ))
+    for idxTerm, idxTuple in np.ndenumerate(interactIdxs):
+
+        # Set up a column vector of metric values from the default simulation
+        interactDerivs[:,idxTerm] = \
+            (
+            - normlzdInteractBiasesCols[:,idxTerm]
+            - fwdFncNoInteract(np.atleast_1d( dnormlzdParamsInteract[idxTerm][0] ),
+                              normlzdSensMatrix[:,idxTuple[0]].reshape(-1, 1),
+                              normlzdCurvMatrix[:,idxTuple[0]].reshape(-1, 1),
+                              numMetrics).reshape(-1,1)
+            - fwdFncNoInteract(np.atleast_1d( dnormlzdParamsInteract[idxTerm][1] ),
+                              normlzdSensMatrix[:,idxTuple[1]].reshape(-1, 1),
+                              normlzdCurvMatrix[:,idxTuple[1]].reshape(-1, 1),
+                              numMetrics).reshape(-1,1)
+            ) / ( dnormlzdParamsInteract[idxTerm][0] * dnormlzdParamsInteract[idxTerm][1] )
+
+    return interactDerivs
+
+def createInteractIdxs(interactParamsNamesAndFilenames, paramsNames):
+
+    # Define a numpy structured dtype to hold jk indices of each interaction term
+    interactIdxType = np.dtype([('jIdx', np.intp), ('kIdx', np.intp)])
+
+    interactIdxs = np.zeros(len(interactParamsNamesAndFilenames), dtype=interactIdxType)
+    for idx, nameTuple in np.ndenumerate(interactParamsNamesAndFilenames):
+        interactIdxs[idx] = ( np.where(paramsNames == nameTuple[0])[0],
+                              np.where(paramsNames == nameTuple[1])[0]
+                              )
+
+    return interactIdxs
+
+def readDnormlzdParamsInteract(interactParamsNamesAndFilenames, interactIdxs,
+                               defaultParamValsRow, magParamValsRow,
+                               paramsNames, transformedParamsNames, numParams):
+
+    # Define a numpy structured dtype to hold jk indices of each interaction term
+    paramValsInteractType = np.dtype([('jParam', np.float64), ('kParam', np.float64)])
+
+    dnormlzdParamsInteract = np.zeros( len(interactParamsNamesAndFilenames),
+                                      dtype=paramValsInteractType )
+
+    # Set up (numInteractRuns x numParams) matrix of param values in interaction runs
+    for idx, nameTuple in np.ndenumerate(interactParamsNamesAndFilenames):
+        interactParamValsRow, interactParamValsOrigRow = \
+            setupDefaultParamVectors(paramsNames, transformedParamsNames,
+                                     numParams,
+                                     nameTuple[2])
+
+        normlzdParamsInteract = \
+            (
+              interactParamValsRow[ 0, interactIdxs[idx][0] ]
+                 / magParamValsRow[ 0, interactIdxs[idx][0] ],
+              interactParamValsRow[ 0, interactIdxs[idx][1] ]
+                 / magParamValsRow[ 0, interactIdxs[idx][1] ]
+              )
+
+        normlzdDefaultParamsInteract = \
+            (
+              defaultParamValsRow[ 0, interactIdxs[idx][0] ]
+                / magParamValsRow[0, interactIdxs[idx][0]],
+              defaultParamValsRow[ 0, interactIdxs[idx][1] ]
+                / magParamValsRow[0, interactIdxs[idx][1]]
+              )
+
+        dnormlzdParamsInteract[idx] = \
+            tuple(
+                np.subtract(normlzdParamsInteract , normlzdDefaultParamsInteract)
+            )
+
+    return dnormlzdParamsInteract
+
+def calcNormlzdInteractBiasesCols(obsMetricValsCol, normMetricValsCol,
+                                  metricsNames,
+                                  interactParamsNamesAndFilenames):
+
+    normlzdInteractBiasesCols = np.zeros((obsMetricValsCol.shape[0],
+                                             len(interactParamsNamesAndFilenames)))
+    for idx, nameTuple in np.ndenumerate(interactParamsNamesAndFilenames):
+
+        # Set up a column vector of metric values from the default simulation
+        interactMetricValsCol = \
+            setUpDefaultMetricValsCol(metricsNames, nameTuple[2])
+
+        # Store biases in default simulation
+        # defaultBiasesCol = + delta_b
+        #                  =  default simulation - observations
+        # shape = numMetrics x (number of interaction simulations)
+        normlzdInteractBiasesCols[:,idx] = np.subtract(interactMetricValsCol, obsMetricValsCol) \
+                                     / np.abs(normMetricValsCol)
+
+    return normlzdInteractBiasesCols
+
+def calc_dnormlzd_dpj_dpk(dnormlzdParams, interactIdxs):
+
+    dnormlzd_dpj_dpk = np.zeros(len(interactIdxs))
+    for idx, jkTuple in np.ndenumerate(interactIdxs):
+        dnormlzd_dpj_dpk[idx] = dnormlzdParams[jkTuple[0]][0] * dnormlzdParams[jkTuple[1]][0]
+
+    return dnormlzd_dpj_dpk
