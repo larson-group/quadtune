@@ -132,8 +132,11 @@ def main():
     # This is the prescribed correction to the metrics that appears on the left-hand side of the Taylor equation.
     #   It is not a bias from the obs.  It is a correction to the simulated default metric values
     #   based on prescribed param values.
+
+    ### THIS CALL DOESN'T ACCOUNT FOR INTERACTIONS!!!
     normlzdPrescribedBiasesCol = \
-         fwdFnc( dnormlzdPrescribedParams, normlzdPrescribedSensMatrixPoly, normlzdPrescribedCurvMatrix, numMetrics )
+         fwdFnc( dnormlzdPrescribedParams, normlzdPrescribedSensMatrixPoly, normlzdPrescribedCurvMatrix, numMetrics,
+                 interactDerivs = np.empty(0), interactIdxs = np.empty(0) )
 
     prescribedBiasesCol = normlzdPrescribedBiasesCol * np.abs(normMetricValsCol)
 
@@ -234,6 +237,7 @@ def main():
 
     interactDerivs = np.empty(0)
     interactIdxs = np.empty(0)
+
     defaultBiasesApproxNonlin, \
     dnormlzdParamsSolnNonlin, paramsSolnNonlin, \
     dnormlzdParamsSolnLin, paramsSolnLin, \
@@ -484,12 +488,15 @@ def solveUsingNonlin(metricsNames,
         print("normlzdSensMatrix=", normlzdSensMatrix)
 
     normlzdWeightedDefaultBiasesApproxNonlin = \
-             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, normlzdCurvMatrix, numMetrics ) \
+             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
+                    interactDerivs, interactIdxs ) \
              * metricsWeights
 
+    ### WHAT IS THIS METRIC USED FOR???
     scale = 2
     normlzdWeightedDefaultBiasesApproxNonlin2x = \
-             fwdFnc(scale*dnormlzdParamsSolnNonlin, normlzdSensMatrix, 1*normlzdCurvMatrix, numMetrics) \
+             fwdFnc(scale*dnormlzdParamsSolnNonlin, normlzdSensMatrix, 1*normlzdCurvMatrix, numMetrics,
+                    interactDerivs, interactIdxs) \
              * metricsWeights
 
     # Relationship between QuadTune variable names and math symbols:
@@ -514,11 +521,13 @@ def solveUsingNonlin(metricsNames,
 
     # To provide error bars, calculate solution with no nonlinear term and double the nonlinear term
     defaultBiasesApproxNonlinNoCurv = \
-             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 0*normlzdCurvMatrix, numMetrics) \
+             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 0*normlzdCurvMatrix, numMetrics,
+                    interactDerivs, interactIdxs ) \
              * np.abs(normMetricValsCol)
 
     defaultBiasesApproxNonlin2xCurv = \
-             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 2*normlzdCurvMatrix, numMetrics) \
+             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 2*normlzdCurvMatrix, numMetrics,
+                    interactDerivs, interactIdxs) \
              * np.abs(normMetricValsCol)
 
 

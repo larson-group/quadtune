@@ -72,6 +72,10 @@ def bootstrapCalculations(numSamples,
     for sampleIdx, metricsSampleIdxRow in enumerate(metricsSampleIdxMatrix):
         if sampleIdx % 10 == 0:
             print(f"Progress: {sampleIdx}/{numSamples}")
+
+        interactDerivs = np.empty(0)
+        interactIdxs = np.empty(0)
+
         defaultBiasesApproxNonlin, dnormlzdParamsSolnNonlin, paramsBoot[sampleIdx], \
         dnormlzdParamsSolnLin, paramsSolnLin, defaultBiasesApproxNonlin2x, \
         defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv = (
@@ -83,6 +87,7 @@ def bootstrapCalculations(numSamples,
                              normlzdSensMatrixPoly[metricsSampleIdxRow, :],
                              normlzdDefaultBiasesCol[metricsSampleIdxRow],
                              normlzdCurvMatrix[metricsSampleIdxRow, :],
+                             interactDerivs, interactIdxs,
                              reglrCoef,
                              beVerbose=False))
 
@@ -113,6 +118,8 @@ def bootstrapCalculations(numSamples,
     #   with metricsWeights set to eps for non-tuned metrics.
     #   (This seems to duplicate the call to solveUsingNonlin in quadtune_driver and could be
     #   avoided with some restructuring.)
+    interactDerivs = np.empty(0)
+    interactIdxs = np.empty(0)
     biasesTuned, _, paramsTuned, *_ = solveUsingNonlin(metricsNames,
                                                        metricsWeights,
                                                        normMetricValsCol,
@@ -121,6 +128,7 @@ def bootstrapCalculations(numSamples,
                                                        normlzdSensMatrixPoly,
                                                        normlzdDefaultBiasesCol,
                                                        normlzdCurvMatrix,
+                                                       interactDerivs, interactIdxs,
                                                        reglrCoef,
                                                        beVerbose=False)
 
@@ -184,6 +192,8 @@ def computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetric
     from quadtune_driver import solveUsingNonlin
     print("Computing jackknife estimates . . .")
     jacknifeParams = np.zeros((len(metricsNames), len(paramsNames), 1))
+    interactDerivs = np.empty(0)
+    interactIdxs = np.empty(0)
     for i in range(len(metricsNames)):
         _, _, jacknifeParams[i], *_ = solveUsingNonlin(np.delete(metricsNames, i),
                                                         np.delete(metricsWeights, i, axis=0),
@@ -193,6 +203,7 @@ def computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetric
                                                         np.delete(normlzdSensMatrixPoly, i, axis=0),
                                                         np.delete(normlzdDefaultBiasesCol, i, axis=0),
                                                         np.delete(normlzdCurvMatrix, i, axis=0),
+                                                        interactDerivs, interactIdxs,
                                                         reglrCoef,
                                                         beVerbose=False)
     return jacknifeParams[:, :, 0]
