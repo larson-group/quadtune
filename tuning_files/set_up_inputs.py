@@ -463,11 +463,3 @@ def calcNormlzdInteractBiasesCols(obsMetricValsCol, normMetricValsCol,
                                      / np.abs(normMetricValsCol)
 
     return normlzdInteractBiasesCols
-
-def calc_dnormlzd_dpj_dpk(dnormlzdParams, interactIdxs):
-
-    dnormlzd_dpj_dpk = np.zeros(len(interactIdxs))
-    for idx, jkTuple in np.ndenumerate(interactIdxs):
-        dnormlzd_dpj_dpk[idx] = dnormlzdParams[jkTuple[0]][0] * dnormlzdParams[jkTuple[1]][0]
-
-    return dnormlzd_dpj_dpk

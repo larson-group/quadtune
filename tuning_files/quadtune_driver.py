@@ -30,8 +30,7 @@ def main():
                createInteractIdxs, \
                calcNormlzdInteractBiasesCols, \
                readDnormlzdParamsInteract, \
-               calcInteractDerivs, \
-               calc_dnormlzd_dpj_dpk
+               calcInteractDerivs
 
     from create_nonbootstrap_figs import createFigs
     from create_bootstrap_figs import bootstrapPlots
@@ -233,6 +232,8 @@ def main():
     #
     #########################################
 
+    interactDerivs = np.empty(0)
+    interactIdxs = np.empty(0)
     defaultBiasesApproxNonlin, \
     dnormlzdParamsSolnNonlin, paramsSolnNonlin, \
     dnormlzdParamsSolnLin, paramsSolnLin, \
@@ -244,6 +245,7 @@ def main():
                          normlzdSensMatrixPolySvd, normlzdDefaultBiasesCol,
                          #normlzdSensMatrixPoly, defaultBiasesCol-prescribedBiasesCol,
                          normlzdCurvMatrixSvd,
+                         interactDerivs, interactIdxs,
                          reglrCoef,
                          beVerbose=False)
 
@@ -255,11 +257,6 @@ def main():
     print("Tuned parameter values (paramsSolnNonlin)")
     for idx in range(0,len(paramsNames)): \
         print("{:33s} {:7.7g}".format(paramsNames[idx], paramsSolnNonlin[idx][0] ) )
-
-    # dnormlzd_dpj_dpk = ( dp_j * dp_k ) for each interaction term
-    dnormlzd_dpj_dpk = calc_dnormlzd_dpj_dpk(dnormlzdParamsSolnNonlin, interactIdxs)
-
-    interactTerms = np.dot( interactDerivs, dnormlzd_dpj_dpk)
 
     # Check whether the minimizer actually reduces chisqd
     # Initial value of chisqd, which assumes parameter perturbations are zero
@@ -375,38 +372,60 @@ def fwdFncNoInteract(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMe
 
     return normlzdDefaultBiasesApproxNonlin
 
-def fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics):
+def fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
+           interactDerivs = np.empty(0), interactIdxs = np.empty(0) ):
     """Calculate forward nonlinear solution, normalized but not weighted"""
 
     normlzdDefaultBiasesApproxNonlin = \
-        normlzdSemiLinMatrixFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) @ dnormlzdParams
+        fwdFncNoInteract(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics)
+
+    # dnormlzd_dpj_dpk = ( dp_j * dp_k ) for each interaction term
+    dnormlzd_dpj_dpk = calc_dnormlzd_dpj_dpk(dnormlzdParams, interactIdxs)
+    interactTerms = np.dot( interactDerivs, dnormlzd_dpj_dpk)
+
+    normlzdDefaultBiasesApproxNonlin += interactTerms
+
+    #normlzdDefaultBiasesApproxNonlin = \
+    #    normlzdSemiLinMatrixFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) @ dnormlzdParams
 
             #normlzdSensMatrix @ dnormlzdParams \
             #+ 0.5 * normlzdCurvMatrix @ (dnormlzdParams * dnormlzdParams) 
 
     return normlzdDefaultBiasesApproxNonlin
 
+def calc_dnormlzd_dpj_dpk(dnormlzdParams, interactIdxs):
+
+    dnormlzd_dpj_dpk = np.zeros(len(interactIdxs))
+    for idx, jkTuple in np.ndenumerate(interactIdxs):
+        dnormlzd_dpj_dpk[idx] = dnormlzdParams[jkTuple[0]][0] * dnormlzdParams[jkTuple[1]][0]
+
+    return dnormlzd_dpj_dpk
+
 def lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
                 normlzdDefaultBiasesCol, metricsWeights,
-                normlzdCurvMatrix, numMetrics):
+                normlzdCurvMatrix, numMetrics,
+                interactDerivs = np.empty(0), interactIdxs = np.empty(0) ):
     """Each regional component of loss function (including squares)"""
 
     weightedBiasDiffSqdCol = \
         np.square( (-normlzdDefaultBiasesCol
-                    - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics)
+                    - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
+                             interactDerivs, interactIdxs )
          ) * metricsWeights )
 
     return weightedBiasDiffSqdCol
 
 def lossFnc(dnormlzdParams, normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-            normlzdCurvMatrix, reglrCoef, numMetrics):
+            normlzdCurvMatrix, reglrCoef, numMetrics,
+            interactDerivs = np.empty(0), interactIdxs = np.empty(0) ):
     """Define objective function (a.k.a. loss function) that is to be minimized."""
 
     dnormlzdParams = np.atleast_2d(dnormlzdParams).T # convert from 1d row array to 2d column array
     weightedBiasDiffSqdCol = \
         lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
                     normlzdDefaultBiasesCol, metricsWeights,
-                    normlzdCurvMatrix, numMetrics)
+                    normlzdCurvMatrix, numMetrics,
+                    interactDerivs, interactIdxs)
     #weightedBiasDiffSqdCol = \
     #    np.square( (-normlzdDefaultBiasesCol \
     #     - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) \
@@ -427,8 +446,9 @@ def solveUsingNonlin(metricsNames,
                      defaultParamValsOrigRow,
                      normlzdSensMatrix, normlzdDefaultBiasesCol,
                      normlzdCurvMatrix,
-                     reglrCoef,
-                     beVerbose):
+                     interactDerivs = np.empty(0), interactIdxs = np.empty(0),
+                     reglrCoef = 0.0,
+                     beVerbose = False):
     """Find optimal parameter values by minimizing quartic loss function"""
 
     numMetrics = len(metricsNames)
@@ -464,7 +484,7 @@ def solveUsingNonlin(metricsNames,
         print("normlzdSensMatrix=", normlzdSensMatrix)
 
     normlzdWeightedDefaultBiasesApproxNonlin = \
-             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) \
+             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, normlzdCurvMatrix, numMetrics ) \
              * metricsWeights
 
     scale = 2
