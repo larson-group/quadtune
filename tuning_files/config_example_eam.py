@@ -370,6 +370,7 @@ def setUpConfig(beVerbose):
         ('clubb_c8', 'clubb_c_invrs_tau_n2',
          'Regional_files/20241022_2yr_20x20regs/20sens1022_76_Regional.nc')
     ]
+    #interactParamsNamesAndFilenames = []
     interactParamsNamesAndFilenamesType = np.dtype([('jParamName', object),
                                                     ('kParamName', object),
                                                     ('filename',   object)])

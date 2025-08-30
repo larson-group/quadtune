@@ -48,48 +48,24 @@ def setUpColAndRowVectors(metricsNames, metricsNorms,
     # Based on the default simulation,
     #    set up a row vector of parameter values.
     numParams = len(paramsNames)
+
     defaultParamValsRow, defaultParamValsOrigRow = \
             setupDefaultParamVectors(paramsNames, transformedParamsNames,
                                 numParams,
                                 defaultNcFilename)
 
-    # Create row vector size numParams containing
-    # parameter values from sensitivity simulations
-    sensParamValsOrigRow = np.zeros((1, numParams))
-    # This variable contains transformed parameter values,
-    #    if transformedParamsNames is non-empty:
-    sensParamValsRow = np.zeros((1, numParams))
-    for idx in np.arange(numParams):
-        paramName = paramsNames[idx]
-        # Read netcdf file with changed parameter values from all sensitivity simulations.
-        f_sensParams = netCDF4.Dataset(sensNcFilenames[idx], 'r')
-        # Assume each metric is stored as length-1 array, rather than scalar.
-        #   Hence the "[0]" at the end is needed.
-        sensParamValsOrigRow[0,idx] = f_sensParams.variables[paramName][0]
-        # Transform [0,1] variable to extend over range [0,infinity]
-        if paramName in transformedParamsNames:
-            #sensParamValsRow[0,idx] = -np.log(1-sensParamValsRow[0,idx])
-            sensParamValsRow[0,idx] = np.log(sensParamValsOrigRow[0,idx])
-        else:
-            sensParamValsRow[0,idx] = sensParamValsOrigRow[0,idx]
-        f_sensParams.close()
 
+    sensParamValsRow, sensParamValsOrigRow, magParamValsRow = \
+        setupSensParamVectors(paramsNames, transformedParamsNames,
+                              numParams,
+                              defaultParamValsRow,
+                              sensNcFilenames)
 
-    # Calculate the magnitude of the maximum value of parameters
-    #    from the default run (and sensitivity runs as a backup), for later use
-    #    in scaling the normalized sensitivity matrix.
-    # Initially, set values to the default-simulation values
-    magParamValsRow = np.abs(defaultParamValsRow)
-    # Now replace any zero default values with the value from the sensitivity run
-    for idx, elem in np.ndenumerate(defaultParamValsRow):
-        if (np.abs(elem) <= np.finfo(elem.dtype).eps): # if default value is zero
-            magParamValsRow[0,idx[1]] = np.abs(sensParamValsRow[0,idx[1]]) # set to sensitivity value
-    if np.any( np.isclose(magParamValsRow, np.zeros((1,numParams))) ):
-        print("\nsensParamValsRow =")
-        print(sensParamValsRow)
-        print("\nmagParamValsRow =")
-        print(magParamValsRow)
-        sys.exit("Error: A parameter value from both default and sensitivity simulation is zero.")
+# TODO: SHOULD I CALL THIS FOR sensNcFilenamesExt?  OTHERWISE THE RESULT DEPENDS ON WHICH
+# PARAMETERS ARE STORED IN WHICH sens FILE.
+
+    dnormlzdSensParams = ( sensParamValsRow - defaultParamValsRow ) \
+                                / magParamValsRow
 
     # Set up a column vector of metric values from the default simulation
     defaultMetricValsCol = \
@@ -139,6 +115,7 @@ def setUpColAndRowVectors(metricsNames, metricsNorms,
     return ( obsMetricValsCol, normMetricValsCol,
              defaultBiasesCol,
              defaultParamValsOrigRow,
+             dnormlzdSensParams,
              magParamValsRow,
              dnormlzdPrescribedParams,
              magPrescribedParamValsRow
@@ -272,6 +249,55 @@ def setupDefaultParamVectors(paramsNames, transformedParamsNames,
 
     return (defaultParamValsRow, defaultParamValsOrigRow)
 
+def setupSensParamVectors(paramsNames, transformedParamsNames,
+                          numParams,
+                          defaultParamValsRow,
+                          sensNcFilenames):
+
+    """
+    Input: Filename containing a set of sensitivity simulations for metrics and parameters.
+    Output: Row vector of parameter values from that set of sensitivity simulations.
+    """
+
+    # Create row vector size numParams containing
+    # parameter values from sensitivity simulations
+    sensParamValsOrigRow = np.zeros((1, numParams))
+    # This variable contains transformed parameter values,
+    #    if transformedParamsNames is non-empty:
+    sensParamValsRow = np.zeros((1, numParams))
+    for idx in np.arange(numParams):
+        paramName = paramsNames[idx]
+        # Read netcdf file with changed parameter values from all sensitivity simulations.
+        f_sensParams = netCDF4.Dataset(sensNcFilenames[idx], 'r')
+        # Assume each metric is stored as length-1 array, rather than scalar.
+        #   Hence the "[0]" at the end is needed.
+        sensParamValsOrigRow[0,idx] = f_sensParams.variables[paramName][0]
+        # Transform [0,1] variable to extend over range [0,infinity]
+        if paramName in transformedParamsNames:
+            #sensParamValsRow[0,idx] = -np.log(1-sensParamValsRow[0,idx])
+            sensParamValsRow[0,idx] = np.log(sensParamValsOrigRow[0,idx])
+        else:
+            sensParamValsRow[0,idx] = sensParamValsOrigRow[0,idx]
+        f_sensParams.close()
+
+
+    # Calculate the magnitude of the maximum value of parameters
+    #    from the default run (and sensitivity runs as a backup), for later use
+    #    in scaling the normalized sensitivity matrix.
+    # Initially, set values to the default-simulation values
+    magParamValsRow = np.abs(defaultParamValsRow)
+    # Now replace any zero default values with the value from the sensitivity run
+    for idx, elem in np.ndenumerate(defaultParamValsRow):
+        if (np.abs(elem) <= np.finfo(elem.dtype).eps): # if default value is zero
+            magParamValsRow[0,idx[1]] = np.abs(sensParamValsRow[0,idx[1]]) # set to sensitivity value
+    if np.any( np.isclose(magParamValsRow, np.zeros((1,numParams))) ):
+        print("\nsensParamValsRow =")
+        print(sensParamValsRow)
+        print("\nmagParamValsRow =")
+        print(magParamValsRow)
+        sys.exit("Error: A parameter value from both default and sensitivity simulation is zero.")
+
+    return ( sensParamValsRow, sensParamValsOrigRow, magParamValsRow )
 
 def setupSensArrays(metricsNames, paramsNames, transformedParamsNames,
                     numMetrics, numParams,
@@ -406,6 +432,9 @@ def createInteractIdxs(interactParamsNamesAndFilenames, paramsNames):
 def readDnormlzdParamsInteract(interactParamsNamesAndFilenames, interactIdxs,
                                defaultParamValsRow, magParamValsRow,
                                paramsNames, transformedParamsNames, numParams):
+    '''
+    :return: dnormlzdParamsInteract = [ (dp_j, dp_k) , ( , ), . . . ] from interact runs.
+    '''
 
     # Define a numpy structured dtype to hold jk indices of each interaction term
     paramValsInteractType = np.dtype([('jParam', np.float64), ('kParam', np.float64)])
@@ -431,9 +460,9 @@ def readDnormlzdParamsInteract(interactParamsNamesAndFilenames, interactIdxs,
         normlzdDefaultParamsInteract = \
             (
               defaultParamValsRow[ 0, interactIdxs[idx][0] ]
-                / magParamValsRow[0, interactIdxs[idx][0]],
+                / magParamValsRow[ 0, interactIdxs[idx][0] ],
               defaultParamValsRow[ 0, interactIdxs[idx][1] ]
-                / magParamValsRow[0, interactIdxs[idx][1]]
+                / magParamValsRow[ 0, interactIdxs[idx][1] ]
               )
 
         dnormlzdParamsInteract[idx] = \
@@ -463,3 +492,76 @@ def calcNormlzdInteractBiasesCols(obsMetricValsCol, normMetricValsCol,
                                      / np.abs(normMetricValsCol)
 
     return normlzdInteractBiasesCols
+
+def checkInteractDerivs(normlzdInteractBiasesCols,
+                        dnormlzdParamsInteract,
+                        numParams,
+                        normlzdSensMatrix, normlzdCurvMatrix,
+                        numMetrics,
+                        interactDerivs, interactIdxs):
+
+    from quadtune_driver import fwdFnc
+
+
+    for idxTerm, idxTuple in np.ndenumerate(interactIdxs):
+        dnormlzdTwoParams = np.zeros((numParams, 1))
+
+        dnormlzdTwoParams[ idxTuple[0], 0 ] = dnormlzdParamsInteract[idxTerm][0]
+        dnormlzdTwoParams[ idxTuple[1], 0 ] = dnormlzdParamsInteract[idxTerm][1]
+
+        fwdFncInteractCol = \
+            fwdFnc(dnormlzdTwoParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
+                   interactDerivs, interactIdxs)
+
+        if not np.allclose(-normlzdInteractBiasesCols[:,idxTerm], fwdFncInteractCol):
+            print(f"\nnormlzdInteractBiasesCols[:,{idxTerm}] =")
+            print(normlzdInteractBiasesCols[:,idxTerm].T)
+            print("\nfwdFncInteractCol =")
+            print(fwdFncInteractCol.T)
+            print(f"\nidxTerm = {idxTerm}")
+            sys.exit("Error: interactDerivs is not consistent with interactBiases.")
+
+    return
+
+def printInteractDiagnostics(interactIdxs,
+                       interactDerivs,
+                       dnormlzdParamsSolnNonlin,
+                       normlzdCurvMatrix, normlzdSensMatrix,
+                       paramsNames, numMetrics):
+
+    from quadtune_driver import calc_dnormlzd_dpj_dpk
+
+    dnormlzd_dpj_dpk = calc_dnormlzd_dpj_dpk(dnormlzdParamsSolnNonlin, interactIdxs)
+
+    print( "dnormlzd_dpj_dpk = ", dnormlzd_dpj_dpk )
+
+    interactTermsMatrix = interactDerivs * ( np.ones((numMetrics,1)) * dnormlzd_dpj_dpk.T )
+
+    print( "paramsNames = ", paramsNames )
+    print( "interactIdxs = ", interactIdxs )
+
+    interactDerivRatiosCols = np.zeros(( numMetrics, len(interactIdxs) ))
+    for idxTerm, jkTuple in np.ndenumerate(interactIdxs):
+
+        normlzdCurvJ = normlzdCurvMatrix[ : , [jkTuple[0]] ]
+        normlzdCurvK = normlzdCurvMatrix[ : , [jkTuple[1]] ]
+
+        interactDerivRatiosCols[:,idxTerm] = \
+            interactDerivs[:, idxTerm] / np.sqrt( np.abs ( normlzdCurvJ * normlzdCurvK ) )
+
+
+    interactDerivRatios = np.std( interactDerivRatiosCols, axis=0 )
+
+    print( "interactDerivRatios = ", interactDerivRatios )
+
+    normlzdCurvTermsMatrix = np.zeros((numMetrics, len(paramsNames)))
+    normlzdSensTermsMatrix = np.zeros((numMetrics, len(paramsNames)))
+    for paramIdx in np.arange(len(paramsNames)):
+
+        normlzdCurvTermsMatrix[:,paramIdx] = \
+            0.5 * normlzdCurvMatrix[:,paramIdx] * np.square( dnormlzdParamsSolnNonlin[paramIdx] )
+
+        normlzdSensTermsMatrix[:,paramIdx] = \
+            normlzdSensMatrix[:,paramIdx] * dnormlzdParamsSolnNonlin[paramIdx]
+
+    return

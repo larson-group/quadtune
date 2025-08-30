@@ -30,7 +30,9 @@ def main():
                createInteractIdxs, \
                calcNormlzdInteractBiasesCols, \
                readDnormlzdParamsInteract, \
-               calcInteractDerivs
+               calcInteractDerivs, \
+               printInteractDiagnostics, \
+               checkInteractDerivs
 
     from create_nonbootstrap_figs import createFigs
     from create_bootstrap_figs import bootstrapPlots
@@ -73,7 +75,8 @@ def main():
 
     obsMetricValsCol, normMetricValsCol, \
     defaultBiasesCol, \
-    defaultParamValsOrigRow,\
+    defaultParamValsOrigRow, \
+    dnormlzdSensParams, \
     magParamValsRow, \
     dnormlzdPrescribedParams, \
     magPrescribedParamValsRow, \
@@ -120,6 +123,13 @@ def main():
                        normlzdInteractBiasesCols,
                        normlzdCurvMatrix, normlzdSensMatrixPoly,
                        numMetrics)
+
+    checkInteractDerivs(normlzdInteractBiasesCols,
+                        dnormlzdParamsInteract,
+                        len(paramsNames),
+                        normlzdSensMatrixPoly, normlzdCurvMatrix,
+                        numMetrics,
+                        interactDerivs, interactIdxs)
 
     # For prescribed parameters, construct numMetrics x numParams matrix of second derivatives, d2metrics/dparams2.
     # The derivatives are normalized by observed metric values and max param values.
@@ -235,8 +245,6 @@ def main():
     #
     #########################################
 
-    interactDerivs = np.empty(0)
-    interactIdxs = np.empty(0)
 
     defaultBiasesApproxNonlin, \
     dnormlzdParamsSolnNonlin, paramsSolnNonlin, \
@@ -267,22 +275,26 @@ def main():
     #normlzdWeightedDefaultBiasesCol = metricsWeights * normlzdDefaultBiasesCol
     chisqdZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                          normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
-                         normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
+                         normlzdCurvMatrix, reglrCoef, numMetrics,
+                         interactDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
                                                                     #   But metricsWeights is already set to eps for un-tuned metrics.
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
     chisqdMin = lossFnc(dnormlzdParamsSolnNonlin.T,
                         normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
-                        normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
+                        normlzdCurvMatrix, reglrCoef, numMetrics,
+                        interactDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdMinRatio (all metrics, non-unity metricsWeights) =", chisqdMin/chisqdZero)
 
     chisqdUnweightedZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                                    normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
-                                   normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
+                                   normlzdCurvMatrix, reglrCoef, numMetrics,
+                                   interactDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
     chisqdUnweightedMin = lossFnc(dnormlzdParamsSolnNonlin.T,
                                   normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
-                                  normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
+                                  normlzdCurvMatrix, reglrCoef, numMetrics,
+                                  interactDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdUnweightedMinRatio (all metrics, metricsWeights=1) =", chisqdUnweightedMin/chisqdUnweightedZero)
 
@@ -309,6 +321,13 @@ def main():
 
     print("chisqdUnweightedGlobTunedMinRatio =", chisqdUnweightedGlobTunedMin/chisqdUnweightedZero)
     print("-----------------------------------------------------")
+
+    if False:
+        printInteractDiagnostics(interactIdxs,
+                       interactDerivs,
+                       dnormlzdParamsSolnNonlin,
+                       normlzdCurvMatrix, normlzdSensMatrixPoly,
+                       paramsNames, numMetrics)
 
     ##############################################
     #
@@ -345,6 +364,7 @@ def main():
                defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv,
                normlzdDefaultBiasesCol,
                normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix,
+               interactDerivs, interactIdxs,
                normlzdOrdDparamsMin, normlzdOrdDparamsMax,
                normlzdWeightedSensMatrixPoly,
                dnormlzdParamsSolnNonlin,
@@ -385,7 +405,7 @@ def fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
 
     # dnormlzd_dpj_dpk = ( dp_j * dp_k ) for each interaction term
     dnormlzd_dpj_dpk = calc_dnormlzd_dpj_dpk(dnormlzdParams, interactIdxs)
-    interactTerms = np.dot( interactDerivs, dnormlzd_dpj_dpk)
+    interactTerms = interactDerivs @ dnormlzd_dpj_dpk
 
     normlzdDefaultBiasesApproxNonlin += interactTerms
 
@@ -399,9 +419,15 @@ def fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
 
 def calc_dnormlzd_dpj_dpk(dnormlzdParams, interactIdxs):
 
-    dnormlzd_dpj_dpk = np.zeros(len(interactIdxs))
+    '''
+    Input:
+    dnormlzdParams = A numParams numpy row array of dp
+    Output:
+    dnormlzd_dpj_dpk = A numInteract numpy col array = [ dp_k * dp_j, ... , ]
+    '''
+    dnormlzd_dpj_dpk = np.zeros((len(interactIdxs),1))
     for idx, jkTuple in np.ndenumerate(interactIdxs):
-        dnormlzd_dpj_dpk[idx] = dnormlzdParams[jkTuple[0]][0] * dnormlzdParams[jkTuple[1]][0]
+        dnormlzd_dpj_dpk[idx,0] = dnormlzdParams[jkTuple[0]][0] * dnormlzdParams[jkTuple[1]][0]
 
     return dnormlzd_dpj_dpk
 
@@ -471,7 +497,7 @@ def solveUsingNonlin(metricsNames,
                                         #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=x0TwoYr, \
                                         #dnormlzdParamsSolnNonlin = minimize(lossFnc,dnormlzdParamsSoln, \
                                         args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-                               normlzdCurvMatrix, reglrCoef, numMetrics),
+                               normlzdCurvMatrix, reglrCoef, numMetrics, interactDerivs, interactIdxs),
                                         method='Powell', tol=1e-12
                                         ))
                                 #,)

@@ -45,6 +45,7 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv,
                normlzdDefaultBiasesCol,
                normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix,
+               interactDerivs, interactIdxs,
                normlzdOrdDparamsMin, normlzdOrdDparamsMax,
                normlzdWeightedSensMatrixPoly,
                dnormlzdParamsSolnNonlin,
@@ -102,22 +103,26 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     # Estimated loss function values in the global simulation upon tuning.
     tunedLossCol = lossFncMetrics(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol, metricsWeights,
-                   normlzdCurvMatrix, len(metricsNames))
+                   normlzdCurvMatrix, len(metricsNames),
+                   interactDerivs, interactIdxs)
 
     tunedLossColUnweighted = lossFncMetrics(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol,
                    np.average(metricsWeights)*np.ones_like(metricsWeights),
-                   normlzdCurvMatrix, len(metricsNames))
+                   normlzdCurvMatrix, len(metricsNames),
+                   interactDerivs, interactIdxs)
 
     # Loss function values in the default-parameter global simulation.
     defaultLossCol = lossFncMetrics(np.zeros_like(dnormlzdParamsSolnNonlin), normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol, metricsWeights,
-                   normlzdCurvMatrix, len(metricsNames))
+                   normlzdCurvMatrix, len(metricsNames),
+                   interactDerivs, interactIdxs)
 
     defaultLossColUnweighted = lossFncMetrics(np.zeros_like(dnormlzdParamsSolnNonlin), normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol,
                    np.average(metricsWeights)*np.ones_like(metricsWeights),
-                   normlzdCurvMatrix, len(metricsNames))
+                   normlzdCurvMatrix, len(metricsNames),
+                   interactDerivs, interactIdxs)
 
     # Estimate how the loss function value changes with tuning in each region.
     tunedLossChange = tunedLossCol - defaultLossCol
