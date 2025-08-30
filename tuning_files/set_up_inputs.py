@@ -403,7 +403,7 @@ def calcInteractDerivs(interactIdxs,
         # Set up a column vector of metric values from the default simulation
         interactDerivs[:,idxTerm] = \
             (
-            - normlzdInteractBiasesCols[:,idxTerm]
+              normlzdInteractBiasesCols[:,idxTerm]
             - fwdFncNoInteract(np.atleast_1d( dnormlzdParamsInteract[idxTerm][0] ),
                               normlzdSensMatrix[:,idxTuple[0]].reshape(-1, 1),
                               normlzdCurvMatrix[:,idxTuple[0]].reshape(-1, 1),
@@ -472,11 +472,14 @@ def readDnormlzdParamsInteract(interactParamsNamesAndFilenames, interactIdxs,
 
     return dnormlzdParamsInteract
 
-def calcNormlzdInteractBiasesCols(obsMetricValsCol, normMetricValsCol,
+def calcNormlzdInteractBiasesCols(defaultMetricValsCol, normMetricValsCol,
                                   metricsNames,
                                   interactParamsNamesAndFilenames):
+    '''
+    :return = normlzdInteractBiasesCols = interact - default
+    '''
 
-    normlzdInteractBiasesCols = np.zeros((obsMetricValsCol.shape[0],
+    normlzdInteractBiasesCols = np.zeros((defaultMetricValsCol.shape[0],
                                              len(interactParamsNamesAndFilenames)))
     for idx, nameTuple in np.ndenumerate(interactParamsNamesAndFilenames):
 
@@ -488,7 +491,7 @@ def calcNormlzdInteractBiasesCols(obsMetricValsCol, normMetricValsCol,
         # defaultBiasesCol = + delta_b
         #                  =  default simulation - observations
         # shape = numMetrics x (number of interaction simulations)
-        normlzdInteractBiasesCols[:,idx] = np.subtract(interactMetricValsCol, obsMetricValsCol) \
+        normlzdInteractBiasesCols[:,idx] = np.subtract(interactMetricValsCol, defaultMetricValsCol) \
                                      / np.abs(normMetricValsCol)
 
     return normlzdInteractBiasesCols
@@ -513,7 +516,7 @@ def checkInteractDerivs(normlzdInteractBiasesCols,
             fwdFnc(dnormlzdTwoParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
                    interactDerivs, interactIdxs)
 
-        if not np.allclose(-normlzdInteractBiasesCols[:,idxTerm], fwdFncInteractCol):
+        if not np.allclose(normlzdInteractBiasesCols[:,idxTerm], fwdFncInteractCol):
             print(f"\nnormlzdInteractBiasesCols[:,{idxTerm}] =")
             print(normlzdInteractBiasesCols[:,idxTerm].T)
             print("\nfwdFncInteractCol =")

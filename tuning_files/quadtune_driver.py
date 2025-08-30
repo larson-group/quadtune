@@ -105,9 +105,12 @@ def main():
     # interactIdxs = array of numInteractTerms (j,k) tuples of parameter indices of interaction terms
     interactIdxs = createInteractIdxs(interactParamsNamesAndFilenames, paramsNames)
 
+    defaultMetricValsCol = obsMetricValsCol+defaultBiasesCol
+
     # normlzdInteractBiasesCols = numMetrics x numInteractTerms array
     normlzdInteractBiasesCols = \
-              calcNormlzdInteractBiasesCols(obsMetricValsCol, normMetricValsCol,
+              calcNormlzdInteractBiasesCols( defaultMetricValsCol,
+                              normMetricValsCol,
                               metricsNames,
                               interactParamsNamesAndFilenames)
 
