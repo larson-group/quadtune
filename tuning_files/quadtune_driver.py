@@ -129,8 +129,8 @@ def main():
                                defaultParamValsOrigRow, magParamValsRow,
                                paramsNames, transformedParamsNames, len(paramsNames))
 
-    # interactDerivs = numMetrics x numInteractTerms array
-    interactDerivs = calcInteractDerivs(interactIdxs,
+    # normlzdInteractDerivs = numMetrics x numInteractTerms array
+    normlzdInteractDerivs = calcInteractDerivs(interactIdxs,
                        dnormlzdParamsInteract,
                        normlzdInteractBiasesCols,
                        normlzdCurvMatrix, normlzdSensMatrixPoly,
@@ -141,7 +141,7 @@ def main():
                         len(paramsNames),
                         normlzdSensMatrixPoly, normlzdCurvMatrix,
                         numMetrics,
-                        interactDerivs, interactIdxs)
+                        normlzdInteractDerivs, interactIdxs)
 
     # For prescribed parameters, construct numMetrics x numParams matrix of second derivatives, d2metrics/dparams2.
     # The derivatives are normalized by observed metric values and max param values.
@@ -157,8 +157,8 @@ def main():
 
     ### THIS CALL DOESN'T ACCOUNT FOR INTERACTIONS!!!
     normlzdPrescribedBiasesCol = \
-         fwdFnc( dnormlzdPrescribedParams, normlzdPrescribedSensMatrixPoly, normlzdPrescribedCurvMatrix, numMetrics,
-                 interactDerivs = np.empty(0), interactIdxs = np.empty(0) )
+         fwdFnc(dnormlzdPrescribedParams, normlzdPrescribedSensMatrixPoly, normlzdPrescribedCurvMatrix, numMetrics,
+                normlzdInteractDerivs= np.empty(0), interactIdxs = np.empty(0))
 
     prescribedBiasesCol = normlzdPrescribedBiasesCol * np.abs(normMetricValsCol)
 
@@ -269,7 +269,7 @@ def main():
                          normlzdSensMatrixPolySvd, normlzdDefaultBiasesCol,
                          #normlzdSensMatrixPoly, defaultBiasesCol-prescribedBiasesCol,
                          normlzdCurvMatrixSvd,
-                         interactDerivs, interactIdxs,
+                         normlzdInteractDerivs, interactIdxs,
                          reglrCoef,
                          beVerbose=False)
 
@@ -288,25 +288,25 @@ def main():
     chisqdZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                          normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
                          normlzdCurvMatrix, reglrCoef, numMetrics,
-                         interactDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
+                         normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
                                                                     #   But metricsWeights is already set to eps for un-tuned metrics.
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
     chisqdMin = lossFnc(dnormlzdParamsSolnNonlin.T,
                         normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
                         normlzdCurvMatrix, reglrCoef, numMetrics,
-                        interactDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
+                        normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdMinRatio (all metrics, non-unity metricsWeights) =", chisqdMin/chisqdZero)
 
     chisqdUnweightedZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                                    normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
                                    normlzdCurvMatrix, reglrCoef, numMetrics,
-                                   interactDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
+                                   normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
     chisqdUnweightedMin = lossFnc(dnormlzdParamsSolnNonlin.T,
                                   normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
                                   normlzdCurvMatrix, reglrCoef, numMetrics,
-                                  interactDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
+                                  normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdUnweightedMinRatio (all metrics, metricsWeights=1) =", chisqdUnweightedMin/chisqdUnweightedZero)
 
@@ -334,9 +334,9 @@ def main():
     print("chisqdUnweightedGlobTunedMinRatio =", chisqdUnweightedGlobTunedMin/chisqdUnweightedZero)
     print("-----------------------------------------------------")
 
-    if False:
+    if True:
         printInteractDiagnostics(interactIdxs,
-                       interactDerivs,
+                       normlzdInteractDerivs,
                        dnormlzdParamsSolnNonlin,
                        normlzdCurvMatrix, normlzdSensMatrixPoly,
                        paramsNames, numMetrics)
@@ -376,7 +376,7 @@ def main():
                defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv,
                normlzdDefaultBiasesCol,
                normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix,
-               interactDerivs, interactIdxs,
+               normlzdInteractDerivs, interactIdxs,
                normlzdOrdDparamsMin, normlzdOrdDparamsMax,
                normlzdWeightedSensMatrixPoly,
                dnormlzdParamsSolnNonlin,
@@ -409,7 +409,7 @@ def fwdFncNoInteract(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMe
     return normlzdDefaultBiasesApproxNonlin
 
 def fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
-           interactDerivs = np.empty(0), interactIdxs = np.empty(0) ):
+           normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0)):
     """Calculate forward nonlinear solution, normalized but not weighted"""
 
     normlzdDefaultBiasesApproxNonlin = \
@@ -417,7 +417,7 @@ def fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
 
     # dnormlzd_dpj_dpk = ( dp_j * dp_k ) for each interaction term
     dnormlzd_dpj_dpk = calc_dnormlzd_dpj_dpk(dnormlzdParams, interactIdxs)
-    interactTerms = interactDerivs @ dnormlzd_dpj_dpk
+    interactTerms = normlzdInteractDerivs @ dnormlzd_dpj_dpk
 
     normlzdDefaultBiasesApproxNonlin += interactTerms
 
@@ -444,30 +444,30 @@ def calc_dnormlzd_dpj_dpk(dnormlzdParams, interactIdxs):
     return dnormlzd_dpj_dpk
 
 def lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
-                normlzdDefaultBiasesCol, metricsWeights,
-                normlzdCurvMatrix, numMetrics,
-                interactDerivs = np.empty(0), interactIdxs = np.empty(0) ):
+                   normlzdDefaultBiasesCol, metricsWeights,
+                   normlzdCurvMatrix, numMetrics,
+                   normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0)):
     """Each regional component of loss function (including squares)"""
 
     weightedBiasDiffSqdCol = \
         np.square( (-normlzdDefaultBiasesCol
                     - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
-                             interactDerivs, interactIdxs )
+                             normlzdInteractDerivs, interactIdxs)
          ) * metricsWeights )
 
     return weightedBiasDiffSqdCol
 
 def lossFnc(dnormlzdParams, normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
             normlzdCurvMatrix, reglrCoef, numMetrics,
-            interactDerivs = np.empty(0), interactIdxs = np.empty(0) ):
+            normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0)):
     """Define objective function (a.k.a. loss function) that is to be minimized."""
 
     dnormlzdParams = np.atleast_2d(dnormlzdParams).T # convert from 1d row array to 2d column array
     weightedBiasDiffSqdCol = \
         lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
-                    normlzdDefaultBiasesCol, metricsWeights,
-                    normlzdCurvMatrix, numMetrics,
-                    interactDerivs, interactIdxs)
+                       normlzdDefaultBiasesCol, metricsWeights,
+                       normlzdCurvMatrix, numMetrics,
+                       normlzdInteractDerivs, interactIdxs)
     #weightedBiasDiffSqdCol = \
     #    np.square( (-normlzdDefaultBiasesCol \
     #     - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) \
@@ -488,7 +488,7 @@ def solveUsingNonlin(metricsNames,
                      defaultParamValsOrigRow,
                      normlzdSensMatrix, normlzdDefaultBiasesCol,
                      normlzdCurvMatrix,
-                     interactDerivs = np.empty(0), interactIdxs = np.empty(0),
+                     normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0),
                      reglrCoef = 0.0,
                      beVerbose = False):
     """Find optimal parameter values by minimizing quartic loss function"""
@@ -506,12 +506,12 @@ def solveUsingNonlin(metricsNames,
     #normlzdDefaultBiasesCol = defaultBiasesCol/np.abs(normMetricValsCol)
     #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=np.ones_like(np.transpose(defaultParamValsOrigRow)), \
     dnormlzdParamsSolnNonlin = (minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])),
-                                        #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=x0TwoYr, \
-                                        #dnormlzdParamsSolnNonlin = minimize(lossFnc,dnormlzdParamsSoln, \
-                                        args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-                               normlzdCurvMatrix, reglrCoef, numMetrics, interactDerivs, interactIdxs),
-                                        method='Powell', tol=1e-12
-                                        ))
+                                         #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=x0TwoYr, \
+                                         #dnormlzdParamsSolnNonlin = minimize(lossFnc,dnormlzdParamsSoln, \
+                                         args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
+                                               normlzdCurvMatrix, reglrCoef, numMetrics, normlzdInteractDerivs, interactIdxs),
+                                         method='Powell', tol=1e-12
+                                         ))
                                 #,)
                                 #        bounds=Bounds(lb=lowerBoundsCol))
     dnormlzdParamsSolnNonlin = np.atleast_2d(dnormlzdParamsSolnNonlin.x).T
@@ -527,14 +527,14 @@ def solveUsingNonlin(metricsNames,
 
     normlzdWeightedDefaultBiasesApproxNonlin = \
              fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
-                    interactDerivs, interactIdxs ) \
+                    normlzdInteractDerivs, interactIdxs) \
              * metricsWeights
 
     ### WHAT IS THIS METRIC USED FOR???
     scale = 2
     normlzdWeightedDefaultBiasesApproxNonlin2x = \
-             fwdFnc(scale*dnormlzdParamsSolnNonlin, normlzdSensMatrix, 1*normlzdCurvMatrix, numMetrics,
-                    interactDerivs, interactIdxs) \
+             fwdFnc(scale * dnormlzdParamsSolnNonlin, normlzdSensMatrix, 1 * normlzdCurvMatrix, numMetrics,
+                    normlzdInteractDerivs, interactIdxs) \
              * metricsWeights
 
     # Relationship between QuadTune variable names and math symbols:
@@ -559,13 +559,13 @@ def solveUsingNonlin(metricsNames,
 
     # To provide error bars, calculate solution with no nonlinear term and double the nonlinear term
     defaultBiasesApproxNonlinNoCurv = \
-             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 0*normlzdCurvMatrix, numMetrics,
-                    interactDerivs, interactIdxs ) \
+             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 0 * normlzdCurvMatrix, numMetrics,
+                    normlzdInteractDerivs, interactIdxs) \
              * np.abs(normMetricValsCol)
 
     defaultBiasesApproxNonlin2xCurv = \
-             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 2*normlzdCurvMatrix, numMetrics,
-                    interactDerivs, interactIdxs) \
+             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 2 * normlzdCurvMatrix, numMetrics,
+                    normlzdInteractDerivs, interactIdxs) \
              * np.abs(normMetricValsCol)
 
 

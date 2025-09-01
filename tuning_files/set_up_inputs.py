@@ -405,11 +405,11 @@ def calcInteractDerivs(interactIdxs,
 
     from quadtune_driver import fwdFncNoInteract
 
-    interactDerivs = np.zeros(( numMetrics, len(interactIdxs) ))
+    normlzdInteractDerivs = np.zeros(( numMetrics, len(interactIdxs) ))
     for idxTerm, idxTuple in np.ndenumerate(interactIdxs):
 
         # Set up a column vector of metric values from the default simulation
-        interactDerivs[:,idxTerm] = \
+        normlzdInteractDerivs[:,idxTerm] = \
             (
               normlzdInteractBiasesCols[:,idxTerm]
             - fwdFncNoInteract(np.atleast_1d( dnormlzdParamsInteract[idxTerm][0] ),
@@ -422,7 +422,7 @@ def calcInteractDerivs(interactIdxs,
                               numMetrics).reshape(-1,1)
             ) / ( dnormlzdParamsInteract[idxTerm][0] * dnormlzdParamsInteract[idxTerm][1] )
 
-    return interactDerivs
+    return normlzdInteractDerivs
 
 def createInteractIdxs(interactParamsNamesAndFilenames, paramsNames):
 
@@ -561,7 +561,7 @@ def checkInteractDerivs(normlzdInteractBiasesCols,
                         numParams,
                         normlzdSensMatrix, normlzdCurvMatrix,
                         numMetrics,
-                        interactDerivs, interactIdxs):
+                        normlzdInteractDerivs, interactIdxs):
 
     from quadtune_driver import fwdFnc
 
@@ -574,7 +574,7 @@ def checkInteractDerivs(normlzdInteractBiasesCols,
 
         fwdFncInteractCol = \
             fwdFnc(dnormlzdTwoParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
-                   interactDerivs, interactIdxs)
+                   normlzdInteractDerivs, interactIdxs)
 
         if not np.allclose(normlzdInteractBiasesCols[:,idxTerm], fwdFncInteractCol):
             print(f"\nnormlzdInteractBiasesCols[:,{idxTerm}] =")
@@ -582,49 +582,70 @@ def checkInteractDerivs(normlzdInteractBiasesCols,
             print("\nfwdFncInteractCol =")
             print(fwdFncInteractCol.T)
             print(f"\nidxTerm = {idxTerm}")
-            sys.exit("Error: interactDerivs is not consistent with interactBiases.")
+            sys.exit("Error: normlzdInteractDerivs is not consistent with interactBiases.")
 
     return
 
 def printInteractDiagnostics(interactIdxs,
-                       interactDerivs,
-                       dnormlzdParamsSolnNonlin,
-                       normlzdCurvMatrix, normlzdSensMatrix,
-                       paramsNames, numMetrics):
+                             normlzdInteractDerivs,
+                             dnormlzdParamsSolnNonlin,
+                             normlzdCurvMatrix, normlzdSensMatrix,
+                             paramsNames, numMetrics):
 
     from quadtune_driver import calc_dnormlzd_dpj_dpk
 
     dnormlzd_dpj_dpk = calc_dnormlzd_dpj_dpk(dnormlzdParamsSolnNonlin, interactIdxs)
 
-    print( "dnormlzd_dpj_dpk = ", dnormlzd_dpj_dpk )
+    #print( "dnormlzd_dpj_dpk = ", dnormlzd_dpj_dpk )
 
-    interactTermsMatrix = interactDerivs * ( np.ones((numMetrics,1)) * dnormlzd_dpj_dpk.T )
+    interactTermsMatrix = normlzdInteractDerivs * (np.ones((numMetrics, 1)) * dnormlzd_dpj_dpk.T)
 
-    print( "paramsNames = ", paramsNames )
-    print( "interactIdxs = ", interactIdxs )
+    #print( "paramsNames = ", paramsNames )
+    #print( "interactIdxs = ", interactIdxs )
 
-    interactDerivRatiosCols = np.zeros(( numMetrics, len(interactIdxs) ))
+    interactTable = np.zeros(( numMetrics, 6, len(interactIdxs) ))
     for idxTerm, jkTuple in np.ndenumerate(interactIdxs):
 
-        normlzdCurvJ = normlzdCurvMatrix[ : , [jkTuple[0]] ]
-        normlzdCurvK = normlzdCurvMatrix[ : , [jkTuple[1]] ]
+        normlzdInteractDerivTerm = normlzdInteractDerivs[:, idxTerm] * dnormlzd_dpj_dpk[idxTerm, 0]
 
-        interactDerivRatiosCols[:,idxTerm] = \
-            interactDerivs[:, idxTerm] / np.sqrt( np.abs ( normlzdCurvJ * normlzdCurvK ) )
+        normlzdCurvJTerm = \
+            0.5 * normlzdCurvMatrix[ : , [jkTuple[0]] ] * np.square( dnormlzdParamsSolnNonlin[jkTuple[0]] )
+        normlzdCurvKTerm = \
+            0.5 * normlzdCurvMatrix[ : , [jkTuple[1]] ] * np.square( dnormlzdParamsSolnNonlin[jkTuple[1]] )
+
+        normlzdSensJTerm = \
+            normlzdSensMatrix[ : , [jkTuple[0]] ] * dnormlzdParamsSolnNonlin[ [jkTuple[0]] ]
+        normlzdSensKTerm = \
+            normlzdSensMatrix[ : , [jkTuple[1]] ] * dnormlzdParamsSolnNonlin[ [jkTuple[1]] ]
+
+        sumNoInteractTerm = normlzdCurvJTerm + normlzdCurvKTerm + normlzdSensJTerm + normlzdSensKTerm
+        normlzdInteractDerivRatio = normlzdInteractDerivTerm / sumNoInteractTerm
+
+        intermediateResult = np.hstack((normlzdInteractDerivRatio, normlzdInteractDerivTerm,
+                   normlzdSensJTerm, normlzdSensKTerm, normlzdCurvJTerm, normlzdCurvKTerm))
+
+        interactTable[:, :, idxTerm] = intermediateResult[:, :, np.newaxis]
+
+        print("")
+
+        #interactDerivRatiosCols[:,idxTerm] = \
+        #    normlzdInteractDerivs[:, idxTerm] / np.sqrt(np.abs (normlzdCurvJ * normlzdCurvK))
 
 
-    interactDerivRatios = np.std( interactDerivRatiosCols, axis=0 )
+    print("")
 
-    print( "interactDerivRatios = ", interactDerivRatios )
+    #interactDerivRatios = np.std( interactDerivRatiosCols, axis=0 )
 
-    normlzdCurvTermsMatrix = np.zeros((numMetrics, len(paramsNames)))
-    normlzdSensTermsMatrix = np.zeros((numMetrics, len(paramsNames)))
-    for paramIdx in np.arange(len(paramsNames)):
+    #print( "interactDerivRatios = ", interactDerivRatios )
 
-        normlzdCurvTermsMatrix[:,paramIdx] = \
-            0.5 * normlzdCurvMatrix[:,paramIdx] * np.square( dnormlzdParamsSolnNonlin[paramIdx] )
+    #normlzdCurvTermsMatrix = np.zeros((numMetrics, len(paramsNames)))
+    #normlzdSensTermsMatrix = np.zeros((numMetrics, len(paramsNames)))
+    #for paramIdx in np.arange(len(paramsNames)):
 
-        normlzdSensTermsMatrix[:,paramIdx] = \
-            normlzdSensMatrix[:,paramIdx] * dnormlzdParamsSolnNonlin[paramIdx]
+    #    normlzdCurvTermsMatrix[:,paramIdx] = \
+    #        0.5 * normlzdCurvMatrix[:,paramIdx] * np.square( dnormlzdParamsSolnNonlin[paramIdx] )
+
+    #    normlzdSensTermsMatrix[:,paramIdx] = \
+    #        normlzdSensMatrix[:,paramIdx] * dnormlzdParamsSolnNonlin[paramIdx]
 
     return
