@@ -25,7 +25,7 @@ def setUpColAndRowVectors(metricsNames, metricsNorms,
                           paramsNames, transformedParamsNames,
                           prescribedParamsNames, prescribedParamValsRow,
                           prescribedTransformedParamsNames,
-                          sensNcFilenames,
+                          sensNcFilenames, sensNcFilenamesExt,
                           defaultNcFilename
                           ):
     """
@@ -61,7 +61,13 @@ def setUpColAndRowVectors(metricsNames, metricsNorms,
                               defaultParamValsRow,
                               sensNcFilenames)
 
-# TODO: SHOULD I CALL THIS FOR sensNcFilenamesExt?  OTHERWISE THE RESULT DEPENDS ON WHICH
+    sensParamValsRowExt, sensParamValsOrigRowExt, magParamValsRowExt = \
+        setupSensParamVectors(paramsNames, transformedParamsNames,
+                              numParams,
+                              defaultParamValsRow,
+                              sensNcFilenamesExt)
+
+# TODO: SHOULD I GENERALIZE magParamVals FOR EXT? OTHERWISE THE RESULT DEPENDS ON WHICH
 # PARAMETERS ARE STORED IN WHICH sens FILE.
 
     dnormlzdSensParams = ( sensParamValsRow - defaultParamValsRow ) \
@@ -115,6 +121,7 @@ def setUpColAndRowVectors(metricsNames, metricsNorms,
     return ( obsMetricValsCol, normMetricValsCol,
              defaultBiasesCol,
              defaultParamValsOrigRow,
+             sensParamValsRow, sensParamValsRowExt,
              dnormlzdSensParams,
              magParamValsRow,
              dnormlzdPrescribedParams,
@@ -255,8 +262,9 @@ def setupSensParamVectors(paramsNames, transformedParamsNames,
                           sensNcFilenames):
 
     """
-    Input: Filename containing a set of sensitivity simulations for metrics and parameters.
-    Output: Row vector of parameter values from that set of sensitivity simulations.
+    Input: Filenames of a set of sensitivity simulations for metrics and parameters.
+    Output: Row vector of perturbed parameter values from that set of sensitivity simulations.
+            Each parameter in row vector is the perturbed one from the appropriate sensitivity simulation.
     """
 
     # Create row vector size numParams containing
@@ -433,7 +441,7 @@ def readDnormlzdParamsInteract(interactParamsNamesAndFilenames, interactIdxs,
                                defaultParamValsRow, magParamValsRow,
                                paramsNames, transformedParamsNames, numParams):
     '''
-    :return: dnormlzdParamsInteract = [ (dp_j, dp_k) , ( , ), . . . ] from interact runs.
+    :return: dnormlzdParamsInteract = [ (dp_j, dp_k) , ( , ), . . . ] values from interact runs.
     '''
 
     # Define a numpy structured dtype to hold jk indices of each interaction term
@@ -465,6 +473,13 @@ def readDnormlzdParamsInteract(interactParamsNamesAndFilenames, interactIdxs,
                 / magParamValsRow[ 0, interactIdxs[idx][1] ]
               )
 
+        if np.any(np.isclose( normlzdParamsInteract , normlzdDefaultParamsInteract )):
+            print("\nnormlzdParamsInteract =")
+            print(normlzdParamsInteract)
+            print("\nnormlzdDefaultParamsInteract =")
+            print(normlzdDefaultParamsInteract)
+            sys.exit("Error: An interacting parameter equals the default value.")
+
         dnormlzdParamsInteract[idx] = \
             tuple(
                 np.subtract(normlzdParamsInteract , normlzdDefaultParamsInteract)
@@ -495,6 +510,51 @@ def calcNormlzdInteractBiasesCols(defaultMetricValsCol, normMetricValsCol,
                                      / np.abs(normMetricValsCol)
 
     return normlzdInteractBiasesCols
+
+def checkInteractParamVals(
+        interactIdxs, interactParamsNamesAndFilenames,
+        sensParamValsRow, sensParamValsRowExt,
+        defaultParamValsOrigRow,
+        paramsNames, transformedParamsNames,
+        numParams
+):
+
+    for interactIdx, nameTuple in np.ndenumerate(interactParamsNamesAndFilenames):
+
+        interactParamValsRow, interactParamValsOrigRow = \
+            setupDefaultParamVectors(paramsNames, transformedParamsNames,
+                                     numParams,
+                                     nameTuple[2])
+
+        #print(f"\ninteractParamValsRow[0,:] = {interactParamValsRow[0, :]}")
+        #print(f"\nsensParamValsRow[0,:] = {sensParamValsRow[0, :]}")
+        #print(f"\nsensParamValsRowExt[0,:] = {sensParamValsRowExt[0, :]}")
+        #print(f"\ndefaultParamValsOrigRow[0,:] = {defaultParamValsOrigRow[0, :]}")
+
+        for paramIdx, paramName in np.ndenumerate(paramsNames):
+
+            if paramIdx in interactIdxs[interactIdx]:
+
+                if ( not np.isclose (interactParamValsRow[0,paramIdx], sensParamValsRow[0,paramIdx] ) and
+                     not np.isclose( interactParamValsRow[0,paramIdx], sensParamValsRowExt[0,paramIdx] ) ):
+
+                    print(f"\ninteractParamValsRow[0,:] = {interactParamValsRow[0,:]}")
+                    print(f"\nsensParamValsRow[0,:] = {sensParamValsRow[0,:]}")
+                    print(f"\nsensParamValsRowExt[0,:] = {sensParamValsRowExt[0, :]}")
+
+                    sys.exit("Error: Interaction parameter value does not equal either of the sensitivity values.")
+
+            else:
+
+                if ( not np.isclose (interactParamValsRow[0,paramIdx], defaultParamValsOrigRow[0,paramIdx] ) ):
+
+                    print(f"\ninteractParamValsRow[0,:] = {interactParamValsRow[0,:]}")
+                    print(f"\ndefaultParamValsOrigRow[0,:] = {defaultParamValsOrigRow[0,:]}")
+
+                    sys.exit("Error: Interaction parameter value does not equal default value.")
+
+
+    return
 
 def checkInteractDerivs(normlzdInteractBiasesCols,
                         dnormlzdParamsInteract,

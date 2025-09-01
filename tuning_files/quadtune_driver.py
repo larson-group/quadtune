@@ -31,6 +31,7 @@ def main():
                calcNormlzdInteractBiasesCols, \
                readDnormlzdParamsInteract, \
                calcInteractDerivs, \
+               checkInteractParamVals, \
                printInteractDiagnostics, \
                checkInteractDerivs
 
@@ -76,6 +77,7 @@ def main():
     obsMetricValsCol, normMetricValsCol, \
     defaultBiasesCol, \
     defaultParamValsOrigRow, \
+    sensParamValsRow, sensParamValsRowExt, \
     dnormlzdSensParams, \
     magParamValsRow, \
     dnormlzdPrescribedParams, \
@@ -85,7 +87,7 @@ def main():
                             paramsNames, transformedParamsNames,
                             prescribedParamsNames, prescribedParamValsRow,
                             prescribedTransformedParamsNames,
-                            sensNcFilenames,
+                            sensNcFilenames, sensNcFilenamesExt,
                             defaultNcFilename
                             )
 
@@ -104,6 +106,13 @@ def main():
 
     # interactIdxs = array of numInteractTerms (j,k) tuples of parameter indices of interaction terms
     interactIdxs = createInteractIdxs(interactParamsNamesAndFilenames, paramsNames)
+
+    checkInteractParamVals(
+        interactIdxs, interactParamsNamesAndFilenames,
+        sensParamValsRow, sensParamValsRowExt,
+        defaultParamValsOrigRow,
+        paramsNames, transformedParamsNames,
+        len(paramsNames))
 
     defaultMetricValsCol = obsMetricValsCol+defaultBiasesCol
 
