@@ -246,12 +246,12 @@ def setUpConfig(beVerbose):
         keysVarPrefix = [key for key in obsWeightsDict.keys() if varPrefix in key]
         # obsWeightsNames = np.array(list(obsWeightsDict.keys()), dtype=str)
         obsWeightsNames = np.array(keysVarPrefix, dtype=str)
-        obsWeightsUnnormlzd = setUpObsCol(obsWeightsDict, obsWeightsNames)
+        obsWeightsUnnormlzd = setUpObsCol(obsWeightsDict, obsWeightsNames, 0, 0, False)
         obsWeights = obsWeightsUnnormlzd / np.sum(obsWeightsUnnormlzd)
         # metricsWeights = obsWeights
         # obsWeights = np.vstack([obsWeights] * len(varPrefixes))
         metricsNamesVarPrefix = [key for key in obsMetricValsDict.keys() if varPrefix in key]
-        obsMetricValsColVarPrefix = setUpObsCol(obsMetricValsDict, metricsNamesVarPrefix)
+        obsMetricValsColVarPrefix = setUpObsCol(obsMetricValsDict, metricsNamesVarPrefix, 0, 0, False)
         obsGlobalStdObsWeights[idx] = np.std(obsMetricValsColVarPrefix)
         obsGlobalAvgObsWeights[idx] = np.dot(obsWeights.T, obsMetricValsColVarPrefix)
         # For sea-level pressure, the global avg is too large to serve as a representative normalization

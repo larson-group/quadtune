@@ -49,6 +49,7 @@ def main():
      highlightedMetricsToPlot, createPlotType,
      metricsWeights, metricsNorms,
      obsMetricValsDict,
+     obsOffsetCol, obsGlobalAvgCol, doObsOffset,
      paramsNames, paramsScales,
      transformedParamsNames,
      prescribedParamsNames, prescribedParamsScales,
@@ -84,8 +85,8 @@ def main():
     magPrescribedParamValsRow, \
     = setUpColAndRowVectors(metricsNames, metricsNorms,
                             obsMetricValsDict,
-                            paramsNames, transformedParamsNames,
-                            prescribedParamsNames, prescribedParamValsRow,
+                            obsOffsetCol, obsGlobalAvgCol, doObsOffset,
+                            paramsNames, transformedParamsNames, prescribedParamsNames, prescribedParamValsRow,
                             prescribedTransformedParamsNames,
                             sensNcFilenames, sensNcFilenamesExt,
                             defaultNcFilename
