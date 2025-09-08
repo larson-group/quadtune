@@ -72,6 +72,7 @@ def setUpColAndRowVectors(metricsNames, metricsNorms,
 # TODO: SHOULD I GENERALIZE magParamVals FOR EXT? OTHERWISE THE RESULT DEPENDS ON WHICH
 # PARAMETERS ARE STORED IN WHICH sens FILE.
 
+    # dnormlzdSensParams = Normalized dp values from one of the sensitivity files
     dnormlzdSensParams = ( sensParamValsRow - defaultParamValsRow ) \
                                 / magParamValsRow
 
@@ -607,6 +608,11 @@ def checkInteractDerivs(normlzdInteractBiasesCols,
                         normlzdSensMatrix, normlzdCurvMatrix,
                         numMetrics,
                         normlzdInteractDerivs, interactIdxs):
+    '''
+    This function checks whether normlzdInteractDerivs has been calculated
+    correctly by doing a forward calculation with the parameter values in the
+    sensitivity files.
+    '''
 
     from quadtune_driver import fwdFnc
 

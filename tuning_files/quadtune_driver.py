@@ -96,7 +96,8 @@ def main():
     #     The derivatives are normalized by observed metric values and max param values.
     # Also construct a linear sensitivity matrix, dmetrics/dparams.
     normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix, \
-    normlzdOrdDparamsMin, normlzdOrdDparamsMax = \
+    normlzdOrdDparamsMin, normlzdOrdDparamsMax, \
+    normlzd_pMid, normlzdLeftSensMatrix, normlzdRightSensMatrix = \
         constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParamsNames,
                                    normMetricValsCol, magParamValsRow,
                                    sensNcFilenames, sensNcFilenamesExt, defaultNcFilename)
@@ -147,7 +148,8 @@ def main():
     # For prescribed parameters, construct numMetrics x numParams matrix of second derivatives, d2metrics/dparams2.
     # The derivatives are normalized by observed metric values and max param values.
     normlzdPrescribedCurvMatrix, normlzdPrescribedSensMatrixPoly, normlzdPrescribedConstMatrix, \
-    normlzdPrescribedOrdDparamsMin, normlzdPrescribedOrdDparamsMax = \
+    normlzdPrescribedOrdDparamsMin, normlzdPrescribedOrdDparamsMax, \
+    normlzd_pMidPrescribed, normlzdPrescribedLeftSensMatrix, normlzdPrescribedRightSensMatrix = \
         constructNormlzdSensCurvMatrices(metricsNames, prescribedParamsNames, prescribedTransformedParamsNames,
                                    normMetricValsCol, magPrescribedParamValsRow,
                                    prescribedSensNcFilenames, prescribedSensNcFilenamesExt, defaultNcFilename)
@@ -200,7 +202,8 @@ def main():
         #     The derivatives are normalized by observed metric values and max param values.
         # Also construct a linear sensitivity matrix, dmetrics/dparams.
         normlzdCurvMatrixSST4K, normlzdSensMatrixPolySST4K, normlzdConstMatrixSST4K, \
-            normlzdOrdDparamsMinSST4K, normlzdOrdDparamsMaxSST4K = \
+        normlzdOrdDparamsMinSST4K, normlzdOrdDparamsMaxSST4K, \
+        normlzd_pMidSST4K, normlzdLeftSensMatrixSST4K, normlzdRightSensMatrixSST4K = \
             constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParamsNames,
                                              normMetricValsCol, magParamValsRow,
                                              sensSST4KNcFilenames, sensSST4KNcFilenamesExt, defaultSST4KNcFilename)
@@ -400,6 +403,20 @@ def normlzdSemiLinMatrixFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix
         + 0.5 * normlzdCurvMatrix * ( np.ones((numMetrics,1)) @ dnormlzdParams.T ).reshape(numMetrics,len(dnormlzdParams))
 
     return normlzdSemiLinMatrix
+
+def normlzdPiecewiseLinMatrixFnc(dnormlzdParams, normlzd_pMid, normlzdDefaultParamValsRow,
+                                 normlzdLeftSensMatrix, normlzdRightSensMatrix):
+    """Calculate piecewise-linear matrix for use in forward solution"""
+
+    normlzdPiecewiseLinMatrix = np.zeros_like(normlzdLeftSensMatrix)
+
+    for col in np.arange(len(normlzdDefaultParamValsRow)):
+        if ( dnormlzdParams >= ( normlzd_pMid - normlzdDefaultParamValsRow ) ):
+            normlzdPiecewiseLinMatrix[:,col] = normlzdRightSensMatrix[:,col]
+        else:
+            normlzdPiecewiseLinMatrix[:, col] = normlzdLeftSensMatrix[:, col]
+
+    return normlzdPiecewiseLinMatrix
 
 def fwdFncNoInteract(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics):
     """Calculate forward nonlinear solution, normalized but not weighted"""
@@ -666,6 +683,7 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
     #pdb.set_trace()
 
     # Compute quadratic coefficients using a polynomial fit to metric and parameters
+    # normlzdOrdMetrics and normlzdOrdParams are length-3 python lists
     for arrayCol in np.arange(numParams):
         for arrayRow in np.arange(numMetrics):
 
@@ -752,8 +770,94 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
             normlzdSensMatrixPoly[arrayRow,arrayCol] = polyCoefs[1]
             normlzdConstMatrixPoly[arrayRow,arrayCol] = polyCoefs[2]
 
+    # Read in information for piecewise linear forward function
+
+    # Value of parameter between the high and low parameter values
+    #     (usually, but not always, the default value)
+    normlzd_pMid = np.zeros_like(defaultParamValsRow)
+    # Sensitivity (slope) of metrics to the left of normlzd_pMid
+    normlzdLeftSensMatrix = np.zeros_like(sens1MetricValsMatrix)
+    # Sensitivity (slope) of metrics to the left of normlzd_pMid
+    normlzdRightSensMatrix = np.zeros_like(sens1MetricValsMatrix)
+
+
+    for arrayCol in np.arange(numParams):
+
+        # normlzd_pMid, LeftSens, and RightSens depend on relative values of parameters
+        if normlzdSens1ParamValsRow[0,arrayCol] < normlzdDefaultParamValsRow[0,arrayCol] < normlzdSens2ParamValsRow[0,arrayCol]:
+
+            normlzd_pMid[0,arrayCol] = normlzdDefaultParamValsRow[0,arrayCol]
+            normlzdLeftSensMatrix[arrayCol,:] = \
+                ( normlzdDefaultMetricValsMatrix[arrayCol,:] - normlzdSens1MetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdDefaultParamValsRow[0,arrayCol] - normlzdSens1ParamValsRow[0,arrayCol] )
+            normlzdRightSensMatrix[arrayCol,:] = \
+                ( normlzdSens2MetricValsMatrix[arrayCol,:] - normlzdDefaultMetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdSens2ParamValsRow[0,arrayCol] - normlzdDefaultParamValsRow[0,arrayCol] )
+
+        elif normlzdSens2ParamValsRow[0,arrayCol] < normlzdDefaultParamValsRow[0,arrayCol] < normlzdSens1ParamValsRow[0,arrayCol]:
+
+            normlzd_pMid[0,arrayCol] = normlzdDefaultParamValsRow[0,arrayCol]
+            normlzdLeftSensMatrix[arrayCol,:] = \
+                ( normlzdDefaultMetricValsMatrix[arrayCol,:] - normlzdSens2MetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdDefaultParamValsRow[0,arrayCol] - normlzdSens2ParamValsRow[0,arrayCol] )
+            normlzdRightSensMatrix[arrayCol,:] = \
+                ( normlzdSens1MetricValsMatrix[arrayCol,:] - normlzdDefaultMetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdSens1ParamValsRow[0,arrayCol] - normlzdDefaultParamValsRow[0,arrayCol] )
+
+        elif normlzdDefaultParamValsRow[0,arrayCol] < normlzdSens1ParamValsRow[0,arrayCol] < normlzdSens2ParamValsRow[0,arrayCol]:
+
+            normlzd_pMid[0,arrayCol] = normlzdSens1ParamValsRow[0,arrayCol]
+            normlzdLeftSensMatrix[arrayCol,:] = \
+                ( normlzdSens1MetricValsMatrix[arrayCol,:] - normlzdDefaultMetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdSens1ParamValsRow[0,arrayCol] - normlzdDefaultParamValsRow[0,arrayCol] )
+            normlzdRightSensMatrix[arrayCol,:] = \
+                ( normlzdSens2MetricValsMatrix[arrayCol,:] - normlzdSens1MetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdSens2ParamValsRow[0,arrayCol] - normlzdSens1ParamValsRow[0,arrayCol] )
+
+        elif normlzdDefaultParamValsRow[0,arrayCol] < normlzdSens2ParamValsRow[0,arrayCol] < normlzdSens1ParamValsRow[0,arrayCol]:
+
+            normlzd_pMid[0,arrayCol] = normlzdSens2ParamValsRow[0,arrayCol]
+            normlzdLeftSensMatrix[arrayCol,:] = \
+                ( normlzdSens2MetricValsMatrix[arrayCol,:] - normlzdDefaultMetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdSens2ParamValsRow[0,arrayCol] - normlzdDefaultParamValsRow[0,arrayCol] )
+            normlzdRightSensMatrix[arrayCol,:] = \
+                ( normlzdSens1MetricValsMatrix[arrayCol,:] - normlzdSens2MetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdSens1ParamValsRow[0,arrayCol] - normlzdSens2ParamValsRow[0,arrayCol] )
+
+        elif normlzdSens1ParamValsRow[0,arrayCol] < normlzdSens2ParamValsRow[0,arrayCol] < normlzdDefaultParamValsRow[0,arrayCol]:
+
+            normlzd_pMid[0,arrayCol] = normlzdSens2ParamValsRow[0,arrayCol]
+            normlzdLeftSensMatrix[arrayCol,:] = \
+                ( normlzdSens2MetricValsMatrix[arrayCol,:] - normlzdSens1MetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdSens2ParamValsRow[0,arrayCol] - normlzdSens1ParamValsRow[0,arrayCol] )
+            normlzdRightSensMatrix[arrayCol,:] = \
+                ( normlzdDefaultMetricValsMatrix[arrayCol,:] - normlzdSens2MetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdDefaultParamValsRow[0,arrayCol] - normlzdSens2ParamValsRow[0,arrayCol] )
+
+        elif normlzdSens2ParamValsRow[0,arrayCol] < normlzdSens1ParamValsRow[0,arrayCol] < normlzdDefaultParamValsRow[0,arrayCol]:
+
+            normlzd_pMid[0,arrayCol] = normlzdSens1ParamValsRow[0,arrayCol]
+            normlzdLeftSensMatrix[arrayCol,:] = \
+                ( normlzdSens1MetricValsMatrix[arrayCol,:] - normlzdSens2MetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdSens1ParamValsRow[0,arrayCol] - normlzdSens2ParamValsRow[0,arrayCol] )
+            normlzdRightSensMatrix[arrayCol,:] = \
+                ( normlzdDefaultMetricValsMatrix[arrayCol,:] - normlzdSens1MetricValsMatrix[arrayCol,:] ) \
+                / ( normlzdDefaultParamValsRow[0,arrayCol] - normlzdSens1ParamValsRow[0,arrayCol] )
+
+        else:
+            print("Error: Sensitivity parameter values are equal to each other or the default value in constructNormlzdSensCurvMatrices.")
+            print( "normlzdSens1ParamValsRow=   ",
+                  np.array2string(normlzdSens1ParamValsRow, formatter={'float_kind': lambda x: f"{x:12.8f}"}) )
+            print( "normlzdSens2ParamValsRow=   ",
+                  np.array2string(normlzdSens2ParamValsRow, formatter={'float_kind': lambda x: f"{x:12.8f}"}) )
+            print( "normlzdDefaultParamValsRow= ",
+                  np.array2string(normlzdDefaultParamValsRow, formatter={'float_kind': lambda x: f"{x:12.8f}"}) )
+            quit()
+
+
     return ( normlzdCurvMatrixPoly, normlzdSensMatrixPoly, normlzdConstMatrixPoly,
-             normlzdOrdDparamsMin, normlzdOrdDparamsMax )
+             normlzdOrdDparamsMin, normlzdOrdDparamsMax,
+             normlzd_pMid, normlzdLeftSensMatrix, normlzdRightSensMatrix)
 
 
 def approxMatrixWithSvd( matrix , sValsRatio, sValsNumToKeep,
