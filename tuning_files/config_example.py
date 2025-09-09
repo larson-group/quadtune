@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 
-def setUpConfig(beVerbose):
+def setUpConfig(beVerbose,datapath='ANN/20.0beta06_',obspath='Regional_files/20250711_2yr_20x20_ANN_BCASE/'):
     from set_up_inputs import (
         setUp_x_MetricsList,
         setUpDefaultMetricValsCol, setUp_x_ObsMetricValsDict,
@@ -32,26 +32,26 @@ def setUpConfig(beVerbose):
     reglrCoef = 0.0
 
     # Use these flags to determine whether or not to create specific plots
-    #    in create_nonbootstrap_figs.py
+    # in create_nonbootstrap_figs.py
     createPlotType = {
-        'paramsErrorBarsFig': True,               # Parameter values with error bars
-        'biasesOrderedArrowFig': False,            # Predicted vs. actual global-model bias removal
-        'threeDotFig': True,                       # Quadratic fnc for each metric and parameter
-        'metricsBarChart': True,                   # Visualization of tuning matrix eqn
-        'paramsIncrsBarChart': True,               # Mean parameter contributions to removal of biases
-        'paramsAbsIncrsBarChart': True,            # Squared parameter contributions to bias removal
-        'paramsTotContrbBarChart': False,          # Linear + nonlinear contributions to bias removal
-        'biasesVsDiagnosticScatterplot': False,    # Scatterplot of biases vs. other fields
-        'dpMin2PtFig': False,                      # Min param perturbation needed to simultaneously remove 2 biases
-        'dpMinMatrixScatterFig': False,            # Scatterplot of min param perturbation for 2-bias removal
-        'projectionMatrixFigs': False,             # Color-coded projection matrix
-        'biasesVsSensMagScatterplot': True,        # Biases vs. parameter sensitivities
-        'biasesVsSvdScatterplot': False,           # Left SV1*bias vs. left SV2*bias
-        'paramsCorrArrayFig': True,                # Color-coded matrix showing correlations among parameters
-        'sensMatrixAndBiasVecFig': False,          # Color-coded matrix equation
-        'PcaBiplot': False,                        # Principal components biplot
-        'PcSensMap': True,                         # Maps showing sensitivities to parameters and left singular vectors
-        'vhMatrixFig': True,                       # Color-coded matrix of right singular vectors
+        'paramsErrorBarsFig'            : True,     # Parameter values with error bars
+        'biasesOrderedArrowFig'         : False,    # Predicted vs. actual global-model bias removal
+        'threeDotFig'                   : True,     # Quadratic fnc for each metric and parameter
+        'metricsBarChart'               : True,     # Visualization of tuning matrix eqn
+        'paramsIncrsBarChart'           : True,     # Mean parameter contributions to removal of biases
+        'paramsAbsIncrsBarChart'        : True,     # Squared parameter contributions to bias removal
+        'paramsTotContrbBarChart'       : False,    # Linear + nonlinear contributions to bias removal
+        'biasesVsDiagnosticScatterplot' : False,    # Scatterplot of biases vs. other fields
+        'dpMin2PtFig'                   : False,    # Min param perturbation needed to simultaneously remove 2 biases
+        'dpMinMatrixScatterFig'         : False,    # Scatterplot of min param perturbation for 2-bias removal
+        'projectionMatrixFigs'          : False,    # Color-coded projection matrix
+        'biasesVsSensMagScatterplot'    : True,     # Biases vs. parameter sensitivities
+        'biasesVsSvdScatterplot'        : False,    # Left SV1*bias vs. left SV2*bias
+        'paramsCorrArrayFig'            : True,     # Color-coded matrix showing correlations among parameters
+        'sensMatrixAndBiasVecFig'       : False,    # Color-coded matrix equation
+        'PcaBiplot'                     : False,    # Principal components biplot
+        'PcSensMap'                     : True,     # Maps showing sensitivities to parameters and left singular vectors
+        'vhMatrixFig'                   : True,     # Color-coded matrix of right singular vectors
     }
 
     #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
@@ -89,9 +89,12 @@ def setUpConfig(beVerbose):
     #                                     ])
     #highlightedMetricsToPlot = np.array(['O500_5_5', 'O500_4_8',
     #                                     'O500_5_14', ])
+    
+    folder_name = datapath
 
     # Directory where the regional files are stored (plus possibly a filename prefix)
-    folder_name = 'Regional_files/20250725_2yr_20x20_ANN_BCASE/20.0beta06_'
+    # folder_name = 'Regional_files/20250725_2yr_20x20_ANN_BCASE/20.0beta06_'
+    
     #folder_name = 'Regional_files/20241022_1yr_20x20regs/30.0sens1022_'
     #folder_name = 'Regional_files/20241022_1yr_sst4k_30x30/30p4k1022_'
     #folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
@@ -120,6 +123,7 @@ def setUpConfig(beVerbose):
     defaultNcFilename = \
         (
             folder_name + 'dflt_Regional.nc'
+            
             ###folder_name + '1_Regional.nc'
         )
 
@@ -487,9 +491,7 @@ def setUpConfig(beVerbose):
     # Read observed values of regional metrics on regular tiled grid into a Python dictionary
     (obsMetricValsDict, obsWeightsDict) = \
         (
-            setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',
-                                      obsPathAndFilename='Regional_files/20250711_2yr_20x20_ANN_BCASE/'
-                                                         + '20.0_OBS.nc')
+            setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',obsPathAndFilename=obspath + '20.0_OBS.nc')
             #setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',
             #                          obsPathAndFilename='Regional_files/20250429_1yr_20x20_ANN_CAM/'
             #                                             + '20.0sens1022_20241011_20.0_OBS.nc')
@@ -499,7 +501,7 @@ def setUpConfig(beVerbose):
         #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "20241011_20.0_OBS.nc")
         #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "20.0_OBS.nc")
         #setUp_x_ObsMetricValsDict(varPrefixes, "Regional_files/stephens_20240131/btune_regional_files/b1850.075plus_Regional.nc")
-        )
+            )
 
 #    # Add on RESTOM separately, since we typically want to prescribe its "observed" value
 #    if 'RESTOM' in varPrefixes:

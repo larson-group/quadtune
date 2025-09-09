@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 
-def setUpConfig(beVerbose):
+def setUpConfig(beVerbose,datapath="Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_",obspath="ANN/20.0beta06_20.0_OBS.nc"):
     from set_up_inputs import (
         setUp_x_MetricsList,
         setUpDefaultMetricValsCol, setUp_x_ObsMetricValsDict,
@@ -172,7 +172,7 @@ def setUpConfig(beVerbose):
     #                                     'O500_5_14', ])
 
     # Directory where the regional files are stored (plus possibly a filename prefix)
-    folder_name = 'Regional_files/20250613_2yr_20x20_ANN_CAM/20.0cam078_'
+    # folder_name = 'Regional_files/20250613_2yr_20x20_ANN_CAM/20.0cam078_'
     #folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
     #folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_take3/20.0sens1022_'
@@ -185,6 +185,7 @@ def setUpConfig(beVerbose):
     #folder_name = 'Regional_files/20240614_e3sm_20x20regs/thresp26_'
     #folder_name = 'Regional_files/20240409updated/thresp26_'
     #folder_name = 'Regional_files/stephens_20240131/btune_regional_files/btune_'
+    folder_name = datapath
 
     # Parameters are tunable model parameters, e.g. clubb_C8.
     # The float listed below after the parameter name is a factor that is used below for scaling plots.
@@ -526,10 +527,10 @@ def setUpConfig(beVerbose):
     # Read observed values of regional metrics on regular tiled grid into a Python dictionary
     (obsMetricValsDict, obsWeightsDict) = \
         (
-            setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',
-                                      obsPathAndFilename='Regional_files/20250429_1yr_20x20_ANN_CAM/' + '20.0sens1022_20241011_20.0_OBS.nc')
+            # setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',
+                                    #   obsPathAndFilename='Regional_files/20250429_1yr_20x20_ANN_CAM/' + '20.0sens1022_20241011_20.0_OBS.nc')
         #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "20241011_20.0_OBS.nc")
-        #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "20.0_OBS.nc")
+        setUp_x_ObsMetricValsDict(varPrefixes, '_[0-9]+_',folder_name + "20.0_OBS.nc")
         #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "30.0_OBS.nc")
         #setUp_x_ObsMetricValsDict(varPrefixes, "Regional_files/stephens_20240131/btune_regional_files/b1850.075plus_Regional.nc")
         )
@@ -592,9 +593,11 @@ def setUpConfig(beVerbose):
     # Observed values of our metrics, from, e.g., CERES-EBAF.
     # These observed metrics will be matched as closely as possible by analyzeSensMatrix.
     # NOTE: PRECT is in the unit of m/s
+
+
     (obsMetricValsDictCustom, obsWeightsDictCustom) = \
         (
-            setUp_x_ObsMetricValsDict(metricsNamesCustom, suffix="", obsPathAndFilename="Regional_files/20250429_1yr_20x20_ANN_CAM/" + "20.0sens1022_20241011_20.0_OBS.nc")
+            setUp_x_ObsMetricValsDict(metricsNamesCustom, suffix="", obsPathAndFilename=obspath)
         )
     if False:
         obsMetricValsDictCustom = {

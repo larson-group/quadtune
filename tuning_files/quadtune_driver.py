@@ -10,6 +10,7 @@ from scipy.optimize import minimize
 from scipy.optimize import Bounds
 from scipy.interpolate import UnivariateSpline
 from sklearn import linear_model
+import argparse
 
 import matplotlib.pyplot as plt
 
@@ -21,9 +22,31 @@ def main():
     create diagnostic plots.
     """
 
+    
+
+    #Read in CML arguments
+    CML_args = parse_arguments()
+
+    #Setup configuration and paths according to CMLargs
+    if CML_args.cam:
+        print("Using CAM configuration")
+        from config_example_cam import setUpConfig
+    elif CML_args.eam:
+        print("Using EAM configuration")
+        from config_example_eam import setUpConfig
+    else:
+        print("Using default configuration")
+        from config_example import setUpConfig
+
+    datapath = CML_args.data
+    obspath = CML_args.obs
+    if obspath is None:
+        obspath = datapath
+        print("No seperate path for observational data was specified. Using data path for observational data")
+
+
     #from config_default import setUpConfig
-    from config_example import setUpConfig
-    #from config_example_eam import setUpConfig
+    
     from set_up_inputs \
         import setUpColAndRowVectors, \
                setUpDefaultMetricValsCol, \
@@ -62,7 +85,7 @@ def main():
      interactParamsNamesAndFilenames,
      reglrCoef, doBootstrapSampling, numBootstrapSamples) \
     = \
-        setUpConfig(beVerbose=False)
+        setUpConfig(beVerbose=False,datapath=datapath,obspath=obspath) if (datapath is not None) else setUpConfig(beVerbose=False)
 
     # Number of regional metrics, including all of varPrefixes including the metrics we're not tuning, plus custom regions.
     numMetrics = len(metricsNames)
@@ -1031,7 +1054,18 @@ def findParamsUsingElastic(normlzdSensMatrix, normlzdWeightedSensMatrix,
     return (defaultBiasesApproxElastic, defaultBiasesApproxElasticNonlin,
             dnormlzdParamsSolnElastic, paramsSolnElastic)
 
+def parse_arguments():
+    """
+    Read in commandline arguments and parse them.
 
+    @return: Returns an Namespace containing all parsed arguments
+    """
+    parser = argparse.ArgumentParser(description='QuadTune driver')
+    parser.add_argument("--cam",action="store_true",default=False,help="Run quadtune using the CAM configuration.")
+    parser.add_argument("--eam",action="store_true",default=False,help="Run quadtune using the EAM configuration.")
+    parser.add_argument("--data",action="store",help="Provide an optional path where the data is stored. If none is given, a default path will be chosen.")
+    parser.add_argument("--obs",action="store",help="Provide an optional path where the observational data is stored. If none is given, a default path will be chosen or the datapath if provided.")
+    return parser.parse_args()
 
 if __name__ == '__main__':
     main()
