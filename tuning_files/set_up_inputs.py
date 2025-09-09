@@ -22,6 +22,7 @@ import sys
 
 def setUpColAndRowVectors(metricsNames, metricsNorms,
                           obsMetricValsDict,
+                          obsOffsetCol, obsGlobalAvgCol, doObsOffset,
                           paramsNames, transformedParamsNames,
                           prescribedParamsNames, prescribedParamValsRow,
                           prescribedTransformedParamsNames,
@@ -35,7 +36,8 @@ def setUpColAndRowVectors(metricsNames, metricsNorms,
     """
 
     # Set up a column vector of observed metrics
-    obsMetricValsCol = setUpObsCol(obsMetricValsDict, metricsNames)
+    obsMetricValsCol = setUpObsCol(obsMetricValsDict, metricsNames,
+                                   obsOffsetCol, obsGlobalAvgCol, doObsOffset)
 
     # Set up a normalization vector for metrics, normMetricValsCol.
     # It equals the observed value when metricsNorms has the special value of -999, 
@@ -70,6 +72,7 @@ def setUpColAndRowVectors(metricsNames, metricsNorms,
 # TODO: SHOULD I GENERALIZE magParamVals FOR EXT? OTHERWISE THE RESULT DEPENDS ON WHICH
 # PARAMETERS ARE STORED IN WHICH sens FILE.
 
+    # dnormlzdSensParams = Normalized dp values from one of the sensitivity files
     dnormlzdSensParams = ( sensParamValsRow - defaultParamValsRow ) \
                                 / magParamValsRow
 
@@ -171,6 +174,42 @@ def setUp_x_ObsMetricValsDict(varPrefixes, suffix="", obsPathAndFilename=""):
 
     return (obsMetricValsDict, obsWeightsDict)
 
+def calcObsGlobalAvgCol(varPrefixes,
+                        obsMetricValsDict, obsWeightsDict):
+
+    # Set metricsNorms to be a global average
+    obsGlobalAvgObsWeights = np.zeros(len(varPrefixes))
+    obsGlobalStdObsWeights = np.zeros(len(varPrefixes))
+    obsGlobalAvgCol = np.empty(shape=[0, 1])
+    obsGlobalStdCol = np.empty(shape=[0, 1])
+    for idx, varPrefix in np.ndenumerate(varPrefixes):
+        keysVarPrefix = [key for key in obsWeightsDict.keys() if varPrefix in key]
+        # obsWeightsNames = np.array(list(obsWeightsDict.keys()), dtype=str)
+        obsWeightsNames = np.array(keysVarPrefix, dtype=str)
+        obsWeightsUnnormlzd = setUpObsCol(obsWeightsDict, obsWeightsNames, 0, 0, doObsOffset=False)
+        obsWeights = obsWeightsUnnormlzd / np.sum(obsWeightsUnnormlzd)
+        # metricsWeights = obsWeights
+        # obsWeights = np.vstack([obsWeights] * len(varPrefixes))
+        # For the current element of varPrefix, e.g. 'SWCF', select the corresponding regions, e.g. 'SWCF_1_1' . . . 'SWCF_9_18':
+        metricsNamesVarPrefix = [key for key in obsMetricValsDict.keys() if varPrefix in key]
+        obsMetricValsColVarPrefix = setUpObsCol(obsMetricValsDict, metricsNamesVarPrefix, 0, 0, doObsOffset=False)
+        #print("obsMetricValsColVarPrefix = ", obsMetricValsColVarPrefix)
+        obsGlobalStdObsWeights[idx] = np.std(obsMetricValsColVarPrefix)
+        obsGlobalAvgObsWeights[idx] = np.dot(obsWeights.T, obsMetricValsColVarPrefix)
+        # For sea-level pressure, the global avg is too large to serve as a representative normalization
+        if varPrefix == 'PSL':
+            obsGlobalAvgObsWeights[idx] = 1e-3 * obsGlobalAvgObsWeights[idx]
+        #if varPrefix == 'RESTOM':
+        #    obsGlobalAvgObsWeights[idx] = 50.0
+        print(f"obsGlobalAvgObsWeights for {varPrefix} =", obsGlobalAvgObsWeights[idx])
+        obsGlobalAvgCol = np.vstack((obsGlobalAvgCol,
+                                     obsGlobalAvgObsWeights[idx] * np.ones((len(obsWeights), 1))
+                                     ))
+        obsGlobalStdCol = np.vstack((obsGlobalStdCol,
+                                     obsGlobalStdObsWeights[idx] * np.ones((len(obsWeights), 1))
+                                     ))
+
+    return obsGlobalAvgCol, obsGlobalStdCol
 
 def setUp_x_MetricsList(varPrefixes, defPathAndFilename):
     """
@@ -206,10 +245,14 @@ def setUp_x_MetricsList(varPrefixes, defPathAndFilename):
     return (metricsNamesWeightsAndNorms, metricGlobalValsFromFile)
 
 
-def setUpObsCol(obsMetricValsDict, metricsNames):
+def setUpObsCol(obsMetricValsDict, metricsNames,
+                obsOffsetCol, obsGlobalAvgCol, doObsOffset):
     """ 
     Input: A python dictionary of observed metrics.
     Output: A column vector of observed metrics
+    Input: doObsOffset = True if we want to tune to obs + (offset value)
+    Input: obsOffsetCol = user-prescribed value of global mean that we want to match
+    Input: obsGlobalAvgCol = global-average value of observed field
     """
 
     # Number of metrics
@@ -221,6 +264,9 @@ def setUpObsCol(obsMetricValsDict, metricsNames):
     for idx in np.arange(numMetrics):
         metricName = metricsNames[idx]
         obsMetricValsCol[idx] = obsMetricValsDict[metricName]
+
+    if doObsOffset:
+        obsMetricValsCol = obsMetricValsCol - obsGlobalAvgCol + obsOffsetCol
 
     return obsMetricValsCol
 
@@ -562,6 +608,11 @@ def checkInteractDerivs(normlzdInteractBiasesCols,
                         normlzdSensMatrix, normlzdCurvMatrix,
                         numMetrics,
                         normlzdInteractDerivs, interactIdxs):
+    '''
+    This function checks whether normlzdInteractDerivs has been calculated
+    correctly by doing a forward calculation with the parameter values in the
+    sensitivity files.
+    '''
 
     from quadtune_driver import fwdFnc
 

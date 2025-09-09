@@ -13,18 +13,22 @@ regional metric weights, and observed values of parameters.
 
 import numpy as np
 import pandas as pd
-
+import sys
 
 def setUpConfig(beVerbose,datapath='ANN/20.0beta06_',obspath='Regional_files/20250711_2yr_20x20_ANN_BCASE/'):
     from set_up_inputs import (
         setUp_x_MetricsList,
         setUpDefaultMetricValsCol, setUp_x_ObsMetricValsDict,
-        setUpObsCol
+        setUpObsCol,
+        calcObsGlobalAvgCol
     )
 
     # Flag for using bootstrap sampling
     doBootstrapSampling = False
     numBootstrapSamples = 100
+
+    # doPiecewise = True if using a piecewise linear emulator
+    doPiecewise = False
 
     # L1 regularization coefficient, i.e., penalty on param perturbations in objFnc
     # Increase this value to 0.1 or 0.5 or so if you want to eliminate
@@ -60,6 +64,13 @@ def setUpConfig(beVerbose,datapath='ANN/20.0beta06_',obspath='Regional_files/202
     # mapVarIdx is the field is plotted in the 20x20 maps created by PcSensMap.
     mapVar = 'RESTOM'
     mapVarIdx = varPrefixes.index(mapVar)
+
+    doObsOffset = False
+    #obsOffset = np.array([0, 0, 0, 0])
+    obsOffset = np.array([0])
+    if ( len(obsOffset) != len(varPrefixes) ):
+        sys.exit("Error: obsOffset must be the same size as the number of variables to tune.")
+
     # Number of metrics to tune.
     # If there are more metrics than this, then
     #   the metrics in the list beyond this number
@@ -72,6 +83,8 @@ def setUpConfig(beVerbose,datapath='ANN/20.0beta06_',obspath='Regional_files/202
     #numMetricsToTune = numBoxesInMap * (len(varPrefixes)-1)  # Omit a variable from tuning.
     #numMetricsToTune = numBoxesInMap  # Only tune for first variable in varPrefixes
     numMetricsToTune = numMetricsToTune.astype(int)
+
+    obsOffsetCol = ( obsOffset[:, np.newaxis] * np.ones((1,numBoxesInMap.astype(int))) ).reshape(-1,1)
 
     # These are a selected subset of the tunable metrics that we want to include
     #      in the metrics bar-chart, 3-dot plot, etc.
@@ -525,37 +538,11 @@ def setUpConfig(beVerbose,datapath='ANN/20.0beta06_',obspath='Regional_files/202
 #        obsMetricValsDict.update(obsRESTOMValsDict)
 #        obsWeightsDict.update(obsRESTOMWeightsDict)
 
-    # Set metricsNorms to be a global average
-    obsGlobalAvgObsWeights = np.zeros(len(varPrefixes))
-    obsGlobalStdObsWeights = np.zeros(len(varPrefixes))
-    obsGlobalAvgCol = np.empty(shape=[0, 1])
-    obsGlobalStdCol = np.empty(shape=[0, 1])
-    for idx, varPrefix in np.ndenumerate(varPrefixes):
-        keysVarPrefix = [key for key in obsWeightsDict.keys() if varPrefix in key]
-        # obsWeightsNames = np.array(list(obsWeightsDict.keys()), dtype=str)
-        obsWeightsNames = np.array(keysVarPrefix, dtype=str)
-        obsWeightsUnnormlzd = setUpObsCol(obsWeightsDict, obsWeightsNames)
-        obsWeights = obsWeightsUnnormlzd / np.sum(obsWeightsUnnormlzd)
-        # metricsWeights = obsWeights
-        # obsWeights = np.vstack([obsWeights] * len(varPrefixes))
-        # For the current element of varPrefix, e.g. 'SWCF', select the corresponding regions, e.g. 'SWCF_1_1' . . . 'SWCF_9_18':
-        metricsNamesVarPrefix = [key for key in obsMetricValsDict.keys() if varPrefix in key]
-        obsMetricValsColVarPrefix = setUpObsCol(obsMetricValsDict, metricsNamesVarPrefix)
-        #print("obsMetricValsColVarPrefix = ", obsMetricValsColVarPrefix)
-        obsGlobalStdObsWeights[idx] = np.std(obsMetricValsColVarPrefix)
-        obsGlobalAvgObsWeights[idx] = np.dot(obsWeights.T, obsMetricValsColVarPrefix)
-        # For sea-level pressure, the global avg is too large to serve as a representative normalization
-        if varPrefix == 'PSL':
-            obsGlobalAvgObsWeights[idx] = 1e-3 * obsGlobalAvgObsWeights[idx]
-        #if varPrefix == 'RESTOM':
-        #    obsGlobalAvgObsWeights[idx] = 50.0
-        print(f"obsGlobalAvgObsWeights for {varPrefix} =", obsGlobalAvgObsWeights[idx])
-        obsGlobalAvgCol = np.vstack((obsGlobalAvgCol,
-                                     obsGlobalAvgObsWeights[idx] * np.ones((len(obsWeights), 1))
-                                     ))
-        obsGlobalStdCol = np.vstack((obsGlobalStdCol,
-                                     obsGlobalStdObsWeights[idx] * np.ones((len(obsWeights), 1))
-                                     ))
+
+    obsGlobalAvgCol, obsGlobalStdCol = \
+    calcObsGlobalAvgCol(varPrefixes,
+                        obsMetricValsDict, obsWeightsDict)
+
     # Warning: Using a global average as the constant weight produces little normalized
     #     sensitivity for PSL
     metricsNorms = np.copy(obsGlobalAvgCol)
@@ -738,6 +725,7 @@ def setUpConfig(beVerbose,datapath='ANN/20.0beta06_',obspath='Regional_files/202
             highlightedMetricsToPlot, createPlotType,
             metricsWeights, metricsNorms,
             obsMetricValsDict,
+            obsOffsetCol, obsGlobalAvgCol, doObsOffset,
             paramsNames, paramsScales,
             transformedParamsNames,
             prescribedParamsNames, prescribedParamsScales,
@@ -749,6 +737,7 @@ def setUpConfig(beVerbose,datapath='ANN/20.0beta06_',obspath='Regional_files/202
             defaultNcFilename, globTunedNcFilename,
             defaultSST4KNcFilename,
             interactParamsNamesAndFilenames,
+            doPiecewise,
             reglrCoef, doBootstrapSampling, numBootstrapSamples)
 
     # SST4K: Output defaultNcFilenameSST4K, etc.
