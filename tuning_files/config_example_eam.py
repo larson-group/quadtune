@@ -24,8 +24,11 @@ def setUpConfig(beVerbose):
     )
 
     # Flag for using bootstrap sampling
-    doBootstrapSampling = False
+    doBootstrapSampling = True
     numBootstrapSamples = 100
+
+    # doPiecewise = True if using a piecewise linear emulator
+    doPiecewise = False
 
     # L1 regularization coefficient, i.e., penalty on param perturbations in objFnc
     # Increase this value to 0.1 or 0.5 or so if you want to eliminate
@@ -146,7 +149,8 @@ def setUpConfig(beVerbose):
             #'Regional_files/20250514_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt2_Regional.nc'
             #'Regional_files/20250530_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt4_Regional.nc'
             #defaultNcFilename
-            folder_name + '69_Regional.nc'
+            folder_name + '84_Regional.nc'
+            #folder_name + '69_Regional.nc'
     #    'Regional_files/20231211_20x20regs/20sens0707_61_Regional.nc'
     #    'Regional_files/20degree_CAM_TAUS_202404_DJF/20.0Tuner_20240702_20d_DJF_Regional.nc'
     #    'Regional_files/stephens_20240131/btune_regional_files/b1850.076base.n2th1b_Regional.nc'
@@ -372,12 +376,12 @@ def setUpConfig(beVerbose):
 
     interactParamsNamesAndFilenames = \
     [
-        ('clubb_c_invrs_tau_wpxp_n2_thresh', 'clubb_c_invrs_tau_n2',
-         'Regional_files/20241022_2yr_20x20regs/20sens1022_74_Regional.nc'),
+    #    ('clubb_c_invrs_tau_wpxp_n2_thresh', 'clubb_c_invrs_tau_n2',
+    #     'Regional_files/20241022_2yr_20x20regs/20sens1022_74_Regional.nc'),
         ('clubb_c_invrs_tau_wpxp_n2_thresh', 'clubb_c8',
          'Regional_files/20241022_2yr_20x20regs/20sens1022_75_Regional.nc'),
-        ('clubb_c8', 'clubb_c_invrs_tau_n2',
-         'Regional_files/20241022_2yr_20x20regs/20sens1022_76_Regional.nc')
+    #    ('clubb_c8', 'clubb_c_invrs_tau_n2',
+    #     'Regional_files/20241022_2yr_20x20regs/20sens1022_76_Regional.nc')
     ]
     #interactParamsNamesAndFilenames = []
     interactParamsNamesAndFilenamesType = np.dtype([('jParamName', object),
@@ -741,6 +745,7 @@ def setUpConfig(beVerbose):
             defaultNcFilename, globTunedNcFilename,
             defaultSST4KNcFilename,
             interactParamsNamesAndFilenames,
+            doPiecewise,
             reglrCoef, doBootstrapSampling, numBootstrapSamples)
 
     # SST4K: Output defaultNcFilenameSST4K, etc.

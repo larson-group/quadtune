@@ -27,6 +27,9 @@ def setUpConfig(beVerbose):
     doBootstrapSampling = False
     numBootstrapSamples = 100
 
+    # doPiecewise = True if using a piecewise linear emulator
+    doPiecewise = False
+
     # L1 regularization coefficient, i.e., penalty on param perturbations in objFnc
     # Increase this value to 0.1 or 0.5 or so if you want to eliminate
     # unimportant parameters.
@@ -730,6 +733,7 @@ def setUpConfig(beVerbose):
             defaultNcFilename, globTunedNcFilename,
             defaultSST4KNcFilename,
             interactParamsNamesAndFilenames,
+            doPiecewise,
             reglrCoef, doBootstrapSampling, numBootstrapSamples)
 
     # SST4K: Output defaultNcFilenameSST4K, etc.

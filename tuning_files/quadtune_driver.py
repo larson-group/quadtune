@@ -22,8 +22,8 @@ def main():
     """
 
     #from config_default import setUpConfig
-    from config_example import setUpConfig
-    #from config_example_eam import setUpConfig
+    #from config_example import setUpConfig
+    from config_example_eam import setUpConfig
     from set_up_inputs \
         import setUpColAndRowVectors, \
                setUpDefaultMetricValsCol, \
@@ -61,6 +61,7 @@ def main():
      defaultNcFilename, globTunedNcFilename,
      defaultSST4KNcFilename,
      interactParamsNamesAndFilenames,
+     doPiecewise,
      reglrCoef, doBootstrapSampling, numBootstrapSamples) \
     = \
         setUpConfig(beVerbose=False)
@@ -230,6 +231,8 @@ def main():
                               normlzdDefaultBiasesCol,
                               normlzdCurvMatrix,
                               normlzdCurvMatrixSST4K,
+                              doPiecewise, normlzd_pMid,
+                              normlzdLeftSensMatrix, normlzdRightSensMatrix,
                               reglrCoef,
                               defaultBiasesCol)
 
@@ -271,8 +274,9 @@ def main():
                          metricsWeights, normMetricValsCol, magParamValsRow,
                          defaultParamValsOrigRow,
                          normlzdSensMatrixPolySvd, normlzdDefaultBiasesCol,
-                         #normlzdSensMatrixPoly, defaultBiasesCol-prescribedBiasesCol,
                          normlzdCurvMatrixSvd,
+                         doPiecewise, normlzd_pMid,
+                         normlzdLeftSensMatrix, normlzdRightSensMatrix,
                          normlzdInteractDerivs, interactIdxs,
                          reglrCoef,
                          beVerbose=False)
@@ -327,13 +331,15 @@ def main():
     normlzdGlobTunedBiasesCol = globTunedBiasesCol/np.abs(normMetricValsCol)
     chisqdGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                                  normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, metricsWeights,
-                                 normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
+                                 normlzdCurvMatrix, reglrCoef, numMetrics, # Should I feed in numMetricsToTune instead??
+                                 normlzdInteractDerivs, interactIdxs)
 
     print("chisqdGlobTunedMinRatio =", chisqdGlobTunedMin/chisqdZero)
 
     chisqdUnweightedGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                                            normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, np.ones_like(metricsWeights),
-                                           normlzdCurvMatrix, reglrCoef, numMetrics)  # Should I feed in numMetricsToTune instead??
+                                           normlzdCurvMatrix, reglrCoef, numMetrics,  # Should I feed in numMetricsToTune instead??
+                                           normlzdInteractDerivs, interactIdxs)
 
     print("chisqdUnweightedGlobTunedMinRatio =", chisqdUnweightedGlobTunedMin/chisqdUnweightedZero)
     print("-----------------------------------------------------")
@@ -506,6 +512,8 @@ def solveUsingNonlin(metricsNames,
                      defaultParamValsOrigRow,
                      normlzdSensMatrix, normlzdDefaultBiasesCol,
                      normlzdCurvMatrix,
+                     doPiecewise, normlzd_pMid,
+                     normlzdLeftSensMatrix, normlzdRightSensMatrix,
                      normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0),
                      reglrCoef = 0.0,
                      beVerbose = False):

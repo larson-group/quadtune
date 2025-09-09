@@ -16,6 +16,8 @@ def bootstrapCalculations(numSamples,
                           normlzdDefaultBiasesCol,
                           normlzdCurvMatrix,
                           normlzdCurvMatrixSST4K,
+                          doPiecewise, normlzd_pMid,
+                          normlzdLeftSensMatrix, normlzdRightSensMatrix,
                           reglrCoef,
                           defaultBiasesCol):
     """
@@ -87,6 +89,8 @@ def bootstrapCalculations(numSamples,
                              normlzdSensMatrixPoly[metricsSampleIdxRow, :],
                              normlzdDefaultBiasesCol[metricsSampleIdxRow],
                              normlzdCurvMatrix[metricsSampleIdxRow, :],
+                             doPiecewise, normlzd_pMid,
+                             normlzdLeftSensMatrix, normlzdRightSensMatrix,
                              interactDerivs, interactIdxs,
                              reglrCoef,
                              beVerbose=False))
@@ -128,6 +132,8 @@ def bootstrapCalculations(numSamples,
                                                        normlzdSensMatrixPoly,
                                                        normlzdDefaultBiasesCol,
                                                        normlzdCurvMatrix,
+                                                       doPiecewise, normlzd_pMid,
+                                                       normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                                        interactDerivs, interactIdxs,
                                                        reglrCoef,
                                                        beVerbose=False)
@@ -152,7 +158,10 @@ def bootstrapCalculations(numSamples,
     ciLowerPercentile, ciUpperPercentile = percentileIntervals(paramsBoot)
     jackknife_params = computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetricValsCol,
                                               magParamValsRow, defaultParamValsOrigRow, normlzdSensMatrixPoly,
-                                              normlzdDefaultBiasesCol, normlzdCurvMatrix, reglrCoef)
+                                              normlzdDefaultBiasesCol, normlzdCurvMatrix,
+                                              doPiecewise, normlzd_pMid,
+                                              normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                                              reglrCoef)
     ciLowerBca, ciUpperBca = bcaIntervals(paramsBoot, paramsTuned, jackknife_params)
     paramBoundsBoot = np.array(
         [[ciLowerPercentile, paramsTuned, ciUpperPercentile], [ciLowerBca, paramsTuned, ciUpperBca]])
@@ -170,6 +179,8 @@ def bootstrapCalculations(numSamples,
 
 def computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetricValsCol, magParamValsRow,
                            defaultParamValsOrigRow, normlzdSensMatrixPoly, normlzdDefaultBiasesCol, normlzdCurvMatrix,
+                           doPiecewise, normlzd_pMid,
+                           normlzdLeftSensMatrix, normlzdRightSensMatrix,
                            reglrCoef):
     """
     Computes jackknife estimates of tuned parameters by excluding each metric once and resolving the tuning.
@@ -196,16 +207,18 @@ def computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetric
     interactIdxs = np.empty(0)
     for i in range(len(metricsNames)):
         _, _, jacknifeParams[i], *_ = solveUsingNonlin(np.delete(metricsNames, i),
-                                                        np.delete(metricsWeights, i, axis=0),
-                                                        np.delete(normMetricValsCol, i, axis=0),
-                                                        magParamValsRow,
-                                                        defaultParamValsOrigRow,
-                                                        np.delete(normlzdSensMatrixPoly, i, axis=0),
-                                                        np.delete(normlzdDefaultBiasesCol, i, axis=0),
-                                                        np.delete(normlzdCurvMatrix, i, axis=0),
-                                                        interactDerivs, interactIdxs,
-                                                        reglrCoef,
-                                                        beVerbose=False)
+                                                       np.delete(metricsWeights, i, axis=0),
+                                                       np.delete(normMetricValsCol, i, axis=0),
+                                                       magParamValsRow,
+                                                       defaultParamValsOrigRow,
+                                                       np.delete(normlzdSensMatrixPoly, i, axis=0),
+                                                       np.delete(normlzdDefaultBiasesCol, i, axis=0),
+                                                       np.delete(normlzdCurvMatrix, i, axis=0),
+                                                       doPiecewise, normlzd_pMid,
+                                                       normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                                                       interactDerivs, interactIdxs,
+                                                       reglrCoef,
+                                                       beVerbose=False)
     return jacknifeParams[:, :, 0]
 
 
