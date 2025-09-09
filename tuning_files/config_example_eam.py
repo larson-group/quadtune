@@ -24,7 +24,7 @@ def setUpConfig(beVerbose):
     )
 
     # Flag for using bootstrap sampling
-    doBootstrapSampling = True
+    doBootstrapSampling = False
     numBootstrapSamples = 100
 
     # doPiecewise = True if using a piecewise linear emulator

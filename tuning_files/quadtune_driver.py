@@ -295,25 +295,37 @@ def main():
     #normlzdWeightedDefaultBiasesCol = metricsWeights * normlzdDefaultBiasesCol
     chisqdZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                          normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
-                         normlzdCurvMatrix, reglrCoef, numMetrics,
+                         normlzdCurvMatrix,
+                         doPiecewise, normlzd_pMid,
+                         normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                         reglrCoef, numMetrics,
                          normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
                                                                     #   But metricsWeights is already set to eps for un-tuned metrics.
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
     chisqdMin = lossFnc(dnormlzdParamsSolnNonlin.T,
                         normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
-                        normlzdCurvMatrix, reglrCoef, numMetrics,
+                        normlzdCurvMatrix,
+                        doPiecewise, normlzd_pMid,
+                        normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                        reglrCoef, numMetrics,
                         normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdMinRatio (all metrics, non-unity metricsWeights) =", chisqdMin/chisqdZero)
 
     chisqdUnweightedZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                                    normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
-                                   normlzdCurvMatrix, reglrCoef, numMetrics,
+                                   normlzdCurvMatrix,
+                                   doPiecewise, normlzd_pMid,
+                                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                                   reglrCoef, numMetrics,
                                    normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
     chisqdUnweightedMin = lossFnc(dnormlzdParamsSolnNonlin.T,
                                   normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
-                                  normlzdCurvMatrix, reglrCoef, numMetrics,
+                                  normlzdCurvMatrix,
+                                  doPiecewise, normlzd_pMid,
+                                  normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                                  reglrCoef, numMetrics,
                                   normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdUnweightedMinRatio (all metrics, metricsWeights=1) =", chisqdUnweightedMin/chisqdUnweightedZero)
@@ -331,14 +343,20 @@ def main():
     normlzdGlobTunedBiasesCol = globTunedBiasesCol/np.abs(normMetricValsCol)
     chisqdGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                                  normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, metricsWeights,
-                                 normlzdCurvMatrix, reglrCoef, numMetrics, # Should I feed in numMetricsToTune instead??
+                                 normlzdCurvMatrix,
+                                 doPiecewise, normlzd_pMid,
+                                 normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                                 reglrCoef, numMetrics, # Should I feed in numMetricsToTune instead??
                                  normlzdInteractDerivs, interactIdxs)
 
     print("chisqdGlobTunedMinRatio =", chisqdGlobTunedMin/chisqdZero)
 
     chisqdUnweightedGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                                            normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, np.ones_like(metricsWeights),
-                                           normlzdCurvMatrix, reglrCoef, numMetrics,  # Should I feed in numMetricsToTune instead??
+                                           normlzdCurvMatrix,
+                                           doPiecewise, normlzd_pMid,
+                                           normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                                           reglrCoef, numMetrics,  # Should I feed in numMetricsToTune instead??
                                            normlzdInteractDerivs, interactIdxs)
 
     print("chisqdUnweightedGlobTunedMinRatio =", chisqdUnweightedGlobTunedMin/chisqdUnweightedZero)
@@ -482,7 +500,10 @@ def lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
     return weightedBiasDiffSqdCol
 
 def lossFnc(dnormlzdParams, normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-            normlzdCurvMatrix, reglrCoef, numMetrics,
+            normlzdCurvMatrix,
+            doPiecewise, normlzd_pMid,
+            normlzdLeftSensMatrix, normlzdRightSensMatrix,
+            reglrCoef, numMetrics,
             normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0)):
     """Define objective function (a.k.a. loss function) that is to be minimized."""
 
@@ -535,7 +556,11 @@ def solveUsingNonlin(metricsNames,
                                          #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=x0TwoYr, \
                                          #dnormlzdParamsSolnNonlin = minimize(lossFnc,dnormlzdParamsSoln, \
                                          args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-                                               normlzdCurvMatrix, reglrCoef, numMetrics, normlzdInteractDerivs, interactIdxs),
+                                               normlzdCurvMatrix,
+                                               doPiecewise, normlzd_pMid,
+                                               normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                                               reglrCoef, numMetrics,
+                                               normlzdInteractDerivs, interactIdxs),
                                          method='Powell', tol=1e-12
                                          ))
                                 #,)
@@ -598,7 +623,10 @@ def solveUsingNonlin(metricsNames,
 
     dnormlzdParamsSolnLin = minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])),
                                      args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-                               0*normlzdCurvMatrix, reglrCoef, numMetrics),
+                                           0*normlzdCurvMatrix,
+                                           doPiecewise, normlzd_pMid,
+                                           normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                                           reglrCoef, numMetrics),
                                      method='Powell')
     dnormlzdParamsSolnLin = np.atleast_2d(dnormlzdParamsSolnLin.x).T
     dparamsSolnLin = dnormlzdParamsSolnLin * np.transpose(magParamValsRow)
