@@ -98,7 +98,7 @@ def main():
     # Also construct a linear sensitivity matrix, dmetrics/dparams.
     normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix, \
     normlzdOrdDparamsMin, normlzdOrdDparamsMax, \
-    normlzd_pMid, normlzdLeftSensMatrix, normlzdRightSensMatrix = \
+    normlzd_dpMid, normlzdLeftSensMatrix, normlzdRightSensMatrix = \
         constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParamsNames,
                                    normMetricValsCol, magParamValsRow,
                                    sensNcFilenames, sensNcFilenamesExt, defaultNcFilename)
@@ -137,12 +137,16 @@ def main():
                        dnormlzdParamsInteract,
                        normlzdInteractBiasesCols,
                        normlzdCurvMatrix, normlzdSensMatrixPoly,
+                       doPiecewise, normlzd_dpMid,
+                       normlzdLeftSensMatrix, normlzdRightSensMatrix,
                        numMetrics)
 
     checkInteractDerivs(normlzdInteractBiasesCols,
                         dnormlzdParamsInteract,
                         len(paramsNames),
                         normlzdSensMatrixPoly, normlzdCurvMatrix,
+                        doPiecewise, normlzd_dpMid,
+                        normlzdLeftSensMatrix, normlzdRightSensMatrix,
                         numMetrics,
                         normlzdInteractDerivs, interactIdxs)
 
@@ -150,7 +154,7 @@ def main():
     # The derivatives are normalized by observed metric values and max param values.
     normlzdPrescribedCurvMatrix, normlzdPrescribedSensMatrixPoly, normlzdPrescribedConstMatrix, \
     normlzdPrescribedOrdDparamsMin, normlzdPrescribedOrdDparamsMax, \
-    normlzd_pMidPrescribed, normlzdPrescribedLeftSensMatrix, normlzdPrescribedRightSensMatrix = \
+    normlzd_dpMidPrescribed, normlzdPrescribedLeftSensMatrix, normlzdPrescribedRightSensMatrix = \
         constructNormlzdSensCurvMatrices(metricsNames, prescribedParamsNames, prescribedTransformedParamsNames,
                                    normMetricValsCol, magPrescribedParamValsRow,
                                    prescribedSensNcFilenames, prescribedSensNcFilenamesExt, defaultNcFilename)
@@ -161,7 +165,10 @@ def main():
 
     ### THIS CALL DOESN'T ACCOUNT FOR INTERACTIONS!!!
     normlzdPrescribedBiasesCol = \
-         fwdFnc(dnormlzdPrescribedParams, normlzdPrescribedSensMatrixPoly, normlzdPrescribedCurvMatrix, numMetrics,
+         fwdFnc(dnormlzdPrescribedParams, normlzdPrescribedSensMatrixPoly, normlzdPrescribedCurvMatrix,
+                doPiecewise, normlzd_dpMidPrescribed,
+                normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                numMetrics,
                 normlzdInteractDerivs= np.empty(0), interactIdxs = np.empty(0))
 
     prescribedBiasesCol = normlzdPrescribedBiasesCol * np.abs(normMetricValsCol)
@@ -204,7 +211,7 @@ def main():
         # Also construct a linear sensitivity matrix, dmetrics/dparams.
         normlzdCurvMatrixSST4K, normlzdSensMatrixPolySST4K, normlzdConstMatrixSST4K, \
         normlzdOrdDparamsMinSST4K, normlzdOrdDparamsMaxSST4K, \
-        normlzd_pMidSST4K, normlzdLeftSensMatrixSST4K, normlzdRightSensMatrixSST4K = \
+        normlzd_dpMidSST4K, normlzdLeftSensMatrixSST4K, normlzdRightSensMatrixSST4K = \
             constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParamsNames,
                                              normMetricValsCol, magParamValsRow,
                                              sensSST4KNcFilenames, sensSST4KNcFilenamesExt, defaultSST4KNcFilename)
@@ -231,7 +238,7 @@ def main():
                               normlzdDefaultBiasesCol,
                               normlzdCurvMatrix,
                               normlzdCurvMatrixSST4K,
-                              doPiecewise, normlzd_pMid,
+                              doPiecewise, normlzd_dpMid,
                               normlzdLeftSensMatrix, normlzdRightSensMatrix,
                               reglrCoef,
                               defaultBiasesCol)
@@ -275,7 +282,7 @@ def main():
                          defaultParamValsOrigRow,
                          normlzdSensMatrixPolySvd, normlzdDefaultBiasesCol,
                          normlzdCurvMatrixSvd,
-                         doPiecewise, normlzd_pMid,
+                         doPiecewise, normlzd_dpMid,
                          normlzdLeftSensMatrix, normlzdRightSensMatrix,
                          normlzdInteractDerivs, interactIdxs,
                          reglrCoef,
@@ -296,7 +303,7 @@ def main():
     chisqdZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                          normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
                          normlzdCurvMatrix,
-                         doPiecewise, normlzd_pMid,
+                         doPiecewise, normlzd_dpMid,
                          normlzdLeftSensMatrix, normlzdRightSensMatrix,
                          reglrCoef, numMetrics,
                          normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
@@ -305,7 +312,7 @@ def main():
     chisqdMin = lossFnc(dnormlzdParamsSolnNonlin.T,
                         normlzdSensMatrixPoly, normlzdDefaultBiasesCol, metricsWeights,
                         normlzdCurvMatrix,
-                        doPiecewise, normlzd_pMid,
+                        doPiecewise, normlzd_dpMid,
                         normlzdLeftSensMatrix, normlzdRightSensMatrix,
                         reglrCoef, numMetrics,
                         normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
@@ -315,7 +322,7 @@ def main():
     chisqdUnweightedZero = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                                    normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
                                    normlzdCurvMatrix,
-                                   doPiecewise, normlzd_pMid,
+                                   doPiecewise, normlzd_dpMid,
                                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                    reglrCoef, numMetrics,
                                    normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
@@ -323,7 +330,7 @@ def main():
     chisqdUnweightedMin = lossFnc(dnormlzdParamsSolnNonlin.T,
                                   normlzdSensMatrixPoly, normlzdDefaultBiasesCol, np.ones_like(metricsWeights),
                                   normlzdCurvMatrix,
-                                  doPiecewise, normlzd_pMid,
+                                  doPiecewise, normlzd_dpMid,
                                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                   reglrCoef, numMetrics,
                                   normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
@@ -344,7 +351,7 @@ def main():
     chisqdGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                                  normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, metricsWeights,
                                  normlzdCurvMatrix,
-                                 doPiecewise, normlzd_pMid,
+                                 doPiecewise, normlzd_dpMid,
                                  normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                  reglrCoef, numMetrics, # Should I feed in numMetricsToTune instead??
                                  normlzdInteractDerivs, interactIdxs)
@@ -354,7 +361,7 @@ def main():
     chisqdUnweightedGlobTunedMin = lossFnc(np.zeros_like(defaultParamValsOrigRow),
                                            normlzdSensMatrixPoly, normlzdGlobTunedBiasesCol, np.ones_like(metricsWeights),
                                            normlzdCurvMatrix,
-                                           doPiecewise, normlzd_pMid,
+                                           doPiecewise, normlzd_dpMid,
                                            normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                            reglrCoef, numMetrics,  # Should I feed in numMetricsToTune instead??
                                            normlzdInteractDerivs, interactIdxs)
@@ -388,9 +395,14 @@ def main():
     #print("defaultBiasesApproxElastic = ", defaultBiasesApproxElastic)
     #print("defaultBiasesApproxElasticCheck = ", defaultBiasesApproxElasticCheck)
 
-    normlzdLinplusSensMatrixPoly = normlzdSemiLinMatrixFnc(
-                                        dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
-                                        normlzdCurvMatrix, numMetrics)
+    if doPiecewise:
+        normlzdLinplusSensMatrixPoly = \
+            normlzdPiecewiseLinMatrixFnc(dnormlzdParamsSolnNonlin, normlzd_dpMid,
+                                         normlzdLeftSensMatrix, normlzdRightSensMatrix)
+    else:
+        normlzdLinplusSensMatrixPoly = \
+            normlzdSemiLinMatrixFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
+                                    normlzdCurvMatrix, numMetrics)
     #normlzdWeightedLinplusSensMatrixPoly = np.diag(np.transpose(metricsWeights)[0]) \
     #                                          @ normlzdLinplusSensMatrixPoly
 
@@ -404,6 +416,8 @@ def main():
                defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv,
                normlzdDefaultBiasesCol,
                normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix,
+               doPiecewise, normlzd_dpMid,
+               normlzdLeftSensMatrix, normlzdRightSensMatrix,
                normlzdInteractDerivs, interactIdxs,
                normlzdOrdDparamsMin, normlzdOrdDparamsMax,
                normlzdWeightedSensMatrixPoly,
@@ -428,46 +442,62 @@ def normlzdSemiLinMatrixFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix
 
     return normlzdSemiLinMatrix
 
-def normlzdPiecewiseLinMatrixFnc(dnormlzdParams, normlzd_pMid, normlzdDefaultParamValsRow,
+def normlzdPiecewiseLinMatrixFnc(dnormlzdParams, normlzd_dpMid,
                                  normlzdLeftSensMatrix, normlzdRightSensMatrix):
     """Calculate piecewise-linear matrix for use in forward solution"""
 
-    normlzdPiecewiseLinMatrix = np.zeros_like(normlzdLeftSensMatrix)
+    normlzdPiecewiseLinMatrix = np.zeros((normlzdLeftSensMatrix.shape[0],dnormlzdParams.shape[0]))
 
-    for col in np.arange(len(normlzdDefaultParamValsRow)):
-        if ( dnormlzdParams >= ( normlzd_pMid - normlzdDefaultParamValsRow ) ):
+    for col in np.arange(len(dnormlzdParams)):
+        if ( dnormlzdParams[col,0].item() >= ( normlzd_dpMid[col,0].item() ) ):
             normlzdPiecewiseLinMatrix[:,col] = normlzdRightSensMatrix[:,col]
         else:
             normlzdPiecewiseLinMatrix[:, col] = normlzdLeftSensMatrix[:, col]
 
     return normlzdPiecewiseLinMatrix
 
-def fwdFncNoInteract(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics):
-    """Calculate forward nonlinear solution, normalized but not weighted"""
+def fwdFncNoInteract(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix,
+                     doPiecewise, normlzd_dpMid,
+                     normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                     numMetrics):
+    """
+    Calculate the sum of all the forward nonlinear terms except the interaction terms.
+    Return a forward sum of terms that is normalized but not weighted
+    """
 
-    normlzdDefaultBiasesApproxNonlin = \
-        normlzdSemiLinMatrixFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) @ dnormlzdParams
+    #print("")
+
+    if doPiecewise:
+        normlzdDefaultBiasesApproxNonlin = \
+            normlzdPiecewiseLinMatrixFnc(dnormlzdParams, normlzd_dpMid,
+                                     normlzdLeftSensMatrix, normlzdRightSensMatrix)  \
+                    @ dnormlzdParams
+    else:
+        normlzdDefaultBiasesApproxNonlin = \
+            normlzdSemiLinMatrixFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix,
+                                    numMetrics) \
+                    @ dnormlzdParams
 
     return normlzdDefaultBiasesApproxNonlin
 
-def fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
+def fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix,
+           doPiecewise, normlzd_dpMid,
+           normlzdLeftSensMatrix, normlzdRightSensMatrix,
+           numMetrics,
            normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0)):
     """Calculate forward nonlinear solution, normalized but not weighted"""
 
     normlzdDefaultBiasesApproxNonlin = \
-        fwdFncNoInteract(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics)
+        fwdFncNoInteract(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix,
+                         doPiecewise, normlzd_dpMid,
+                         normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                         numMetrics)
 
     # dnormlzd_dpj_dpk = ( dp_j * dp_k ) for each interaction term
     dnormlzd_dpj_dpk = calc_dnormlzd_dpj_dpk(dnormlzdParams, interactIdxs)
     interactTerms = normlzdInteractDerivs @ dnormlzd_dpj_dpk
 
     normlzdDefaultBiasesApproxNonlin += interactTerms
-
-    #normlzdDefaultBiasesApproxNonlin = \
-    #    normlzdSemiLinMatrixFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) @ dnormlzdParams
-
-            #normlzdSensMatrix @ dnormlzdParams \
-            #+ 0.5 * normlzdCurvMatrix @ (dnormlzdParams * dnormlzdParams) 
 
     return normlzdDefaultBiasesApproxNonlin
 
@@ -487,13 +517,19 @@ def calc_dnormlzd_dpj_dpk(dnormlzdParams, interactIdxs):
 
 def lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
                    normlzdDefaultBiasesCol, metricsWeights,
-                   normlzdCurvMatrix, numMetrics,
+                   normlzdCurvMatrix,
+                   doPiecewise, normlzd_dpMid,
+                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                   numMetrics,
                    normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0)):
     """Each regional component of loss function (including squares)"""
 
     weightedBiasDiffSqdCol = \
         np.square( (-normlzdDefaultBiasesCol
-                    - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
+                    - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix,
+                             doPiecewise, normlzd_dpMid,
+                             normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                             numMetrics,
                              normlzdInteractDerivs, interactIdxs)
          ) * metricsWeights )
 
@@ -501,7 +537,7 @@ def lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
 
 def lossFnc(dnormlzdParams, normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
             normlzdCurvMatrix,
-            doPiecewise, normlzd_pMid,
+            doPiecewise, normlzd_dpMid,
             normlzdLeftSensMatrix, normlzdRightSensMatrix,
             reglrCoef, numMetrics,
             normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0)):
@@ -511,7 +547,10 @@ def lossFnc(dnormlzdParams, normlzdSensMatrix, normlzdDefaultBiasesCol, metricsW
     weightedBiasDiffSqdCol = \
         lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
                        normlzdDefaultBiasesCol, metricsWeights,
-                       normlzdCurvMatrix, numMetrics,
+                       normlzdCurvMatrix,
+                       doPiecewise, normlzd_dpMid,
+                       normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                       numMetrics,
                        normlzdInteractDerivs, interactIdxs)
     #weightedBiasDiffSqdCol = \
     #    np.square( (-normlzdDefaultBiasesCol \
@@ -533,7 +572,7 @@ def solveUsingNonlin(metricsNames,
                      defaultParamValsOrigRow,
                      normlzdSensMatrix, normlzdDefaultBiasesCol,
                      normlzdCurvMatrix,
-                     doPiecewise, normlzd_pMid,
+                     doPiecewise, normlzd_dpMid,
                      normlzdLeftSensMatrix, normlzdRightSensMatrix,
                      normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0),
                      reglrCoef = 0.0,
@@ -557,7 +596,7 @@ def solveUsingNonlin(metricsNames,
                                          #dnormlzdParamsSolnNonlin = minimize(lossFnc,dnormlzdParamsSoln, \
                                          args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
                                                normlzdCurvMatrix,
-                                               doPiecewise, normlzd_pMid,
+                                               doPiecewise, normlzd_dpMid,
                                                normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                                reglrCoef, numMetrics,
                                                normlzdInteractDerivs, interactIdxs),
@@ -577,14 +616,20 @@ def solveUsingNonlin(metricsNames,
         print("normlzdSensMatrix=", normlzdSensMatrix)
 
     normlzdWeightedDefaultBiasesApproxNonlin = \
-             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
+             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, normlzdCurvMatrix,
+                    doPiecewise, normlzd_dpMid,
+                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                    numMetrics,
                     normlzdInteractDerivs, interactIdxs) \
              * metricsWeights
 
     ### WHAT IS THIS METRIC USED FOR???
     scale = 2
     normlzdWeightedDefaultBiasesApproxNonlin2x = \
-             fwdFnc(scale * dnormlzdParamsSolnNonlin, normlzdSensMatrix, 1 * normlzdCurvMatrix, numMetrics,
+             fwdFnc(scale * dnormlzdParamsSolnNonlin, normlzdSensMatrix, 1 * normlzdCurvMatrix,
+                    doPiecewise, normlzd_dpMid,
+                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                    numMetrics,
                     normlzdInteractDerivs, interactIdxs) \
              * metricsWeights
 
@@ -610,12 +655,18 @@ def solveUsingNonlin(metricsNames,
 
     # To provide error bars, calculate solution with no nonlinear term and double the nonlinear term
     defaultBiasesApproxNonlinNoCurv = \
-             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 0 * normlzdCurvMatrix, numMetrics,
+             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 0 * normlzdCurvMatrix,
+                    doPiecewise, normlzd_dpMid,
+                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                    numMetrics,
                     normlzdInteractDerivs, interactIdxs) \
              * np.abs(normMetricValsCol)
 
     defaultBiasesApproxNonlin2xCurv = \
-             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 2 * normlzdCurvMatrix, numMetrics,
+             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrix, 2 * normlzdCurvMatrix,
+                    doPiecewise, normlzd_dpMid,
+                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                    numMetrics,
                     normlzdInteractDerivs, interactIdxs) \
              * np.abs(normMetricValsCol)
 
@@ -624,7 +675,7 @@ def solveUsingNonlin(metricsNames,
     dnormlzdParamsSolnLin = minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])),
                                      args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
                                            0*normlzdCurvMatrix,
-                                           doPiecewise, normlzd_pMid,
+                                           doPiecewise, normlzd_dpMid,
                                            normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                            reglrCoef, numMetrics),
                                      method='Powell')
@@ -890,10 +941,14 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
                   np.array2string(normlzdDefaultParamValsRow, formatter={'float_kind': lambda x: f"{x:12.8f}"}) )
             quit()
 
+    normlzd_dpMid = normlzd_pMid - normlzdDefaultParamValsRow
+
+    # Output normlzd_dpMid as a column vector, like dnormlzdParamsSolnNonlin
+    normlzd_dpMid = normlzd_dpMid.T
 
     return ( normlzdCurvMatrixPoly, normlzdSensMatrixPoly, normlzdConstMatrixPoly,
              normlzdOrdDparamsMin, normlzdOrdDparamsMax,
-             normlzd_pMid, normlzdLeftSensMatrix, normlzdRightSensMatrix)
+             normlzd_dpMid, normlzdLeftSensMatrix, normlzdRightSensMatrix)
 
 
 def approxMatrixWithSvd( matrix , sValsRatio, sValsNumToKeep,

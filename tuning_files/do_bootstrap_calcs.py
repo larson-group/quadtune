@@ -16,7 +16,7 @@ def bootstrapCalculations(numSamples,
                           normlzdDefaultBiasesCol,
                           normlzdCurvMatrix,
                           normlzdCurvMatrixSST4K,
-                          doPiecewise, normlzd_pMid,
+                          doPiecewise, normlzd_dpMid,
                           normlzdLeftSensMatrix, normlzdRightSensMatrix,
                           reglrCoef,
                           defaultBiasesCol):
@@ -89,7 +89,7 @@ def bootstrapCalculations(numSamples,
                              normlzdSensMatrixPoly[metricsSampleIdxRow, :],
                              normlzdDefaultBiasesCol[metricsSampleIdxRow],
                              normlzdCurvMatrix[metricsSampleIdxRow, :],
-                             doPiecewise, normlzd_pMid,
+                             doPiecewise, normlzd_dpMid,
                              normlzdLeftSensMatrix, normlzdRightSensMatrix,
                              interactDerivs, interactIdxs,
                              reglrCoef,
@@ -98,16 +98,22 @@ def bootstrapCalculations(numSamples,
         # Do a forward calculation of the biases in which the sensitivity matrix
         #   is in the order of the original metrics.
         #   The output of fwdFnc, which is a column vector, is assigned to a row of a matrix (somehow).
-        defaultBiasesApproxNonlinMatrix[sampleIdx, :, :] = fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
-                                                               normlzdCurvMatrix, numMetrics) \
-                                                         * np.abs(normMetricValsCol)
+        defaultBiasesApproxNonlinMatrix[sampleIdx, :, :] = \
+            fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,normlzdCurvMatrix,
+                   doPiecewise, normlzd_dpMid,
+                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                   numMetrics) \
+            * np.abs(normMetricValsCol)
 
         # Do a forward calculation of the biases in which the sensitivity matrix
         #   is in the order of the original metrics.
         #   The output of fwdFnc, which is a column vector, is assigned to a row of a matrix (somehow).
-        defaultBiasesApproxNonlinMatrixSST4K[sampleIdx, :, :] = fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPolySST4K,
-                                                               normlzdCurvMatrixSST4K, numMetrics) \
-                                                         * np.abs(normMetricValsCol)
+        defaultBiasesApproxNonlinMatrixSST4K[sampleIdx, :, :] = \
+            fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPolySST4K, normlzdCurvMatrixSST4K,
+                   doPiecewise, normlzd_dpMid,
+                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                   numMetrics) \
+            * np.abs(normMetricValsCol)
 
         # SST4K: If we feed in normlzdSensMatrixPoly, etc., for SST4K runs, then we can calc spread for SST4K.
         #   This would come from constructNormlzdSensCurvMatrices.
@@ -132,7 +138,7 @@ def bootstrapCalculations(numSamples,
                                                        normlzdSensMatrixPoly,
                                                        normlzdDefaultBiasesCol,
                                                        normlzdCurvMatrix,
-                                                       doPiecewise, normlzd_pMid,
+                                                       doPiecewise, normlzd_dpMid,
                                                        normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                                        interactDerivs, interactIdxs,
                                                        reglrCoef,
@@ -159,7 +165,7 @@ def bootstrapCalculations(numSamples,
     jackknife_params = computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetricValsCol,
                                               magParamValsRow, defaultParamValsOrigRow, normlzdSensMatrixPoly,
                                               normlzdDefaultBiasesCol, normlzdCurvMatrix,
-                                              doPiecewise, normlzd_pMid,
+                                              doPiecewise, normlzd_dpMid,
                                               normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                               reglrCoef)
     ciLowerBca, ciUpperBca = bcaIntervals(paramsBoot, paramsTuned, jackknife_params)
@@ -179,7 +185,7 @@ def bootstrapCalculations(numSamples,
 
 def computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetricValsCol, magParamValsRow,
                            defaultParamValsOrigRow, normlzdSensMatrixPoly, normlzdDefaultBiasesCol, normlzdCurvMatrix,
-                           doPiecewise, normlzd_pMid,
+                           doPiecewise, normlzd_dpMid,
                            normlzdLeftSensMatrix, normlzdRightSensMatrix,
                            reglrCoef):
     """
@@ -214,7 +220,7 @@ def computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetric
                                                        np.delete(normlzdSensMatrixPoly, i, axis=0),
                                                        np.delete(normlzdDefaultBiasesCol, i, axis=0),
                                                        np.delete(normlzdCurvMatrix, i, axis=0),
-                                                       doPiecewise, normlzd_pMid,
+                                                       doPiecewise, normlzd_dpMid,
                                                        normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                                        interactDerivs, interactIdxs,
                                                        reglrCoef,

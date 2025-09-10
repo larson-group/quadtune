@@ -45,6 +45,8 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv,
                normlzdDefaultBiasesCol,
                normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix,
+               doPiecewise, normlzd_dpMid,
+               normlzdLeftSensMatrix, normlzdRightSensMatrix,
                interactDerivs, interactIdxs,
                normlzdOrdDparamsMin, normlzdOrdDparamsMax,
                normlzdWeightedSensMatrixPoly,
@@ -64,7 +66,9 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     """
     
     from config_default import abbreviateParamsNames
-    from quadtune_driver import lossFncMetrics, normlzdSemiLinMatrixFnc
+    from quadtune_driver import ( lossFncMetrics,
+                                  normlzdSemiLinMatrixFnc,
+                                  normlzdPiecewiseLinMatrixFnc )
 
     print("Creating plots . . .")
 
@@ -103,25 +107,37 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     # Estimated loss function values in the global simulation upon tuning.
     tunedLossCol = lossFncMetrics(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol, metricsWeights,
-                   normlzdCurvMatrix, len(metricsNames),
+                   normlzdCurvMatrix,
+                   doPiecewise, normlzd_dpMid,
+                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                   len(metricsNames),
                    interactDerivs, interactIdxs)
 
     tunedLossColUnweighted = lossFncMetrics(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol,
                    np.average(metricsWeights)*np.ones_like(metricsWeights),
-                   normlzdCurvMatrix, len(metricsNames),
+                   normlzdCurvMatrix,
+                   doPiecewise, normlzd_dpMid,
+                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                   len(metricsNames),
                    interactDerivs, interactIdxs)
 
     # Loss function values in the default-parameter global simulation.
     defaultLossCol = lossFncMetrics(np.zeros_like(dnormlzdParamsSolnNonlin), normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol, metricsWeights,
-                   normlzdCurvMatrix, len(metricsNames),
+                   normlzdCurvMatrix,
+                   doPiecewise, normlzd_dpMid,
+                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                   len(metricsNames),
                    interactDerivs, interactIdxs)
 
     defaultLossColUnweighted = lossFncMetrics(np.zeros_like(dnormlzdParamsSolnNonlin), normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol,
                    np.average(metricsWeights)*np.ones_like(metricsWeights),
-                   normlzdCurvMatrix, len(metricsNames),
+                   normlzdCurvMatrix,
+                   doPiecewise, normlzd_dpMid,
+                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                   len(metricsNames),
                    interactDerivs, interactIdxs)
 
     # Estimate how the loss function value changes with tuning in each region.
@@ -241,14 +257,22 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
 
     # Create plot showing lumped linear+nonlinear contributions to each metric
     # Form matrix of parameter perturbations, for later multiplication into the sensitivity matrix
-    linMatrixDparams = \
-        normlzdSemiLinMatrixFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
+    if doPiecewise:
+        linMatrixDparams = \
+            normlzdPiecewiseLinMatrixFnc(dnormlzdParamsSolnNonlin, normlzd_dpMid,
+                                         normlzdLeftSensMatrix, normlzdRightSensMatrix) \
+            * dnormlzdParamsSolnNonlinMatrix
+        curvMatrixDparams = np.zeros_like(linMatrixDparams)
+    else:
+        linMatrixDparams = \
+            normlzdSemiLinMatrixFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
                                 np.zeros_like(normlzdCurvMatrix), len(metricsNames)) \
-        * dnormlzdParamsSolnNonlinMatrix
-    curvMatrixDparams = \
-        normlzdSemiLinMatrixFnc(dnormlzdParamsSolnNonlin, np.zeros_like(normlzdSensMatrixPoly),
+            * dnormlzdParamsSolnNonlinMatrix
+        curvMatrixDparams = \
+            normlzdSemiLinMatrixFnc(dnormlzdParamsSolnNonlin, np.zeros_like(normlzdSensMatrixPoly),
                                 normlzdCurvMatrix, len(metricsNames)) \
-        * dnormlzdParamsSolnNonlinMatrix
+            * dnormlzdParamsSolnNonlinMatrix
+
     nonlinMatrixDparams = linMatrixDparams + curvMatrixDparams
     #nonlinMatrixDparams = \
     #    normlzdSemiLinMatrixFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,

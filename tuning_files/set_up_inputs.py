@@ -447,6 +447,8 @@ def calcInteractDerivs(interactIdxs,
                        dnormlzdParamsInteract,
                        normlzdInteractBiasesCols,
                        normlzdCurvMatrix, normlzdSensMatrix,
+                       doPiecewise, normlzd_dpMid,
+                       normlzdLeftSensMatrix, normlzdRightSensMatrix,
                        numMetrics):
 
     from quadtune_driver import fwdFncNoInteract
@@ -458,13 +460,19 @@ def calcInteractDerivs(interactIdxs,
         normlzdInteractDerivs[:,idxTerm] = \
             (
               normlzdInteractBiasesCols[:,idxTerm]
-            - fwdFncNoInteract(np.atleast_1d( dnormlzdParamsInteract[idxTerm][0] ),
+            - fwdFncNoInteract(np.atleast_2d( dnormlzdParamsInteract[idxTerm][0] ),
                               normlzdSensMatrix[:,idxTuple[0]].reshape(-1, 1),
                               normlzdCurvMatrix[:,idxTuple[0]].reshape(-1, 1),
+                              doPiecewise, np.atleast_2d(normlzd_dpMid[idxTuple[0],:]),
+                              normlzdLeftSensMatrix[:,idxTuple[0]].reshape(-1, 1),
+                              normlzdRightSensMatrix[:,idxTuple[0]].reshape(-1, 1),
                               numMetrics).reshape(-1,1)
-            - fwdFncNoInteract(np.atleast_1d( dnormlzdParamsInteract[idxTerm][1] ),
+            - fwdFncNoInteract(np.atleast_2d( dnormlzdParamsInteract[idxTerm][1] ),
                               normlzdSensMatrix[:,idxTuple[1]].reshape(-1, 1),
                               normlzdCurvMatrix[:,idxTuple[1]].reshape(-1, 1),
+                              doPiecewise, np.atleast_2d(normlzd_dpMid[idxTuple[1],:]),
+                              normlzdLeftSensMatrix[:,idxTuple[1]].reshape(-1, 1),
+                              normlzdRightSensMatrix[:,idxTuple[1]].reshape(-1, 1),
                               numMetrics).reshape(-1,1)
             ) / ( dnormlzdParamsInteract[idxTerm][0] * dnormlzdParamsInteract[idxTerm][1] )
 
@@ -606,6 +614,8 @@ def checkInteractDerivs(normlzdInteractBiasesCols,
                         dnormlzdParamsInteract,
                         numParams,
                         normlzdSensMatrix, normlzdCurvMatrix,
+                        doPiecewise, normlzd_dpMid,
+                        normlzdLeftSensMatrix, normlzdRightSensMatrix,
                         numMetrics,
                         normlzdInteractDerivs, interactIdxs):
     '''
@@ -624,7 +634,10 @@ def checkInteractDerivs(normlzdInteractBiasesCols,
         dnormlzdTwoParams[ idxTuple[1], 0 ] = dnormlzdParamsInteract[idxTerm][1]
 
         fwdFncInteractCol = \
-            fwdFnc(dnormlzdTwoParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics,
+            fwdFnc(dnormlzdTwoParams, normlzdSensMatrix, normlzdCurvMatrix,
+                   doPiecewise, normlzd_dpMid,
+                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                   numMetrics,
                    normlzdInteractDerivs, interactIdxs)
 
         if not np.allclose(normlzdInteractBiasesCols[:,idxTerm], fwdFncInteractCol):
@@ -677,13 +690,10 @@ def printInteractDiagnostics(interactIdxs,
 
         interactTable[:, :, idxTerm] = intermediateResult[:, :, np.newaxis]
 
-        print("")
 
         #interactDerivRatiosCols[:,idxTerm] = \
         #    normlzdInteractDerivs[:, idxTerm] / np.sqrt(np.abs (normlzdCurvJ * normlzdCurvK))
 
-
-    print("")
 
     #interactDerivRatios = np.std( interactDerivRatiosCols, axis=0 )
 
