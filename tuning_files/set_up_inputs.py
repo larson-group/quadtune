@@ -710,3 +710,41 @@ def printInteractDiagnostics(interactIdxs,
     #        normlzdSensMatrix[:,paramIdx] * dnormlzdParamsSolnNonlin[paramIdx]
 
     return
+
+def checkPiecewiseLeftRightPoints( dLeftRightParams,
+                        normlzdSensMatrixPolySvd, normlzdCurvMatrix,
+                        normlzd_dpMid,
+                        normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                        numMetrics):
+    '''
+    This function checks whether normlzdPiecewiseLinMatrixFnc and normlzdSemiLinMatrixFnc
+    yield the same answer at the lo and hi perturbations, normlzd_pLeftRow and normlzd_pRightRow.
+    '''
+
+    from quadtune_driver import normlzdPiecewiseLinMatrixFnc, normlzdSemiLinMatrixFnc
+
+
+    piecewiseMatrix = \
+        normlzdPiecewiseLinMatrixFnc(dLeftRightParams, normlzd_dpMid,
+                                     normlzdLeftSensMatrix, normlzdRightSensMatrix)
+
+    semiMatrix = \
+        normlzdSemiLinMatrixFnc(dLeftRightParams, normlzdSensMatrixPolySvd, normlzdCurvMatrix,
+                                numMetrics)
+
+    diffMatrix = piecewiseMatrix - semiMatrix
+
+    piecewiseVector = piecewiseMatrix @ dLeftRightParams
+
+    semiVector = semiMatrix @ dLeftRightParams
+
+    diffVector = piecewiseVector - semiVector
+
+    if not np.allclose(piecewiseVector, semiVector):
+        print("\npiecewiseVector =")
+        print(piecewiseVector.T)
+        print("\nsemiVector =")
+        print(semiVector.T)
+        sys.exit("Error: Piecewise emulator is inconsistent with quadratic emulator at lo/hi param values.")
+
+    return
