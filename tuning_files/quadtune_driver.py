@@ -874,61 +874,61 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
         if normlzdSens1ParamValsRow[0,arrayCol] < normlzdDefaultParamValsRow[0,arrayCol] < normlzdSens2ParamValsRow[0,arrayCol]:
 
             normlzd_pMid[0,arrayCol] = normlzdDefaultParamValsRow[0,arrayCol]
-            normlzdLeftSensMatrix[arrayCol,:] = \
-                ( normlzdDefaultMetricValsMatrix[arrayCol,:] - normlzdSens1MetricValsMatrix[arrayCol,:] ) \
+            normlzdLeftSensMatrix[:,arrayCol] = \
+                ( normlzdDefaultMetricValsMatrix[:,arrayCol] - normlzdSens1MetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdDefaultParamValsRow[0,arrayCol] - normlzdSens1ParamValsRow[0,arrayCol] )
-            normlzdRightSensMatrix[arrayCol,:] = \
-                ( normlzdSens2MetricValsMatrix[arrayCol,:] - normlzdDefaultMetricValsMatrix[arrayCol,:] ) \
+            normlzdRightSensMatrix[:,arrayCol] = \
+                ( normlzdSens2MetricValsMatrix[:,arrayCol] - normlzdDefaultMetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdSens2ParamValsRow[0,arrayCol] - normlzdDefaultParamValsRow[0,arrayCol] )
 
         elif normlzdSens2ParamValsRow[0,arrayCol] < normlzdDefaultParamValsRow[0,arrayCol] < normlzdSens1ParamValsRow[0,arrayCol]:
 
             normlzd_pMid[0,arrayCol] = normlzdDefaultParamValsRow[0,arrayCol]
-            normlzdLeftSensMatrix[arrayCol,:] = \
-                ( normlzdDefaultMetricValsMatrix[arrayCol,:] - normlzdSens2MetricValsMatrix[arrayCol,:] ) \
+            normlzdLeftSensMatrix[:,arrayCol] = \
+                ( normlzdDefaultMetricValsMatrix[:,arrayCol] - normlzdSens2MetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdDefaultParamValsRow[0,arrayCol] - normlzdSens2ParamValsRow[0,arrayCol] )
-            normlzdRightSensMatrix[arrayCol,:] = \
-                ( normlzdSens1MetricValsMatrix[arrayCol,:] - normlzdDefaultMetricValsMatrix[arrayCol,:] ) \
+            normlzdRightSensMatrix[:,arrayCol] = \
+                ( normlzdSens1MetricValsMatrix[:,arrayCol] - normlzdDefaultMetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdSens1ParamValsRow[0,arrayCol] - normlzdDefaultParamValsRow[0,arrayCol] )
 
         elif normlzdDefaultParamValsRow[0,arrayCol] < normlzdSens1ParamValsRow[0,arrayCol] < normlzdSens2ParamValsRow[0,arrayCol]:
 
             normlzd_pMid[0,arrayCol] = normlzdSens1ParamValsRow[0,arrayCol]
-            normlzdLeftSensMatrix[arrayCol,:] = \
-                ( normlzdSens1MetricValsMatrix[arrayCol,:] - normlzdDefaultMetricValsMatrix[arrayCol,:] ) \
+            normlzdLeftSensMatrix[:,arrayCol] = \
+                ( normlzdSens1MetricValsMatrix[:,arrayCol] - normlzdDefaultMetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdSens1ParamValsRow[0,arrayCol] - normlzdDefaultParamValsRow[0,arrayCol] )
-            normlzdRightSensMatrix[arrayCol,:] = \
-                ( normlzdSens2MetricValsMatrix[arrayCol,:] - normlzdSens1MetricValsMatrix[arrayCol,:] ) \
+            normlzdRightSensMatrix[:,arrayCol] = \
+                ( normlzdSens2MetricValsMatrix[:,arrayCol] - normlzdSens1MetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdSens2ParamValsRow[0,arrayCol] - normlzdSens1ParamValsRow[0,arrayCol] )
 
         elif normlzdDefaultParamValsRow[0,arrayCol] < normlzdSens2ParamValsRow[0,arrayCol] < normlzdSens1ParamValsRow[0,arrayCol]:
 
             normlzd_pMid[0,arrayCol] = normlzdSens2ParamValsRow[0,arrayCol]
-            normlzdLeftSensMatrix[arrayCol,:] = \
-                ( normlzdSens2MetricValsMatrix[arrayCol,:] - normlzdDefaultMetricValsMatrix[arrayCol,:] ) \
+            normlzdLeftSensMatrix[:,arrayCol] = \
+                ( normlzdSens2MetricValsMatrix[:,arrayCol] - normlzdDefaultMetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdSens2ParamValsRow[0,arrayCol] - normlzdDefaultParamValsRow[0,arrayCol] )
-            normlzdRightSensMatrix[arrayCol,:] = \
-                ( normlzdSens1MetricValsMatrix[arrayCol,:] - normlzdSens2MetricValsMatrix[arrayCol,:] ) \
+            normlzdRightSensMatrix[:,arrayCol] = \
+                ( normlzdSens1MetricValsMatrix[:,arrayCol] - normlzdSens2MetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdSens1ParamValsRow[0,arrayCol] - normlzdSens2ParamValsRow[0,arrayCol] )
 
         elif normlzdSens1ParamValsRow[0,arrayCol] < normlzdSens2ParamValsRow[0,arrayCol] < normlzdDefaultParamValsRow[0,arrayCol]:
 
             normlzd_pMid[0,arrayCol] = normlzdSens2ParamValsRow[0,arrayCol]
-            normlzdLeftSensMatrix[arrayCol,:] = \
-                ( normlzdSens2MetricValsMatrix[arrayCol,:] - normlzdSens1MetricValsMatrix[arrayCol,:] ) \
+            normlzdLeftSensMatrix[:,arrayCol] = \
+                ( normlzdSens2MetricValsMatrix[:,arrayCol] - normlzdSens1MetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdSens2ParamValsRow[0,arrayCol] - normlzdSens1ParamValsRow[0,arrayCol] )
-            normlzdRightSensMatrix[arrayCol,:] = \
-                ( normlzdDefaultMetricValsMatrix[arrayCol,:] - normlzdSens2MetricValsMatrix[arrayCol,:] ) \
+            normlzdRightSensMatrix[:,arrayCol] = \
+                ( normlzdDefaultMetricValsMatrix[:,arrayCol] - normlzdSens2MetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdDefaultParamValsRow[0,arrayCol] - normlzdSens2ParamValsRow[0,arrayCol] )
 
         elif normlzdSens2ParamValsRow[0,arrayCol] < normlzdSens1ParamValsRow[0,arrayCol] < normlzdDefaultParamValsRow[0,arrayCol]:
 
             normlzd_pMid[0,arrayCol] = normlzdSens1ParamValsRow[0,arrayCol]
-            normlzdLeftSensMatrix[arrayCol,:] = \
-                ( normlzdSens1MetricValsMatrix[arrayCol,:] - normlzdSens2MetricValsMatrix[arrayCol,:] ) \
+            normlzdLeftSensMatrix[:,arrayCol] = \
+                ( normlzdSens1MetricValsMatrix[:,arrayCol] - normlzdSens2MetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdSens1ParamValsRow[0,arrayCol] - normlzdSens2ParamValsRow[0,arrayCol] )
-            normlzdRightSensMatrix[arrayCol,:] = \
-                ( normlzdDefaultMetricValsMatrix[arrayCol,:] - normlzdSens1MetricValsMatrix[arrayCol,:] ) \
+            normlzdRightSensMatrix[:,arrayCol] = \
+                ( normlzdDefaultMetricValsMatrix[:,arrayCol] - normlzdSens1MetricValsMatrix[:,arrayCol] ) \
                 / ( normlzdDefaultParamValsRow[0,arrayCol] - normlzdSens1ParamValsRow[0,arrayCol] )
 
         else:
