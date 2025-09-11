@@ -1,15 +1,27 @@
 # -*- coding: utf-8 -*-
 
-# Run this app with `python3 quadtune_driver.py` and
-# view the plots at http://127.0.0.1:8050/ in your web browser.
-# (To open a web browser on a larson-group computer,
-# login to malan with `ssh -X` and then type `firefox &`.)
+"""
+Run this app with something like:
+
+ `python3 quadtune_driver.py --config_filename config_default.py`
+
+or
+
+ `python3 quadtune_driver.py -c config_example.py`  
+ 
+and view the plots at http://127.0.0.1:8050/ in your web browser.
+(To open a web browser on a larson-group computer,
+login to malan with `ssh -X` and then type `firefox &`.)
+"""
+
 
 import numpy as np
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
 from scipy.interpolate import UnivariateSpline
 from sklearn import linear_model
+
+import argparse
 
 import matplotlib.pyplot as plt
 
@@ -21,9 +33,6 @@ def main():
     create diagnostic plots.
     """
 
-    #from config_default import setUpConfig
-    #from config_example import setUpConfig
-    from config_example_eam import setUpConfig
     from set_up_inputs \
         import setUpColAndRowVectors, \
                setUpDefaultMetricValsCol, \
@@ -39,6 +48,13 @@ def main():
     from create_nonbootstrap_figs import createFigs
     from create_bootstrap_figs import bootstrapPlots
     from do_bootstrap_calcs import bootstrapCalculations
+
+    #Parse the argument to get the config filename and import setUpConfig from that file | !! Potentially unsafe -> Import arbitary function !!
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c","--config_filename", type=str,required=True,help="Please provide the filename of your config file, e.g., config_default.py")
+
+    args = parser.parse_args()
+    setUpConfig = getattr(__import__(args.config_filename.replace('.py','')), 'setUpConfig')
 
 
     print("Set up inputs . . .")

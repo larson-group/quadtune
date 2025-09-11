@@ -21,8 +21,11 @@ see the code comments in `config_default.py`.
 The file `config_example.py` is a scratch file
 where a user can store old configurations.
 
-3) Then run QuadTune with `python3 quadtune_driver.py` and
-view the plots at http://127.0.0.1:8050/ in your web browser.
+3) Then run QuadTune with something like:  
+ `python3 quadtune_driver.py --config_filename config_default.py`  
+or  
+ `python3 quadtune_driver.py -c config_example.py`  
+and view the plots at http://127.0.0.1:8050/ in your web browser.
 
 ## Some setup variables in config_default.py
 
