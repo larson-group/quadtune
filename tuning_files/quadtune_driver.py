@@ -1,9 +1,19 @@
 # -*- coding: utf-8 -*-
 
-# Run this app with `python3 quadtune_driver.py` and
-# view the plots at http://127.0.0.1:8050/ in your web browser.
-# (To open a web browser on a larson-group computer,
-# login to malan with `ssh -X` and then type `firefox &`.)
+"""
+Run this app with something like:
+
+ `python3 quadtune_driver.py --config_filename config_default.py`
+
+or
+
+ `python3 quadtune_driver.py -c config_example.py`  
+ 
+and view the plots at http://127.0.0.1:8050/ in your web browser.
+(To open a web browser on a larson-group computer,
+login to malan with `ssh -X` and then type `firefox &`.)
+"""
+
 
 import numpy as np
 from scipy.optimize import minimize
@@ -40,7 +50,7 @@ def main():
 
     #Parse the argument to get the config filename and import setUpConfig from that file | !! Potentially unsafe -> Import arbitary function !!
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c","--config_filename", type=str,required=True,help="Provide the path to your config file")
+    parser.add_argument("-c","--config_filename", type=str,required=True,help="Please provide the filename of your config file, e.g., config_default.py")
 
     args = parser.parse_args()
     setUpConfig = getattr(__import__(args.config_filename.replace('.py','')), 'setUpConfig')
