@@ -67,6 +67,7 @@ def main():
      metricsWeights, metricsNorms,
      obsMetricValsDict,
      obsOffsetCol, obsGlobalAvgCol, doObsOffset,
+     obsWeightsCol,
      paramsNames, paramsScales,
      transformedParamsNames,
      prescribedParamsNames, prescribedParamsScales,
@@ -79,12 +80,15 @@ def main():
      defaultSST4KNcFilename,
      interactParamsNamesAndFilenames,
      doPiecewise,
-     reglrCoef, doBootstrapSampling, numBootstrapSamples) \
+     reglrCoef, penaltyCoef, doBootstrapSampling, numBootstrapSamples) \
     = \
         setUpConfig(beVerbose=False)
 
     # Number of regional metrics, including all of varPrefixes including the metrics we're not tuning, plus custom regions.
     numMetrics = len(metricsNames)
+
+    # Save the original metricsWeights for global-avg diagnostics
+    metricsWeightsDiagnostic = np.copy(metricsWeights)
 
     # We apply a tiny weight to the final metrics.
     #    Those metrics will appear in the diagnostics
@@ -274,7 +278,7 @@ def main():
                               normlzdCurvMatrixSST4K,
                               doPiecewise, normlzd_dpMid,
                               normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                              reglrCoef,
+                              reglrCoef, penaltyCoef,
                               defaultBiasesCol)
 
         print(f"Sample avg of paramsBoot = {np.mean(paramsBoot, axis=0)}")
@@ -319,15 +323,22 @@ def main():
                          doPiecewise, normlzd_dpMid,
                          normlzdLeftSensMatrix, normlzdRightSensMatrix,
                          normlzdInteractDerivs, interactIdxs,
-                         reglrCoef,
+                         reglrCoef, penaltyCoef,
                          beVerbose=False)
 
     y_hat_i = defaultBiasesApproxNonlin + defaultBiasesCol + obsMetricValsCol
 
+    tunedMetricGlobalAvgs = np.diag(np.dot(metricsWeightsDiagnostic.reshape(-1, len(varPrefixes), order='F').T,
+                                (defaultBiasesApproxNonlin + defaultBiasesCol).reshape(-1, len(varPrefixes), order='F'))) \
+                            + np.diag(np.dot(obsWeightsCol.reshape(-1, len(varPrefixes), order='F').T,
+                                 obsMetricValsCol.reshape(-1, len(varPrefixes), order='F')))
+
+    print(f"\ntunedMetricGlobalAvgs = {tunedMetricGlobalAvgs}")
+
     #print("Tuned parameter perturbation values (dnormzldParamsSolnNonlin)")
     #for idx in range(0,len(paramsNames)): \
     #    print("{:33s} {:7.7g}".format(paramsNames[idx], dnormlzdParamsSolnNonlin[idx][0] ) )
-    print("Tuned parameter values (paramsSolnNonlin)")
+    print("\nTuned parameter values (paramsSolnNonlin)")
     for idx in range(0,len(paramsNames)): \
         print("{:33s} {:7.7g}".format(paramsNames[idx], paramsSolnNonlin[idx][0] ) )
 
@@ -339,7 +350,7 @@ def main():
                          normlzdCurvMatrix,
                          doPiecewise, normlzd_dpMid,
                          normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                         reglrCoef, numMetrics,
+                         numMetrics,
                          normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
                                                                     #   But metricsWeights is already set to eps for un-tuned metrics.
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
@@ -348,7 +359,7 @@ def main():
                         normlzdCurvMatrix,
                         doPiecewise, normlzd_dpMid,
                         normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                        reglrCoef, numMetrics,
+                        numMetrics,
                         normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdMinRatio (all metrics, non-unity metricsWeights) =", chisqdMin/chisqdZero)
@@ -358,7 +369,7 @@ def main():
                                    normlzdCurvMatrix,
                                    doPiecewise, normlzd_dpMid,
                                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                                   reglrCoef, numMetrics,
+                                   numMetrics,
                                    normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
     # Optimized value of chisqd, which uses optimal values of parameter perturbations
     chisqdUnweightedMin = lossFnc(dnormlzdParamsSolnNonlin.T,
@@ -366,7 +377,7 @@ def main():
                                   normlzdCurvMatrix,
                                   doPiecewise, normlzd_dpMid,
                                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                                  reglrCoef, numMetrics,
+                                  numMetrics,
                                   normlzdInteractDerivs, interactIdxs)  # Should I feed in numMetricsToTune instead??
 
     print("chisqdUnweightedMinRatio (all metrics, metricsWeights=1) =", chisqdUnweightedMin/chisqdUnweightedZero)
@@ -387,7 +398,7 @@ def main():
                                  normlzdCurvMatrix,
                                  doPiecewise, normlzd_dpMid,
                                  normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                                 reglrCoef, numMetrics, # Should I feed in numMetricsToTune instead??
+                                 numMetrics, # Should I feed in numMetricsToTune instead??
                                  normlzdInteractDerivs, interactIdxs)
 
     print("chisqdGlobTunedMinRatio =", chisqdGlobTunedMin/chisqdZero)
@@ -397,7 +408,7 @@ def main():
                                            normlzdCurvMatrix,
                                            doPiecewise, normlzd_dpMid,
                                            normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                                           reglrCoef, numMetrics,  # Should I feed in numMetricsToTune instead??
+                                           numMetrics,  # Should I feed in numMetricsToTune instead??
                                            normlzdInteractDerivs, interactIdxs)
 
     print("chisqdUnweightedGlobTunedMinRatio =", chisqdUnweightedGlobTunedMin/chisqdUnweightedZero)
@@ -549,6 +560,26 @@ def calc_dnormlzd_dpj_dpk(dnormlzdParams, interactIdxs):
 
     return dnormlzd_dpj_dpk
 
+def lossFncMetricsKernel(dnormlzdParams, normlzdSensMatrix,
+                   normlzdDefaultBiasesCol, metricsWeights,
+                   normlzdCurvMatrix,
+                   doPiecewise, normlzd_dpMid,
+                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                   numMetrics,
+                   normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0)):
+    """Each regional component of loss function (including squares)"""
+
+    weightedBiasDiffSqdCol = \
+        (-normlzdDefaultBiasesCol
+                    - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix,
+                             doPiecewise, normlzd_dpMid,
+                             normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                             numMetrics,
+                             normlzdInteractDerivs, interactIdxs)
+         ) * metricsWeights
+
+    return weightedBiasDiffSqdCol
+
 def lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
                    normlzdDefaultBiasesCol, metricsWeights,
                    normlzdCurvMatrix,
@@ -559,13 +590,15 @@ def lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
     """Each regional component of loss function (including squares)"""
 
     weightedBiasDiffSqdCol = \
-        np.square( (-normlzdDefaultBiasesCol
-                    - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix,
-                             doPiecewise, normlzd_dpMid,
-                             normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                             numMetrics,
-                             normlzdInteractDerivs, interactIdxs)
-         ) * metricsWeights )
+        np.square(
+            lossFncMetricsKernel(dnormlzdParams, normlzdSensMatrix,
+                   normlzdDefaultBiasesCol, metricsWeights,
+                   normlzdCurvMatrix,
+                   doPiecewise, normlzd_dpMid,
+                   normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                   numMetrics,
+                   normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0))
+        )
 
     return weightedBiasDiffSqdCol
 
@@ -573,7 +606,34 @@ def lossFnc(dnormlzdParams, normlzdSensMatrix, normlzdDefaultBiasesCol, metricsW
             normlzdCurvMatrix,
             doPiecewise, normlzd_dpMid,
             normlzdLeftSensMatrix, normlzdRightSensMatrix,
-            reglrCoef, numMetrics,
+            numMetrics,
+            normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0)):
+    """Define objective function (a.k.a. loss function) that is to be minimized."""
+
+    dnormlzdParams = np.atleast_2d(dnormlzdParams).T # convert from 1d row array to 2d column array
+    weightedBiasDiffSqdCol = \
+        lossFncMetrics(dnormlzdParams, normlzdSensMatrix,
+                       normlzdDefaultBiasesCol, metricsWeights,
+                       normlzdCurvMatrix,
+                       doPiecewise, normlzd_dpMid,
+                       normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                       numMetrics,
+                       normlzdInteractDerivs, interactIdxs)
+    #weightedBiasDiffSqdCol = \
+    #    np.square( (-normlzdDefaultBiasesCol \
+    #     - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics) \
+    #     ) * metricsWeights )
+    # This is the chisqd fnc listed in Eqn. (15.2.2) of Numerical Recipes, 1992.
+    # It is like MSE (not RMSE), except that it sums the squares rather than averaging them.
+    chisqd = np.sum(weightedBiasDiffSqdCol)
+
+    return chisqd
+
+def lossFncWithPenalty(dnormlzdParams, normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
+            normlzdCurvMatrix,
+            doPiecewise, normlzd_dpMid,
+            normlzdLeftSensMatrix, normlzdRightSensMatrix,
+            reglrCoef, penaltyCoef, numMetrics,
             normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0)):
     """Define objective function (a.k.a. loss function) that is to be minimized."""
 
@@ -593,7 +653,24 @@ def lossFnc(dnormlzdParams, normlzdSensMatrix, normlzdDefaultBiasesCol, metricsW
     # This is the chisqd fnc listed in Eqn. (15.2.2) of Numerical Recipes, 1992.
     # It is like MSE (not RMSE), except that it sums the squares rather than averaging them.
     chisqd = np.sum(weightedBiasDiffSqdCol) \
-             + reglrCoef * np.linalg.norm(dnormlzdParams, ord=1)
+             + reglrCoef * np.linalg.norm(dnormlzdParams, ord=1) \
+             + penaltyCoef * \
+                 np.square( np.sum (
+                     lossFncMetricsKernel(dnormlzdParams, normlzdSensMatrix,
+                                          normlzdDefaultBiasesCol, metricsWeights,
+                                          normlzdCurvMatrix,
+                                          doPiecewise, normlzd_dpMid,
+                                          normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                                          numMetrics,
+                                          normlzdInteractDerivs=np.empty(0), interactIdxs=np.empty(0))
+#                     (-normlzdDefaultBiasesCol
+#                    - fwdFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix,
+#                             doPiecewise, normlzd_dpMid,
+#                             normlzdLeftSensMatrix, normlzdRightSensMatrix,
+#                             numMetrics,
+#                             normlzdInteractDerivs, interactIdxs)
+#                 ) * metricsWeights
+                 ) )
     #chisqd = np.sqrt(np.sum(weightedBiasDiffSqdCol)) \
     #         + reglrCoef * np.linalg.norm(dnormlzdParams, ord=1)
     #chisqd = np.linalg.norm( weightedBiasDiffCol, ord=2 )**1  \
@@ -610,6 +687,7 @@ def solveUsingNonlin(metricsNames,
                      normlzdLeftSensMatrix, normlzdRightSensMatrix,
                      normlzdInteractDerivs = np.empty(0), interactIdxs = np.empty(0),
                      reglrCoef = 0.0,
+                     penaltyCoef = 0.0,
                      beVerbose = False):
     """Find optimal parameter values by minimizing quartic loss function"""
 
@@ -625,14 +703,14 @@ def solveUsingNonlin(metricsNames,
     # Perform nonlinear optimization
     #normlzdDefaultBiasesCol = defaultBiasesCol/np.abs(normMetricValsCol)
     #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=np.ones_like(np.transpose(defaultParamValsOrigRow)), \
-    dnormlzdParamsSolnNonlin = (minimize(lossFnc, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])),
+    dnormlzdParamsSolnNonlin = (minimize(lossFncWithPenalty, x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])),
                                          #dnormlzdParamsSolnNonlin = minimize(lossFnc,x0=x0TwoYr, \
                                          #dnormlzdParamsSolnNonlin = minimize(lossFnc,dnormlzdParamsSoln, \
                                          args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
                                                normlzdCurvMatrix,
                                                doPiecewise, normlzd_dpMid,
                                                normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                                               reglrCoef, numMetrics,
+                                               reglrCoef, penaltyCoef, numMetrics,
                                                normlzdInteractDerivs, interactIdxs),
                                          method='Powell', tol=1e-12
                                          ))
@@ -711,7 +789,7 @@ def solveUsingNonlin(metricsNames,
                                            0*normlzdCurvMatrix,
                                            doPiecewise, normlzd_dpMid,
                                            normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                                           reglrCoef, numMetrics),
+                                           numMetrics),  # TODO: SHOULD I ADD INTERACTION TERMS?
                                      method='Powell')
     dnormlzdParamsSolnLin = np.atleast_2d(dnormlzdParamsSolnLin.x).T
     dparamsSolnLin = dnormlzdParamsSolnLin * np.transpose(magParamValsRow)

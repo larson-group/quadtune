@@ -182,6 +182,7 @@ def calcObsGlobalAvgCol(varPrefixes,
     obsGlobalStdObsWeights = np.zeros(len(varPrefixes))
     obsGlobalAvgCol = np.empty(shape=[0, 1])
     obsGlobalStdCol = np.empty(shape=[0, 1])
+    obsWeightsCol = np.empty(shape=[0, 1])
     for idx, varPrefix in np.ndenumerate(varPrefixes):
         keysVarPrefix = [key for key in obsWeightsDict.keys() if varPrefix in key]
         # obsWeightsNames = np.array(list(obsWeightsDict.keys()), dtype=str)
@@ -208,8 +209,11 @@ def calcObsGlobalAvgCol(varPrefixes,
         obsGlobalStdCol = np.vstack((obsGlobalStdCol,
                                      obsGlobalStdObsWeights[idx] * np.ones((len(obsWeights), 1))
                                      ))
+        obsWeightsCol = np.vstack((obsWeightsCol,
+                                     obsWeights
+                                     ))
 
-    return obsGlobalAvgCol, obsGlobalStdCol
+    return obsGlobalAvgCol, obsGlobalStdCol, obsWeightsCol
 
 def setUp_x_MetricsList(varPrefixes, defPathAndFilename):
     """

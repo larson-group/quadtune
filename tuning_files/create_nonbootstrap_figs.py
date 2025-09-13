@@ -2755,9 +2755,7 @@ def createParamsCorrArrayFig(matrix,
 
 def minimize2ptDp(metricsNames, normMetricValsCol,
                   normlzdSensMatrix, defaultBiasesCol):
-    # normlzdCurvMatrix,
-    # reglrCoef,
-    # beVerbose):
+
 
 
 
@@ -2771,14 +2769,6 @@ def minimize2ptDp(metricsNames, normMetricValsCol,
     # Perform nonlinear optimization
     normlzdDefaultBiasesCol = defaultBiasesCol / np.abs(normMetricValsCol)
 
-    # dnormlzdParamsSolnNonlin = minimize(objFnc,x0=np.ones_like(np.transpose(defaultParamValsOrigRow)), \
-    # dnormlzdParamsSolnNonlin = minimize(objFnc,x0=np.zeros_like(np.transpose(defaultParamValsOrigRow[0])), \
-    # dnormlzdParamsSolnNonlin = minimize(objFnc,dnormlzdParamsSoln, \
-    #                           args=(normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
-    #                           normlzdCurvMatrix, reglrCoef, numMetrics),\
-    #                           method='Powell', tol=1e-12,
-    #                           bounds=Bounds(lb=lowerBoundsCol) )
-    # dnormlzdParamsSolnNonlin = np.atleast_2d(dnormlzdParamsSolnNonlin.x).T
 
     # dparamsSolnNonlin = dnormlzdParamsSolnNonlin * np.transpose(magParamValsRow)
     # paramsSolnNonlin = np.transpose(defaultParamValsOrigRow) + dparamsSolnNonlin

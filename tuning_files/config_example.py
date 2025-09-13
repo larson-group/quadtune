@@ -24,7 +24,7 @@ def setUpConfig(beVerbose):
     )
 
     # Flag for using bootstrap sampling
-    doBootstrapSampling = False
+    doBootstrapSampling = True
     numBootstrapSamples = 100
 
     # doPiecewise = True if using a piecewise linear emulator
@@ -34,6 +34,11 @@ def setUpConfig(beVerbose):
     # Increase this value to 0.1 or 0.5 or so if you want to eliminate
     # unimportant parameters.
     reglrCoef = 0.0
+
+    # Non-dimensional pre-factor of penalty term in loss function that penalizes when
+    #   the tuner leaves a global-mean bias, i.e., when the residuals don't sum to zero.
+    #   Set to 1.0 for a "medium" penalty, and set to 0.0 for no penalty.
+    penaltyCoef = 0.0
 
     # Use these flags to determine whether or not to create specific plots
     #    in create_nonbootstrap_figs.py
@@ -58,6 +63,19 @@ def setUpConfig(beVerbose):
         'vhMatrixFig': True,                       # Color-coded matrix of right singular vectors
     }
 
+    # Number of metrics to tune.
+    # If there are more metrics than this, then
+    #   the metrics in the list beyond this number
+    #   will appear in plots but not be counted in the tuning.
+    boxSize = 20
+    numBoxesInMap = np.rint( (360/boxSize) * (180/boxSize) )
+    # numMetricsToTune includes all (e.g., 20x20 regions) and as many
+    #   variables as we want to tune, up to all varPrefixes.
+    #numMetricsToTune = numBoxesInMap * len(varPrefixes)
+    #numMetricsToTune = numBoxesInMap * (len(varPrefixes)-1)  # Omit a variable from tuning.
+    numMetricsToTune = numBoxesInMap  # Only tune for first variable in varPrefixes
+    numMetricsToTune = numMetricsToTune.astype(int)
+
     #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
     #varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
     varPrefixes = ['RESTOM']
@@ -71,18 +89,7 @@ def setUpConfig(beVerbose):
     if ( len(obsOffset) != len(varPrefixes) ):
         sys.exit("Error: obsOffset must be the same size as the number of variables to tune.")
 
-    # Number of metrics to tune.
-    # If there are more metrics than this, then
-    #   the metrics in the list beyond this number
-    #   will appear in plots but not be counted in the tuning.
-    boxSize = 20
-    numBoxesInMap = np.rint( (360/boxSize) * (180/boxSize) )
-    # numMetricsToTune includes all (e.g., 20x20 regions) and as many
-    #   variables as we want to tune, up to all varPrefixes.
-    numMetricsToTune = numBoxesInMap * len(varPrefixes)
-    #numMetricsToTune = numBoxesInMap * (len(varPrefixes)-1)  # Omit a variable from tuning.
-    #numMetricsToTune = numBoxesInMap  # Only tune for first variable in varPrefixes
-    numMetricsToTune = numMetricsToTune.astype(int)
+
 
     obsOffsetCol = ( obsOffset[:, np.newaxis] * np.ones((1,numBoxesInMap.astype(int))) ).reshape(-1,1)
 
@@ -537,7 +544,7 @@ def setUpConfig(beVerbose):
 #        obsWeightsDict.update(obsRESTOMWeightsDict)
 
 
-    obsGlobalAvgCol, obsGlobalStdCol = \
+    obsGlobalAvgCol, obsGlobalStdCol, obsWeightsCol = \
     calcObsGlobalAvgCol(varPrefixes,
                         obsMetricValsDict, obsWeightsDict)
 
@@ -724,6 +731,7 @@ def setUpConfig(beVerbose):
             metricsWeights, metricsNorms,
             obsMetricValsDict,
             obsOffsetCol, obsGlobalAvgCol, doObsOffset,
+            obsWeightsCol,
             paramsNames, paramsScales,
             transformedParamsNames,
             prescribedParamsNames, prescribedParamsScales,
@@ -736,7 +744,7 @@ def setUpConfig(beVerbose):
             defaultSST4KNcFilename,
             interactParamsNamesAndFilenames,
             doPiecewise,
-            reglrCoef, doBootstrapSampling, numBootstrapSamples)
+            reglrCoef, penaltyCoef, doBootstrapSampling, numBootstrapSamples)
 
     # SST4K: Output defaultNcFilenameSST4K, etc.
 

@@ -18,7 +18,7 @@ def bootstrapCalculations(numSamples,
                           normlzdCurvMatrixSST4K,
                           doPiecewise, normlzd_dpMid,
                           normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                          reglrCoef,
+                          reglrCoef, penaltyCoef,
                           defaultBiasesCol):
     """
     Performs bootstrap resampling on the metric set and solves for parameter values for each bootstrap sample.
@@ -92,7 +92,7 @@ def bootstrapCalculations(numSamples,
                              doPiecewise, normlzd_dpMid,
                              normlzdLeftSensMatrix, normlzdRightSensMatrix,
                              interactDerivs, interactIdxs,
-                             reglrCoef,
+                             reglrCoef, penaltyCoef,
                              beVerbose=False))
 
         # Do a forward calculation of the biases in which the sensitivity matrix
@@ -141,7 +141,7 @@ def bootstrapCalculations(numSamples,
                                                        doPiecewise, normlzd_dpMid,
                                                        normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                                        interactDerivs, interactIdxs,
-                                                       reglrCoef,
+                                                       reglrCoef, penaltyCoef,
                                                        beVerbose=False)
 
     paramsTuned = paramsTuned[:, 0]
@@ -167,7 +167,7 @@ def bootstrapCalculations(numSamples,
                                               normlzdDefaultBiasesCol, normlzdCurvMatrix,
                                               doPiecewise, normlzd_dpMid,
                                               normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                                              reglrCoef)
+                                              reglrCoef, penaltyCoef)
     ciLowerBca, ciUpperBca = bcaIntervals(paramsBoot, paramsTuned, jackknife_params)
     paramBoundsBoot = np.array(
         [[ciLowerPercentile, paramsTuned, ciUpperPercentile], [ciLowerBca, paramsTuned, ciUpperBca]])
@@ -187,7 +187,7 @@ def computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetric
                            defaultParamValsOrigRow, normlzdSensMatrixPoly, normlzdDefaultBiasesCol, normlzdCurvMatrix,
                            doPiecewise, normlzd_dpMid,
                            normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                           reglrCoef):
+                           reglrCoef, penaltyCoef):
     """
     Computes jackknife estimates of tuned parameters by excluding each metric once and resolving the tuning.
 
@@ -223,7 +223,7 @@ def computeJackknifeParams(metricsNames, paramsNames, metricsWeights, normMetric
                                                        doPiecewise, normlzd_dpMid,
                                                        normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                                        interactDerivs, interactIdxs,
-                                                       reglrCoef,
+                                                       reglrCoef, penaltyCoef,
                                                        beVerbose=False)
     return jacknifeParams[:, :, 0]
 

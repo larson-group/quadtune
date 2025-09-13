@@ -13,6 +13,7 @@ regional metric weights, and observed values of parameters.
 
 import numpy as np
 import pandas as pd
+import sys
 
 
 def setUpConfig(beVerbose):
@@ -34,6 +35,11 @@ def setUpConfig(beVerbose):
     # Increase this value to 0.1 or 0.5 or so if you want to eliminate
     # unimportant parameters.
     reglrCoef = 0.0
+
+    # Non-dimensional pre-factor of penalty term in loss function that penalizes when
+    #   the tuner leaves a global-mean bias, i.e., when the residuals don't sum to zero.
+    #   Set to 1.0 for a "medium" penalty, and set to 0.0 for no penalty.
+    penaltyCoef = 0.0
 
     # Use these flags to determine whether or not to create specific plots
     #    in create_nonbootstrap_figs.py
@@ -547,7 +553,7 @@ def setUpConfig(beVerbose):
 
     # Set metricsNorms to be a global average
 
-    obsGlobalAvgCol, obsGlobalStdCol = \
+    obsGlobalAvgCol, obsGlobalStdCol, obsWeightsCol = \
     calcObsGlobalAvgCol(varPrefixes,
                         obsMetricValsDict, obsWeightsDict)
 
@@ -734,6 +740,7 @@ def setUpConfig(beVerbose):
             metricsWeights, metricsNorms,
             obsMetricValsDict,
             obsOffsetCol, obsGlobalAvgCol, doObsOffset,
+            obsWeightsCol,
             paramsNames, paramsScales,
             transformedParamsNames,
             prescribedParamsNames, prescribedParamsScales,
@@ -746,7 +753,7 @@ def setUpConfig(beVerbose):
             defaultSST4KNcFilename,
             interactParamsNamesAndFilenames,
             doPiecewise,
-            reglrCoef, doBootstrapSampling, numBootstrapSamples)
+            reglrCoef, penaltyCoef, doBootstrapSampling, numBootstrapSamples)
 
     # SST4K: Output defaultNcFilenameSST4K, etc.
 
