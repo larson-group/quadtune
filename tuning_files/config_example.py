@@ -24,7 +24,7 @@ def setUpConfig(beVerbose):
     )
 
     # Flag for using bootstrap sampling
-    doBootstrapSampling = True
+    doBootstrapSampling = False
     numBootstrapSamples = 100
 
     # doPiecewise = True if using a piecewise linear emulator
@@ -84,12 +84,10 @@ def setUpConfig(beVerbose):
     mapVarIdx = varPrefixes.index(mapVar)
 
     doObsOffset = False
-    #obsOffset = np.array([0, 0, 0, 0])
-    obsOffset = np.array([0])
+    #obsOffset = np.array([-1.00039087, 0, 0, 0, 0])
+    obsOffset = np.array([0.0])
     if ( len(obsOffset) != len(varPrefixes) ):
         sys.exit("Error: obsOffset must be the same size as the number of variables to tune.")
-
-
 
     obsOffsetCol = ( obsOffset[:, np.newaxis] * np.ones((1,numBoxesInMap.astype(int))) ).reshape(-1,1)
 

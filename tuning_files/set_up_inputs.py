@@ -270,7 +270,8 @@ def setUpObsCol(obsMetricValsDict, metricsNames,
         obsMetricValsCol[idx] = obsMetricValsDict[metricName]
 
     if doObsOffset:
-        obsMetricValsCol = obsMetricValsCol - obsGlobalAvgCol + obsOffsetCol
+        #obsMetricValsCol = obsMetricValsCol - obsGlobalAvgCol + obsOffsetCol
+        obsMetricValsCol = obsMetricValsCol + obsOffsetCol
 
     return obsMetricValsCol
 

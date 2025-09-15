@@ -114,6 +114,10 @@ def main():
                             defaultNcFilename
                             )
 
+    obsMetricValsAvgs = np.diag(np.dot(obsWeightsCol.reshape(-1, len(varPrefixes), order='F').T,
+                                 obsMetricValsCol.reshape(-1, len(varPrefixes), order='F')))
+    print(f"\nobsMetricValsAvgs (including any offsets) = {obsMetricValsAvgs}")
+
     # Construct numMetrics x numParams matrix of second derivatives, d2metrics/dparams2.
     #     The derivatives are normalized by observed metric values and max param values.
     # Also construct a linear sensitivity matrix, dmetrics/dparams.
@@ -139,7 +143,7 @@ def main():
         paramsNames, transformedParamsNames,
         len(paramsNames))
 
-    defaultMetricValsCol = obsMetricValsCol+defaultBiasesCol
+    defaultMetricValsCol = obsMetricValsCol + defaultBiasesCol
 
     # normlzdInteractBiasesCols = numMetrics x numInteractTerms array
     normlzdInteractBiasesCols = \
@@ -330,9 +334,7 @@ def main():
 
     tunedMetricGlobalAvgs = np.diag(np.dot(metricsWeightsDiagnostic.reshape(-1, len(varPrefixes), order='F').T,
                                 (defaultBiasesApproxNonlin + defaultBiasesCol).reshape(-1, len(varPrefixes), order='F'))) \
-                            + np.diag(np.dot(obsWeightsCol.reshape(-1, len(varPrefixes), order='F').T,
-                                 obsMetricValsCol.reshape(-1, len(varPrefixes), order='F')))
-
+                            + obsMetricValsAvgs
     print(f"\ntunedMetricGlobalAvgs = {tunedMetricGlobalAvgs}")
 
     #print("Tuned parameter perturbation values (dnormzldParamsSolnNonlin)")
