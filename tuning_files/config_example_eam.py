@@ -43,6 +43,7 @@ def setUpConfig(beVerbose):
 
     # Use these flags to determine whether or not to create specific plots
     #    in create_nonbootstrap_figs.py
+    doCreatePlots = True
     createPlotType = {
         'paramsErrorBarsFig': True,               # Parameter values with error bars
         'biasesOrderedArrowFig': False,            # Predicted vs. actual global-model bias removal
@@ -736,7 +737,7 @@ def setUpConfig(beVerbose):
     return (numMetricsNoCustom, numMetricsToTune,
             metricsNames, metricsNamesNoprefix,
             varPrefixes, mapVarIdx, boxSize,
-            highlightedMetricsToPlot, createPlotType,
+            highlightedMetricsToPlot, doCreatePlots, createPlotType,
             metricsWeights, metricsNorms,
             obsMetricValsDict,
             obsOffsetCol, obsGlobalAvgCol, doObsOffset,

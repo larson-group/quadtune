@@ -24,6 +24,8 @@ from scipy.interpolate import UnivariateSpline
 from sklearn import linear_model
 
 import argparse
+import sys
+
 
 import matplotlib.pyplot as plt
 
@@ -893,8 +895,7 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
     normlzdSens2MetricValsMatrix = sens2MetricValsMatrix * invrsObsMatrix
 
     # Initialize matrix to store second derivatives of metrics w.r.t. parameters
-    normlzdCurvMatrix = np.zeros_like(sens1MetricValsMatrix)
-    normlzdCurvMatrix2 = np.zeros_like(sens1MetricValsMatrix)  # 2nd way of calculating derivs
+    normlzdCurvMatrixSpline = np.zeros_like(sens1MetricValsMatrix)
     normlzdCurvMatrixPoly = np.zeros_like(sens1MetricValsMatrix)  # 3rd way of calculating derivs
     normlzdSensMatrixPoly = np.zeros_like(sens1MetricValsMatrix)  # Approx of linear sensitivity
     normlzdConstMatrixPoly = np.zeros_like(sens1MetricValsMatrix)  # Approx of linear sensitivity
@@ -976,12 +977,7 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
             # Based on spline, find 2nd derivative at arbitrary point (1).
             # I hope that the derivative has the same value at all points,
             #    since it is a parabola.
-            normlzdCurvMatrix[arrayRow,arrayCol] = metricValsSpline.derivative(n=2)(1)
-
-            # Check results using a 2nd calculation
-            polyCoefs = np.polyfit(normlzdOrdParams, normlzdOrdMetrics, 2)
-            normlzdCurvMatrix2[arrayRow,arrayCol] = 2*polyCoefs[0]
-            #pdb.set_trace()
+            normlzdCurvMatrixSpline[arrayRow,arrayCol] = metricValsSpline.derivative(n=2)(1)
 
             # Check results using a 3rd calculation
             polyCoefs = np.polyfit(normlzdOrdDparams, normlzdOrdMetrics, 2)
@@ -990,6 +986,11 @@ def constructNormlzdSensCurvMatrices(metricsNames, paramsNames, transformedParam
             normlzdCurvMatrixPoly[arrayRow][arrayCol] = 2. * polyCoefs[0]
             normlzdSensMatrixPoly[arrayRow,arrayCol] = polyCoefs[1]
             normlzdConstMatrixPoly[arrayRow,arrayCol] = polyCoefs[2]
+
+    if (not np.allclose(normlzdCurvMatrixSpline, normlzdCurvMatrixPoly) ):
+        print(f"\nnormlzdCurvMatrixSpline = {normlzdCurvMatrixSpline}")
+        print(f"\nnormlzdCurvMatrixPoly = {normlzdCurvMatrixPoly}")
+        sys.exit("Error: Spline and polynomial fits of curvature matrices disagree.")
 
     # Read in information for piecewise linear forward function
 
