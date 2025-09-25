@@ -27,4 +27,3 @@ jobs:
       - name: Run test from v1 paper
         run: |
           pytest
-          rm v1_paper_test_output.txt
