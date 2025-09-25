@@ -35,6 +35,10 @@ def main(args):
     create diagnostic plots.
     """
 
+    """
+    The following line adds the current directory (quadtune/tuning_files) to the python path, so that imports from, e.g., set_up_inputs work,
+    even if quadtune_driver.py is called from tests/ or another directory.
+    """
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
     from set_up_inputs \
@@ -482,7 +486,7 @@ def main(args):
                 createPlotType,
                 beVerbose=False, useLongTitle=False, paramBoundsBoot=paramBoundsBoot)
 
-    return paramsSolnNonlin
+    return paramsSolnNonlin, paramsNames
 
 def normlzdSemiLinMatrixFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics):
     """Calculate semi-linear matrix, sensMatrix + curvMatrix*dp, for use in forward solution"""
