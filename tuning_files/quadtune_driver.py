@@ -15,6 +15,8 @@ login to malan with `ssh -X` and then type `firefox &`.)
 """
 
 
+import os
+import sys
 import numpy as np
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
@@ -25,13 +27,15 @@ import argparse
 
 import matplotlib.pyplot as plt
 
-def main():
+def main(args):
     """
     Main driver for QuadTune.
     It calls routines to feeds in input configuration data,
     find optimal parameter values, and
     create diagnostic plots.
     """
+
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
     from set_up_inputs \
         import setUpColAndRowVectors, \
@@ -53,8 +57,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c","--config_filename", type=str,required=True,help="Please provide the filename of your config file, e.g., config_default.py")
 
-    args = parser.parse_args()
-    setUpConfig = getattr(__import__(args.config_filename.replace('.py','')), 'setUpConfig')
+    args = parser.parse_args(args)
+    setUpConfig = getattr(__import__(args.config_filename.replace('.py',''), fromlist=['setUpConfig']), 'setUpConfig')
 
 
     print("Set up inputs . . .")
@@ -63,7 +67,7 @@ def main():
     (numMetricsNoCustom, numMetricsToTune,
      metricsNames, metricsNamesNoprefix,
      varPrefixes, mapVarIdx, boxSize,
-     highlightedMetricsToPlot, createPlotType,
+     highlightedMetricsToPlot, doCreatePlots, createPlotType,
      metricsWeights, metricsNorms,
      obsMetricValsDict,
      obsOffsetCol, obsGlobalAvgCol, doObsOffset,
@@ -452,33 +456,33 @@ def main():
                                     normlzdCurvMatrix, numMetrics)
     #normlzdWeightedLinplusSensMatrixPoly = np.diag(np.transpose(metricsWeights)[0]) \
     #                                          @ normlzdLinplusSensMatrixPoly
+    if doCreatePlots:
+        createFigs(numMetricsNoCustom, metricsNames, metricsNamesNoprefix,
+                numMetricsToTune,
+                varPrefixes, mapVarIdx, boxSize,
+                highlightedMetricsToPlot,
+                paramsNames, transformedParamsNames, paramsScales,
+                metricsWeights, obsMetricValsCol, normMetricValsCol, magParamValsRow,
+                defaultBiasesCol, defaultBiasesApproxNonlin, defaultBiasesApproxElastic,
+                defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv,
+                normlzdDefaultBiasesCol,
+                normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix,
+                doPiecewise, normlzd_dpMid,
+                normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                normlzdInteractDerivs, interactIdxs,
+                normlzdOrdDparamsMin, normlzdOrdDparamsMax,
+                normlzdWeightedSensMatrixPoly,
+                dnormlzdParamsSolnNonlin,
+                defaultParamValsOrigRow,
+                normlzdGlobTunedBiasesCol, normlzdLinplusSensMatrixPoly,
+                paramsSolnLin, dnormlzdParamsSolnLin,
+                paramsSolnNonlin,
+                paramsSolnElastic, dnormlzdParamsSolnElastic,
+                sensNcFilenames, sensNcFilenamesExt, defaultNcFilename,
+                createPlotType,
+                beVerbose=False, useLongTitle=False, paramBoundsBoot=paramBoundsBoot)
 
-    createFigs(numMetricsNoCustom, metricsNames, metricsNamesNoprefix,
-               numMetricsToTune,
-               varPrefixes, mapVarIdx, boxSize,
-               highlightedMetricsToPlot,
-               paramsNames, transformedParamsNames, paramsScales,
-               metricsWeights, obsMetricValsCol, normMetricValsCol, magParamValsRow,
-               defaultBiasesCol, defaultBiasesApproxNonlin, defaultBiasesApproxElastic,
-               defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv,
-               normlzdDefaultBiasesCol,
-               normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix,
-               doPiecewise, normlzd_dpMid,
-               normlzdLeftSensMatrix, normlzdRightSensMatrix,
-               normlzdInteractDerivs, interactIdxs,
-               normlzdOrdDparamsMin, normlzdOrdDparamsMax,
-               normlzdWeightedSensMatrixPoly,
-               dnormlzdParamsSolnNonlin,
-               defaultParamValsOrigRow,
-               normlzdGlobTunedBiasesCol, normlzdLinplusSensMatrixPoly,
-               paramsSolnLin, dnormlzdParamsSolnLin,
-               paramsSolnNonlin,
-               paramsSolnElastic, dnormlzdParamsSolnElastic,
-               sensNcFilenames, sensNcFilenamesExt, defaultNcFilename,
-               createPlotType,
-               beVerbose=False, useLongTitle=False, paramBoundsBoot=paramBoundsBoot)
-
-    return
+    return paramsSolnNonlin
 
 def normlzdSemiLinMatrixFnc(dnormlzdParams, normlzdSensMatrix, normlzdCurvMatrix, numMetrics):
     """Calculate semi-linear matrix, sensMatrix + curvMatrix*dp, for use in forward solution"""
@@ -1372,5 +1376,5 @@ def findParamsUsingElastic(normlzdSensMatrix, normlzdWeightedSensMatrix,
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
 #        sensMatrixDashboard.run_server(debug=True)

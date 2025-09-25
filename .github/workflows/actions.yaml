@@ -1,0 +1,30 @@
+name: Run Quadtune Driver
+
+on:
+  push:
+
+
+jobs:
+  run-quadtune:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up Python 3.12.0
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.0'
+
+      - name: Install dependencies
+        run: |
+          cd tuning_files
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r requirements.txt
+
+      - name: Run test from v1 paper
+        run: |
+          pytest
+          rm v1_paper_test_output.txt
