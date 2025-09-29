@@ -98,7 +98,6 @@ def setUpConfig(beVerbose):
     highlightedMetricsToPlot = np.char.add(mapVarIdxPlusUnderscore, highlightedRegionsToPlot)                               
 
     # Directory where the regional files are stored (plus possibly a filename prefix)
-    print(os.getcwd())
     folder_name = thisfile_abspath  + '/../../tests/files_for_v1_paper/20.0sens1022_'
 
 

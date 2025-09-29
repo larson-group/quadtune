@@ -40,6 +40,9 @@ def setUpConfig(beVerbose):
     #   Set to 1.0 for a "medium" penalty, and set to 0.0 for no penalty.
     penaltyCoef = 0.0
 
+    # Flag for whether or not to create plots after the tuning is done.
+    doCreatePlots = True
+
     # Use these flags to determine whether or not to create specific plots
     #    in create_nonbootstrap_figs.py
     createPlotType = {
@@ -725,7 +728,7 @@ def setUpConfig(beVerbose):
     return (numMetricsNoCustom, numMetricsToTune,
             metricsNames, metricsNamesNoprefix,
             varPrefixes, mapVarIdx, boxSize,
-            highlightedMetricsToPlot, createPlotType,
+            highlightedMetricsToPlot, doCreatePlots, createPlotType,
             metricsWeights, metricsNorms,
             obsMetricValsDict,
             obsOffsetCol, obsGlobalAvgCol, doObsOffset,
