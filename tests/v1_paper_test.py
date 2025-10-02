@@ -16,7 +16,7 @@ import numpy as np
 
 def test_v1_paper_tuning():
     
-    quadtune_v1_test_parameter_values, _ = quadtune_driver.main(["-c", "tuning_files.configs_tests.config_v1_paper_test"])
+    quadtune_v1_test_parameter_values, _ = quadtune_driver.main(["-c", "configs_tests.config_v1_paper_test"])
     true_parameter_values = [0.7970267, 0.4655446, 0.0880349, 0.0004552707, 0.1357132]
     assert np.allclose(quadtune_v1_test_parameter_values.flatten(), true_parameter_values, rtol=1e-5)
 
