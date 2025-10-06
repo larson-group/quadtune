@@ -15,6 +15,7 @@ login to malan with `ssh -X` and then type `firefox &`.)
 """
 
 
+import importlib
 import os
 import sys
 import numpy as np
@@ -59,40 +60,71 @@ def main(args):
     from create_bootstrap_figs import bootstrapPlots
     from do_bootstrap_calcs import bootstrapCalculations
 
-    #Parse the argument to get the config filename and import setUpConfig from that file | !! Potentially unsafe -> Import arbitary function !!
+    import process_config_info
+
+    #Parse the argument to get the config filename and import setUpConfig from that file | !! Potentially unsafe -> Import arbitrary function !!
     parser = argparse.ArgumentParser()
     parser.add_argument("-c","--config_filename", type=str,required=True,help="Please provide the filename of your config file, e.g., config_default.py")
 
     args = parser.parse_args(args)
-    setUpConfig = getattr(__import__(args.config_filename.replace('.py',''), fromlist=['setUpConfig']), 'setUpConfig')
-
+    config_file = importlib.import_module(args.config_filename.replace('.py',''))
+    print(config_file)
 
     print("Set up inputs . . .")
 
     # The user should input all tuning configuration info into file set_up_inputs.py
-    (numMetricsNoCustom, numMetricsToTune,
-     metricsNames, metricsNamesNoprefix,
-     varPrefixes, mapVarIdx, boxSize,
-     highlightedMetricsToPlot, doCreatePlots, createPlotType,
-     metricsWeights, metricsNorms,
+    (numMetricsToTune,
+     varPrefixes, boxSize,
+     doCreatePlots, metricsNorms,
      obsMetricValsDict,
      obsOffsetCol, obsGlobalAvgCol, doObsOffset,
      obsWeightsCol,
-     paramsNames, paramsScales,
      transformedParamsNames,
-     prescribedParamsNames, prescribedParamsScales,
-     prescribedTransformedParamsNames,
-     prescribedParamValsRow,
-     prescribedSensNcFilenames, prescribedSensNcFilenamesExt,
-     sensNcFilenames, sensNcFilenamesExt,
-     sensSST4KNcFilenames, sensSST4KNcFilenamesExt,
      defaultNcFilename, globTunedNcFilename,
-     defaultSST4KNcFilename,
      interactParamsNamesAndFilenames,
      doPiecewise,
-     reglrCoef, penaltyCoef, doBootstrapSampling, numBootstrapSamples) \
+     reglrCoef, penaltyCoef, doBootstrapSampling,
+     paramsNamesScalesAndFilenames, folder_name,
+     prescribedParamsNamesScalesAndValues,
+     metricsNamesWeightsAndNormsCustom) \
     = \
-        setUpConfig(beVerbose=False)
+        config_file.config_core(beVerbose=False)
+    
+
+
+    # Process configuration
+
+    (paramsNames, paramsScales,
+    sensNcFilenames,sensNcFilenamesExt) = \
+        process_config_info.process_paramsnames_scales_and_filesuffixes(paramsNamesScalesAndFilenames,folder_name)
+
+    (prescribedParamsNames, prescribedParamsScales,
+    prescribedParamValsRow, prescribedSensNcFilenames,
+    prescribedSensNcFilenamesExt,
+    prescribedTransformedParamsNames) = \
+        process_config_info.process_prescribed_paramsnames(prescribedParamsNamesScalesAndValues,folder_name)
+
+    (metricsNames, metricsWeights, metricGlobalAvgs, numMetricsNoCustom) = \
+        process_config_info.process_metrics_names_weights_norms(defaultNcFilename,varPrefixes)
+
+
+    (metricsNames, metricsWeights,metricsNorms, metricsNamesNoprefix) = \
+        process_config_info.process_metrics_names_weights_norms_custom(metricsNamesWeightsAndNormsCustom,metricsNames,
+                                                                            metricsWeights,metricsNorms)
+    
+    
+
+    if doCreatePlots:
+        createPlotType, highlightedMetricsToPlot, mapVarIdx = \
+            config_file.config_plots(beVerbose=False)
+    
+
+    if doBootstrapSampling:
+        numBootstrapSamples, folder_name_SST4K, defaultSST4KNcFilename =\
+              config_file.config_bootstrap(beVerbose=False)
+        _, _ , sensSST4KNcFilenames, sensSST4KNcFilenamesExt  =\
+              process_config_info.process_paramsnames_scales_and_filesuffixes(paramsNamesScalesAndFilenames,folder_name_SST4K)
+
 
     # Number of regional metrics, including all of varPrefixes including the metrics we're not tuning, plus custom regions.
     numMetrics = len(metricsNames)
@@ -1125,7 +1157,7 @@ def approxMatrixWithSvd( matrix , sValsRatio, sValsNumToKeep,
                 sValsTrunc[idx] = 0.
     else:
         for idx, sVal in np.ndenumerate(sVals):
-            if idx+1 > sValsNumToKeep:
+            if idx+1 > sValsNumToKeep: 
                 sValsTrunc[idx] = 0.
 
     if beVerbose:

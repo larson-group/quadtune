@@ -12,14 +12,12 @@ in folder `create_regional_files`.
 E.g., use your IDE or at the command line type 
 `pip install -r requirements.txt`.
 
-2) QuadTune has no namelist file, but in `config_default.py`, 
-you may specify the configuration of your tuning run, 
+2) QuadTune has no namelist file, but 
+you may copy `configs_tests/config_v1_paper_test.py` into `tuning_files` and specify the configuration of your tuning run, 
 including the names of parameters to tune, the regional metrics to use, 
 and the file names containing that information.
-For more information on the configurable quantities,
-see the code comments in `config_default.py`.
-The file `config_example.py` is a scratch file
-where a user can store old configurations.
+For more information on the configurable quantities, see the code comments in `configs_tests/config_v1_paper_test.py`.
+
 
 3) Then run QuadTune with something like:  
  `python3 quadtune_driver.py --config_filename config_default.py`  
