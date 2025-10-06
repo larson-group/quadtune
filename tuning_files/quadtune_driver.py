@@ -115,8 +115,8 @@ def main(args):
     
 
     if doCreatePlots:
-        createPlotType, highlightedMetricsToPlot, mapVarIdx = \
-            config_file.config_plots(beVerbose=False,varPrefixes=varPrefixes)
+        createPlotType, highlightedMetricsToPlot, mapVarIdx, paramsAbbrv = \
+            config_file.config_plots(False,varPrefixes,paramsNames)
     
 
     if doBootstrapSampling:
@@ -501,7 +501,7 @@ def main(args):
                 numMetricsToTune,
                 varPrefixes, mapVarIdx, boxSize,
                 highlightedMetricsToPlot,
-                paramsNames, transformedParamsNames, paramsScales,
+                paramsNames,paramsAbbrv, transformedParamsNames, paramsScales,
                 metricsWeights, obsMetricValsCol, normMetricValsCol, magParamValsRow,
                 defaultBiasesCol, defaultBiasesApproxNonlin, defaultBiasesApproxElastic,
                 defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv,

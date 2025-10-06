@@ -79,6 +79,7 @@ def config_core(beVerbose: bool):
 
     # Directory where the regional files are stored (plus possibly a filename prefix)
     folder_name = 'Regional_files/20250725_2yr_20x20_ANN_BCASE/20.0beta06_'
+    # folder_name = "data/20.0beta06_"
     #folder_name = 'Regional_files/20241022_1yr_20x20regs/30.0sens1022_'
     #folder_name = 'Regional_files/20241022_1yr_sst4k_30x30/30p4k1022_'
     #folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
@@ -391,6 +392,9 @@ def config_core(beVerbose: bool):
             setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',
                                       obsPathAndFilename='Regional_files/20250711_2yr_20x20_ANN_BCASE/'
                                                          + '20.0_OBS.nc')
+            # setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',
+            #                           obsPathAndFilename='data/'
+            #                                              + '20.0_OBS.nc')
             #setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',
             #                          obsPathAndFilename='Regional_files/20250429_1yr_20x20_ANN_CAM/'
             #                                             + '20.0sens1022_20241011_20.0_OBS.nc')
@@ -587,7 +591,7 @@ def config_core(beVerbose: bool):
 
 
 
-def config_plots(beVerbose: bool, varPrefixes:list[str]) -> tuple[dict[str, bool], np.ndarray, int]:
+def config_plots(beVerbose: bool, varPrefixes:list[str],paramsNames:list[str]) -> tuple[dict[str, bool], np.ndarray, int]:
     """
     Configure settings for creating plots.
     For example, specify which plots to create.
@@ -635,7 +639,9 @@ def config_plots(beVerbose: bool, varPrefixes:list[str]) -> tuple[dict[str, bool
     mapVarIdxPlusUnderscore = mapVar + '_'
     highlightedMetricsToPlot = np.char.add(mapVarIdxPlusUnderscore, highlightedRegionsToPlot)
 
-    return createPlotType, highlightedMetricsToPlot, mapVarIdx
+    paramsAbbrv= abbreviateParamsNames(paramsNames) 
+
+    return createPlotType, highlightedMetricsToPlot, mapVarIdx, paramsAbbrv
 
 
 def config_bootstrap(beVerbose: bool) -> tuple[int,str,str]:

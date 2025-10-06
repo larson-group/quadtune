@@ -193,7 +193,7 @@ def config_core(beVerbose: bool):
      prescribedParamsNamesScalesAndValues,
      metricsNamesWeightsAndNormsCustom)
 
-def config_plots(beVerbose: bool, varPrefixes:list[str]) -> tuple[dict[str, bool], np.ndarray, int]:
+def config_plots(beVerbose: bool, varPrefixes:list[str],paramsNames:list[str]) -> tuple[dict[str, bool], np.ndarray, int]:
     """
     Configure settings for creating plots.
     For example, specify which plots to create.
@@ -241,9 +241,11 @@ def config_plots(beVerbose: bool, varPrefixes:list[str]) -> tuple[dict[str, bool
     highlightedRegionsToPlot = np.array(['1_6', '1_14', '3_6', '3_14',
                                          '6_14', '6_18', '8_13'])
     mapVarIdxPlusUnderscore = mapVar + '_'
-    highlightedMetricsToPlot = np.char.add(mapVarIdxPlusUnderscore, highlightedRegionsToPlot)      
+    highlightedMetricsToPlot = np.char.add(mapVarIdxPlusUnderscore, highlightedRegionsToPlot)     
 
-    return createPlotType, highlightedMetricsToPlot, mapVarIdx
+    paramsAbbrv= abbreviateParamsNames(paramsNames) 
+
+    return createPlotType, highlightedMetricsToPlot, mapVarIdx, paramsAbbrv
 
 
 

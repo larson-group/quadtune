@@ -39,7 +39,7 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                numMetricsToTune,
                varPrefixes, mapVarIdx, boxSize,
                highlightedMetricsToPlot,
-               paramsNames, transformedParamsNames, paramsScales,
+               paramsNames,paramsAbbrv, transformedParamsNames, paramsScales,
                metricsWeights, obsMetricValsCol, normMetricValsCol, magParamValsRow,
                defaultBiasesCol, defaultBiasesApproxNonlin, defaultBiasesApproxElastic,
                defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv,
@@ -65,7 +65,6 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     rather than a bootstrap ensemble of parameter sets.
     """
     
-    from config_default import abbreviateParamsNames
     from quadtune_driver import ( lossFncMetrics,
                                   normlzdSemiLinMatrixFnc,
                                   normlzdPiecewiseLinMatrixFnc )
@@ -85,9 +84,6 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
 
     normlzdResid = (-defaultBiasesApproxNonlin - defaultBiasesCol)[:, 0] \
                    / np.abs(normMetricValsCol[:, 0])
-
-    # Remove prefixes from CLUBB variable names in order to shorten them
-    paramsAbbrv = abbreviateParamsNames(paramsNames)
 
     # If the singular values are to be related to the eigenvalues of the covariance matrix
     #     then the columns of the matrix to decompose, X, must have each column centered.

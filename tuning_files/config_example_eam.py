@@ -25,7 +25,7 @@ def config_core(beVerbose: bool):
     )
 
     # Flag for using bootstrap sampling
-    doBootstrapSampling = False
+    doBootstrapSampling = True
 
     # doPiecewise = True if using a piecewise linear emulator
     doPiecewise = False
@@ -76,7 +76,8 @@ def config_core(beVerbose: bool):
     #folder_name = 'Regional_files/20241022_1yr_20x20regs/30.0sens1022_'
     #folder_name = 'Regional_files/20241022_1yr_sst4k_30x30/30p4k1022_'
     #folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
-    folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
+    # folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
+    folder_name = "data/20.0beta06_"
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_take3/20.0sens1022_'
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_msq/20.0sens1022_'
     #folder_name = 'Regional_files/20231211_20x20regs/sens0707_'
@@ -595,7 +596,7 @@ def config_core(beVerbose: bool):
 
     # SST4K: Output defaultNcFilenameSST4K, etc.
 
-def config_plots(beVerbose: bool, varPrefixes:list[str]) -> tuple[dict[str, bool], np.ndarray, int]:
+def config_plots(beVerbose: bool, varPrefixes:list[str],paramsNames:list[str]) -> tuple[dict[str, bool], np.ndarray, int]:
     """
     Configure settings for creating plots.
     For example, specify which plots to create.
@@ -643,7 +644,9 @@ def config_plots(beVerbose: bool, varPrefixes:list[str]) -> tuple[dict[str, bool
     mapVarIdxPlusUnderscore = mapVar + '_'
     highlightedMetricsToPlot = np.char.add(mapVarIdxPlusUnderscore, highlightedRegionsToPlot)      
 
-    return createPlotType, highlightedMetricsToPlot, mapVarIdx
+    paramsAbbrv= abbreviateParamsNames(paramsNames) 
+
+    return createPlotType, highlightedMetricsToPlot, mapVarIdx, paramsAbbrv
 
 
 def config_bootstrap(beVerbose: bool) -> tuple[int,str,str]:
