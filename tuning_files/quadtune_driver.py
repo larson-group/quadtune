@@ -116,7 +116,7 @@ def main(args):
 
     if doCreatePlots:
         createPlotType, highlightedMetricsToPlot, mapVarIdx = \
-            config_file.config_plots(beVerbose=False)
+            config_file.config_plots(beVerbose=False,varPrefixes=varPrefixes)
     
 
     if doBootstrapSampling:
@@ -325,7 +325,9 @@ def main(args):
                               doPiecewise, normlzd_dpMid,
                               normlzdLeftSensMatrix, normlzdRightSensMatrix,
                               reglrCoef, penaltyCoef,
-                              defaultBiasesCol)
+                              defaultBiasesCol
+                              ,normlzdInteractDerivs,interactIdxs
+                              )
 
         print(f"Sample avg of paramsBoot = {np.mean(paramsBoot, axis=0)}")
 

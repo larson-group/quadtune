@@ -19,7 +19,8 @@ def bootstrapCalculations(numSamples,
                           doPiecewise, normlzd_dpMid,
                           normlzdLeftSensMatrix, normlzdRightSensMatrix,
                           reglrCoef, penaltyCoef,
-                          defaultBiasesCol):
+                          defaultBiasesCol
+                          ,normlzdInteractDerivs,interactIdxs):
     """
     Performs bootstrap resampling on the metric set and solves for parameter values for each bootstrap sample.
     Also computes confidence intervals, residuals, and trade-off diagnostics.
@@ -102,7 +103,7 @@ def bootstrapCalculations(numSamples,
             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,normlzdCurvMatrix,
                    doPiecewise, normlzd_dpMid,
                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                   numMetrics) \
+                   numMetrics,normlzdInteractDerivs,interactIdxs) \
             * np.abs(normMetricValsCol)
 
         # Do a forward calculation of the biases in which the sensitivity matrix
@@ -112,7 +113,7 @@ def bootstrapCalculations(numSamples,
             fwdFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPolySST4K, normlzdCurvMatrixSST4K,
                    doPiecewise, normlzd_dpMid,
                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
-                   numMetrics) \
+                   numMetrics,normlzdInteractDerivs,interactIdxs) \
             * np.abs(normMetricValsCol)
 
         # SST4K: If we feed in normlzdSensMatrixPoly, etc., for SST4K runs, then we can calc spread for SST4K.
