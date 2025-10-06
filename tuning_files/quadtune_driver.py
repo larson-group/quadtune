@@ -62,7 +62,7 @@ def main(args):
 
     import process_config_info
 
-    #Parse the argument to get the config filename and import setUpConfig from that file | !! Potentially unsafe -> Import arbitary function !!
+    #Parse the argument to get the config filename and import setUpConfig from that file | !! Potentially unsafe -> Import arbitrary function !!
     parser = argparse.ArgumentParser()
     parser.add_argument("-c","--config_filename", type=str,required=True,help="Please provide the filename of your config file, e.g., config_default.py")
 
@@ -88,7 +88,7 @@ def main(args):
      prescribedParamsNamesScalesAndValues,
      metricsNamesWeightsAndNormsCustom) \
     = \
-        config_file.config_mandatory(beVerbose=False)
+        config_file.config_core(beVerbose=False)
     
 
 
@@ -96,13 +96,13 @@ def main(args):
 
     (paramsNames, paramsScales,
     sensNcFilenames,sensNcFilenamesExt) = \
-        process_config_info.process_paramsnames(paramsNamesScalesAndFilenames,folder_name)
+        process_config_info.process_paramsnames_scales_and_filesuffixes(paramsNamesScalesAndFilenames,folder_name)
 
     (prescribedParamsNames, prescribedParamsScales,
     prescribedParamValsRow, prescribedSensNcFilenames,
     prescribedSensNcFilenamesExt,
     prescribedTransformedParamsNames) = \
-        process_config_info.process_prescribed_paramnames(prescribedParamsNamesScalesAndValues,folder_name)
+        process_config_info.process_prescribed_paramsnames(prescribedParamsNamesScalesAndValues,folder_name)
 
     (metricsNames, metricsWeights, metricGlobalAvgs, numMetricsNoCustom) = \
         process_config_info.process_metrics_names_weights_norms(defaultNcFilename,varPrefixes)
@@ -115,12 +115,15 @@ def main(args):
     
 
     if doCreatePlots:
-        createPlotType, highlightedMetricsToPlot, mapVarIdx = config_file.config_plots(beVerbose=False)
+        createPlotType, highlightedMetricsToPlot, mapVarIdx = \
+            config_file.config_plots(beVerbose=False)
     
 
     if doBootstrapSampling:
-        numBootstrapSamples, folder_name_SST4K, defaultSST4KNcFilename = config_file.config_bootstrap(beVerbose=False)
-        _, _ , sensSST4KNcFilenames, sensSST4KNcFilenamesExt  = process_config_info.process_paramsnames(paramsNamesScalesAndFilenames,folder_name_SST4K)
+        numBootstrapSamples, folder_name_SST4K, defaultSST4KNcFilename =\
+              config_file.config_bootstrap(beVerbose=False)
+        _, _ , sensSST4KNcFilenames, sensSST4KNcFilenamesExt  =\
+              process_config_info.process_paramsnames_scales_and_filesuffixes(paramsNamesScalesAndFilenames,folder_name_SST4K)
 
 
     # Number of regional metrics, including all of varPrefixes including the metrics we're not tuning, plus custom regions.

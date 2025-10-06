@@ -16,7 +16,7 @@ import pandas as pd
 import sys
 
 
-def config_mandatory(beVerbose):
+def config_core(beVerbose: bool):
     from set_up_inputs import (
         setUp_x_MetricsList,
         setUpDefaultMetricValsCol, setUp_x_ObsMetricValsDict,
@@ -595,17 +595,13 @@ def config_mandatory(beVerbose):
 
     # SST4K: Output defaultNcFilenameSST4K, etc.
 
-def config_plots(beVerbose: bool) -> tuple[dict[str, bool], np.ndarray, int]:
+def config_plots(beVerbose: bool, varPrefixes:list[str]) -> tuple[dict[str, bool], np.ndarray, int]:
     """
     Configure settings for creating plots.
     For example, specify which plots to create.
     
     :param beVerbose: Boolean flag to make output more verbose.
     """
-
-
-    # Get varPrefixes from config_mandatory
-    _,varPrefixes,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_=config_mandatory(beVerbose=False)
 
     # Use these flags to determine whether or not to create specific plots
     # in create_nonbootstrap_figs.py

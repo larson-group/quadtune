@@ -13,9 +13,9 @@ regional metric weights, and observed values of parameters.
 
 import numpy as np
 import pandas as pd
+import sys
 
-
-def setUpConfig(beVerbose):
+def config_core(beVerbose: bool):
     from set_up_inputs import (
         setUp_x_MetricsList,
         setUpDefaultMetricValsCol, setUp_x_ObsMetricValsDict,
@@ -25,7 +25,6 @@ def setUpConfig(beVerbose):
 
     # Flag for using bootstrap sampling
     doBootstrapSampling = False
-    numBootstrapSamples = 100
 
     # doPiecewise = True if using a piecewise linear emulator
     doPiecewise = False
@@ -40,38 +39,8 @@ def setUpConfig(beVerbose):
     #   Set to 1.0 for a "medium" penalty, and set to 0.0 for no penalty.
     penaltyCoef = 0.0
 
-    # Use these flags to determine whether or not to create specific plots
-    #    in create_nonbootstrap_figs.py
-    createPlotType = {
-        'paramsErrorBarsFig': True,               # Parameter values with error bars
-        'biasesOrderedArrowFig': False,            # Predicted vs. actual global-model bias removal
-        'threeDotFig': True,                       # Quadratic fnc for each metric and parameter
-        'metricsBarChart': True,                   # Visualization of tuning matrix eqn
-        'paramsIncrsBarChart': True,               # Mean parameter contributions to removal of biases
-        'paramsAbsIncrsBarChart': True,            # Squared parameter contributions to bias removal
-        'paramsTotContrbBarChart': False,          # Linear + nonlinear contributions to bias removal
-        'biasesVsDiagnosticScatterplot': False,    # Scatterplot of biases vs. other fields
-        'dpMin2PtFig': False,                      # Min param perturbation needed to simultaneously remove 2 biases
-        'dpMinMatrixScatterFig': False,            # Scatterplot of min param perturbation for 2-bias removal
-        'projectionMatrixFigs': False,             # Color-coded projection matrix
-        'biasesVsSensMagScatterplot': True,        # Biases vs. parameter sensitivities
-        'biasesVsSvdScatterplot': False,           # Left SV1*bias vs. left SV2*bias
-        'paramsCorrArrayFig': True,                # Color-coded matrix showing correlations among parameters
-        'sensMatrixAndBiasVecFig': False,          # Color-coded matrix equation
-        'PcaBiplot': False,                        # Principal components biplot
-        'PcSensMap': True,                         # Maps showing sensitivities to parameters and left singular vectors
-        'vhMatrixFig': True,                       # Color-coded matrix of right singular vectors
-    }
-
-    #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
-    #varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
-    varPrefixes = ['RESTOM']
-    # mapVarIdx is the field is plotted in the 20x20 maps created by PcSensMap.
-    mapVar = 'RESTOM'
-    mapVarIdx = varPrefixes.index(mapVar)
-
-    doObsOffset = True
-    obsOffset = np.array([0, 0, 0, 0])
+    # Flag for whether or not to create plots after the tuning is done.
+    doCreatePlots = True
 
 
     # Number of metrics to tune.
@@ -82,23 +51,25 @@ def setUpConfig(beVerbose):
     numBoxesInMap = np.rint( (360/boxSize) * (180/boxSize) )
     # numMetricsToTune includes all (e.g., 20x20 regions) and as many
     #   variables as we want to tune, up to all varPrefixes.
-    numMetricsToTune = numBoxesInMap * len(varPrefixes)
+    #numMetricsToTune = numBoxesInMap * len(varPrefixes)
     #numMetricsToTune = numBoxesInMap * (len(varPrefixes)-1)  # Omit a variable from tuning.
-    #numMetricsToTune = numBoxesInMap  # Only tune for first variable in varPrefixes
+    numMetricsToTune = numBoxesInMap  # Only tune for first variable in varPrefixes
     numMetricsToTune = numMetricsToTune.astype(int)
+
+    #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
+    #varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
+    varPrefixes = ['RESTOM']
+
+
+    doObsOffset = False
+    #obsOffset = np.array([-1.00039087, 0, 0, 0, 0])
+    obsOffset = np.array([0.0])
+    if ( len(obsOffset) != len(varPrefixes) ):
+        sys.exit("Error: obsOffset must be the same size as the number of variables to tune.")
 
     obsOffsetCol = ( obsOffset[:, np.newaxis] * np.ones((1,numBoxesInMap.astype(int))) ).reshape(-1,1)
 
-    # These are a selected subset of the tunable metrics that we want to include
-    #      in the metrics bar-chart, 3-dot plot, etc.
-    # They must be a subset of metricsNames
-    highlightedRegionsToPlot = np.array(['5_5', '4_8', '5_9',
-                                         '5_14', '5_17', '5_1', '5_18',
-                                         '5_2', '6_14', '6_13', '6_15', '7_5'])
-    #highlightedRegionsToPlot = np.array(['6_14', '4_8', '5_14',
-    #                                     '7_5', '6_13'])
-    mapVarIdxPlusUnderscore = mapVar + '_'
-    highlightedMetricsToPlot = np.char.add(mapVarIdxPlusUnderscore, highlightedRegionsToPlot)
+
 
     #highlightedMetricsToPlot = np.array(['PRECT_5_5', 'PRECT_4_8',
     #                                     'PRECT_5_14',
@@ -124,8 +95,6 @@ def setUpConfig(beVerbose):
     #folder_name = 'Regional_files/stephens_20240131/btune_regional_files/btune_'
 
     # Directory where the SST4K regional files are stored (plus possibly a filename prefix)
-    folder_name_SST4K = folder_name
-    ###folder_name_SST4K = 'Regional_files/20241022_1yr_sst4k_20x20/20p4k1022_'
 
     # Netcdf file containing metric and parameter values from the default simulation
     #defaultNcFilename = \
@@ -137,12 +106,6 @@ def setUpConfig(beVerbose):
         (
             folder_name + 'dflt_Regional.nc'
             ###folder_name + '1_Regional.nc'
-        )
-
-    defaultSST4KNcFilename = \
-        (
-            folder_name_SST4K + 'dflt_Regional.nc'
-            ###folder_name_SST4K + '1_Regional.nc'
         )
 
 
@@ -359,23 +322,6 @@ def setUpConfig(beVerbose):
         # 'hetfrz_dust_scalfacp_Regional.nc'],
         ]
 
-    # Split up the above list into parameter names, scales, and filenames.
-    dfparamsNamesScalesAndFilenames = \
-        pd.DataFrame(paramsNamesScalesAndFilenames,
-                     columns=['paramsNames', 'paramsScales',
-                              'sensNcFilenamesSuffix', 'sensNcFilenamesSuffixExt'])
-                              #'sensNcFilenamesExt', 'sensNcFilenames'] )
-    paramsNames = dfparamsNamesScalesAndFilenames[['paramsNames']].to_numpy().astype(str)[:, 0]
-    # Extract scaling factors of parameter values from user-defined list paramsNamesScalesAndFilenames.
-    # The scaling is not used for any calculations, but it allows us to avoid plotting very large or small values.
-    paramsScales = dfparamsNamesScalesAndFilenames[['paramsScales']].to_numpy().astype(float)[:, 0]
-    sensNcFilenamesSuffix = dfparamsNamesScalesAndFilenames[['sensNcFilenamesSuffix']].to_numpy().astype(str)[:, 0]
-    sensNcFilenames = np.char.add(folder_name, sensNcFilenamesSuffix)
-    sensSST4KNcFilenames = np.char.add(folder_name_SST4K, sensNcFilenamesSuffix)
-    sensNcFilenamesSuffixExt = dfparamsNamesScalesAndFilenames[['sensNcFilenamesSuffixExt']].to_numpy().astype(str)[:, 0]
-    sensNcFilenamesExt = np.char.add(folder_name, sensNcFilenamesSuffixExt)
-    sensSST4KNcFilenamesExt = np.char.add(folder_name_SST4K, sensNcFilenamesSuffixExt)
-
     interactParamsNamesAndFilenames = \
         []
     interactParamsNamesAndFilenamesType = np.dtype([('jParamName', object),
@@ -435,70 +381,9 @@ def setUpConfig(beVerbose):
                     # 'sens0707_4_Regional.nc',
                     # 'sens0707_5_Regional.nc'], \
         ]
-    # Split up the above list into parameter names, scales, and filenames.
-    dfprescribedParamsNamesScalesAndValues = \
-        pd.DataFrame(prescribedParamsNamesScalesAndValues,
-                     columns=['prescribedParamsNames',
-                              'prescribedParamsScales',
-                              'prescribedParamVals',
-                              'prescribedSensNcFilenamesSuffix', 'prescribedSensNcFilenamesSuffixExt'
-                              ]
-                     )
-    prescribedParamsNames = dfprescribedParamsNamesScalesAndValues[['prescribedParamsNames']].to_numpy().astype(str)[:,0]
-    # Extract scaling factors of parameter values from user-defined list paramsNamesScalesAndFilenames.
-    # The scaling is not used for any calculations, but it allows us to avoid plotting very large or small values.
-    prescribedParamsScales = dfprescribedParamsNamesScalesAndValues[['prescribedParamsScales']].to_numpy().astype(float)[:, 0]
-    prescribedParamVals = dfprescribedParamsNamesScalesAndValues[['prescribedParamVals']].to_numpy().astype(float)[:, 0]
-    prescribedParamValsRow = prescribedParamVals
-    prescribedSensNcFilenamesSuffix = dfprescribedParamsNamesScalesAndValues[
-                                    ['prescribedSensNcFilenamesSuffix']].to_numpy().astype(str)[:, 0]
-    prescribedSensNcFilenames = np.char.add(folder_name, prescribedSensNcFilenamesSuffix)
-    prescribedSensNcFilenamesSuffixExt = dfprescribedParamsNamesScalesAndValues[
-                                       ['prescribedSensNcFilenamesSuffixExt']].to_numpy().astype(str)[:, 0]
-    prescribedSensNcFilenamesExt = np.char.add(folder_name, prescribedSensNcFilenamesSuffixExt)
-    prescribedTransformedParamsNames = np.array([''])
-
-
-    # Comment out if not using 20x20reg files
-    metricsNamesWeightsAndNorms, metricGlobalValsFromFile \
-        = setUp_x_MetricsList(varPrefixes, defaultNcFilename)
-    # Split up the list above into metric names and the corresponding weights.
-    dfMetricsNamesWeightsAndNorms = \
-        pd.DataFrame(metricsNamesWeightsAndNorms, columns=['metricsNames', 'metricsWeights', 'metricsNorms'])
-    # Here we initialize metricsNames to all the standard (e.g., 20x20) regions for all varPrefixes
-    #    Later down, we'll append any custom regions, e.g., DYCOMS
-    metricsNames = dfMetricsNamesWeightsAndNorms[['metricsNames']].to_numpy().astype(str)[:, 0]
-    metricsWeights = dfMetricsNamesWeightsAndNorms[['metricsWeights']].to_numpy().astype(float)
-    # metricsNorms = dfMetricsNamesWeightsAndNorms[['metricsNorms']].to_numpy().astype(float)
 
 
 
-    # Set up a column vector of metric values from the default simulation
-    defaultMetricValsCol = \
-        setUpDefaultMetricValsCol(metricsNames, defaultNcFilename)
-
-    #print("defaultMetricValsCol = ", defaultMetricValsCol)
-
-    #metricGlobalAvg = np.dot(metricsWeights.T, defaultMetricValsCol)
-    metricGlobalAvgs = np.diag(np.dot(metricsWeights.reshape(-1, len(varPrefixes), order='F').T,
-                                      defaultMetricValsCol.reshape(-1, len(varPrefixes), order='F')))
-    #np.dot(metricsWeights.reshape(-1,2,order='F').T, defaultMetricValsCol.reshape(-1,2,order='F'))
-
-    if not np.isclose(metricGlobalValsFromFile, metricGlobalAvgs).all():
-        print("Error: metricGlobalAvgs not equal to metricGlobalValsFromFile")
-    print("\nThe following two global values should be close to each other:")
-    print("metricGlobalAvgs =", metricGlobalAvgs)
-    print("metricGlobalValsFromFile =", metricGlobalValsFromFile)
-    if beVerbose:
-        print("defaultMetricValsCol printed as array = ")
-        # Calculate number of regions in the east-west (X) and north-south (Y) directions
-        numXBoxes = np.rint(360 / boxSize).astype(int)  # 18
-        numYBoxes = np.rint(180 / boxSize).astype(int)  # 9
-        defaultMetricValsReshaped = defaultMetricValsCol.reshape((numYBoxes, numXBoxes))
-        # defaultMetricValsRolled = np.roll(defaultMetricValsReshaped, -9, axis=1)
-        np.set_printoptions(linewidth=200)
-        print(np.around(defaultMetricValsReshaped, 2))
-        # print(np.around(defaultMetricValsRolled,2))
 
     # Read observed values of regional metrics on regular tiled grid into a Python dictionary
     (obsMetricValsDict, obsWeightsDict) = \
@@ -559,9 +444,6 @@ def setUpConfig(beVerbose):
     # rmse = np.sqrt(mse)
     # print("rmse between default and obs =", rmse)
 
-    # Any special "custom" regions, e.g. DYCOMS, will be tacked onto the end of
-    #     the usual metrics vectors.  But we exclude those regions from numMetricsNoCustom.
-    numMetricsNoCustom = len(metricsNames)
 
     # These are metrics from customized regions that differ from the standard 20x20 degree tiles.
     # Metrics are observed quantities that we want a tuned simulation to match.
@@ -641,23 +523,6 @@ def setUpConfig(beVerbose):
     #                        ['PRECT_HAWAII', 0.01, -999], \
     #                        ['PRECT_VOCAL', 0.01, -999], \
 
-    # Split up the list above into metric names and the corresponding weights.
-    dfMetricsNamesWeightsAndNormsCustom = \
-        pd.DataFrame(metricsNamesWeightsAndNormsCustom,
-                     columns=['metricsNamesCustom', 'metricsWeightsCustom', 'metricsNormsCustom'])
-    metricsNamesCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsNamesCustom']].to_numpy().astype(str)[:, 0]
-    metricsWeightsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsWeightsCustom']].to_numpy().astype(float)
-    metricsNormsCustom = dfMetricsNamesWeightsAndNormsCustom[['metricsNormsCustom']].to_numpy().astype(float)
-
-    # Include custom regions in metricsNames:
-    metricsNames = np.append(metricsNames, metricsNamesCustom)
-    metricsWeights = np.vstack((metricsWeights, metricsWeightsCustom))
-    #numMetricsCustom = len(metricsNames) - numMetricsNoCustom
-    metricsNorms = np.vstack((metricsNorms, metricsNormsCustom))
-
-    #metricsNamesNoprefix = np.char.replace(metricsNames, "SWCF_", "")
-    metricsNamesNoprefix = metricsNames
-
 
     # Observed values of our metrics, from, e.g., CERES-EBAF.
     # These observed metrics will be matched as closely as possible by analyzeSensMatrix.
@@ -704,45 +569,97 @@ def setUpConfig(beVerbose):
         'PSL_CAF': 100941.7890625
         }
 
-    #obsMetricValsDictCustom = {
-    #    'RESTOM_GLB': 5.0 }
-    # For custom regions, make simulated values a numpy float,
-    #     like the other metrics
-    #obsMetricValsDictCustom = {key: np.float32(value) \
-    #                           for key, value in obsMetricValsDictCustom.items()}
 
-    # Add obs of custom metrics to obs dictionary
-    #obsMetricValsDict.update(obsMetricValsDictCustom)
+    return (numMetricsToTune,
+     varPrefixes, boxSize,
+     doCreatePlots, metricsNorms,
+     obsMetricValsDict,
+     obsOffsetCol, obsGlobalAvgCol, doObsOffset,
+     obsWeightsCol,
+     transformedParamsNames,
+     defaultNcFilename, globTunedNcFilename,
+     interactParamsNamesAndFilenames,
+     doPiecewise,
+     reglrCoef, penaltyCoef, doBootstrapSampling,
+     paramsNamesScalesAndFilenames, folder_name,
+     prescribedParamsNamesScalesAndValues,
+     metricsNamesWeightsAndNormsCustom)
 
-    # Sanity check: is highlightedMetricsToPlot a subset of metricsNames?
-    if np.setdiff1d(highlightedMetricsToPlot, metricsNames).size != 0:
-        print("One of the metrics names specified in highlightedMetricsToPlot "
-              "does not appear in metricsNames:")
-        print(np.setdiff1d(highlightedMetricsToPlot, metricsNames))
 
-    return (numMetricsNoCustom, numMetricsToTune,
-            metricsNames, metricsNamesNoprefix,
-            varPrefixes, mapVarIdx, boxSize,
-            highlightedMetricsToPlot, createPlotType,
-            metricsWeights, metricsNorms,
-            obsMetricValsDict,
-            obsOffsetCol, obsGlobalAvgCol, doObsOffset,
-            obsWeightsCol,
-            paramsNames, paramsScales,
-            transformedParamsNames,
-            prescribedParamsNames, prescribedParamsScales,
-            prescribedTransformedParamsNames,
-            prescribedParamValsRow,
-            prescribedSensNcFilenames, prescribedSensNcFilenamesExt,
-            sensNcFilenames, sensNcFilenamesExt,
-            sensSST4KNcFilenames, sensSST4KNcFilenamesExt,
-            defaultNcFilename, globTunedNcFilename,
-            defaultSST4KNcFilename,
-            interactParamsNamesAndFilenames,
-            doPiecewise,
-            reglrCoef, penaltyCoef, doBootstrapSampling, numBootstrapSamples)
 
-    # SST4K: Output defaultNcFilenameSST4K, etc.
+def config_plots(beVerbose: bool, varPrefixes:list[str]) -> tuple[dict[str, bool], np.ndarray, int]:
+    """
+    Configure settings for creating plots.
+    For example, specify which plots to create.
+    
+    :param beVerbose: Boolean flag to make output more verbose.
+    """
+
+
+    # Use these flags to determine whether or not to create specific plots
+    # in create_nonbootstrap_figs.py
+    createPlotType = {
+        'paramsErrorBarsFig': True,               # Parameter values with error bars
+        'biasesOrderedArrowFig': False,            # Predicted vs. actual global-model bias removal
+        'threeDotFig': True,                       # Quadratic fnc for each metric and parameter
+        'metricsBarChart': True,                   # Visualization of tuning matrix eqn
+        'paramsIncrsBarChart': True,               # Mean parameter contributions to removal of biases
+        'paramsAbsIncrsBarChart': True,            # Squared parameter contributions to bias removal
+        'paramsTotContrbBarChart': False,          # Linear + nonlinear contributions to bias removal
+        'biasesVsDiagnosticScatterplot': False,    # Scatterplot of biases vs. other fields
+        'dpMin2PtFig': False,                      # Min param perturbation needed to simultaneously remove 2 biases
+        'dpMinMatrixScatterFig': False,            # Scatterplot of min param perturbation for 2-bias removal
+        'projectionMatrixFigs': False,             # Color-coded projection matrix
+        'biasesVsSensMagScatterplot': True,        # Biases vs. parameter sensitivities
+        'biasesVsSvdScatterplot': False,           # Left SV1*bias vs. left SV2*bias
+        'paramsCorrArrayFig': True,                # Color-coded matrix showing correlations among parameters
+        'sensMatrixAndBiasVecFig': False,          # Color-coded matrix equation
+        'PcaBiplot': False,                        # Principal components biplot
+        'PcSensMap': True,                         # Maps showing sensitivities to parameters and left singular vectors
+        'vhMatrixFig': True,                       # Color-coded matrix of right singular vectors
+    }
+
+    if beVerbose:
+        print(f"Creating {sum(createPlotType.values())} types of plots.")
+
+    # mapVarIdx is the field is plotted in the 20x20 maps created by PcSensMap.
+    mapVar = 'RESTOM'
+    mapVarIdx = varPrefixes.index(mapVar)
+
+    # These are a selected subset of the tunable metrics that we want to include
+    # in the metrics bar-chart, 3-dot plot, etc.
+    # They must be a subset of metricsNames
+    highlightedRegionsToPlot = np.array(['5_5', '4_8', '5_9',
+                                         '5_14', '5_17', '5_1', '5_18',
+                                         '5_2', '6_14', '6_13', '6_15', '7_5'])
+    mapVarIdxPlusUnderscore = mapVar + '_'
+    highlightedMetricsToPlot = np.char.add(mapVarIdxPlusUnderscore, highlightedRegionsToPlot)
+
+    return createPlotType, highlightedMetricsToPlot, mapVarIdx
+
+
+def config_bootstrap(beVerbose: bool) -> tuple[int,str,str]:
+    """
+    Configure settings for bootstrap sampling.
+    For example specify how many bootstrap samples to create.
+    
+    :param beVerbose: Boolean flag to make output more verbose.
+    """
+    numBootstrapSamples: int = 100
+
+    # Directory where the SST4K regional files are stored (plus possibly a filename prefix)
+    folder_name_SST4K = 'Regional_files/20241022_1yr_sst4k_20x20/20p4k1022_'
+
+    defaultSST4KNcFilename = \
+    (
+        folder_name_SST4K + '1_Regional.nc'
+    )
+
+    return numBootstrapSamples, folder_name_SST4K, defaultSST4KNcFilename
+
+def config_additional(beVerbose:bool):
+    return
+
 
 def abbreviateParamsNames(paramsNames):
     """

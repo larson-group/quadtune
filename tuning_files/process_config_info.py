@@ -3,13 +3,13 @@ import pandas as pd
 
 from set_up_inputs import setUp_x_MetricsList, setUpDefaultMetricValsCol
 
-def process_paramsnames(paramsNamesScalesAndFilenames,folder_name):
+def process_paramsnames_scales_and_filesuffixes(paramsNamesScalesAndFilenames,folder_name):
     """
     Split up paramsNamesScalesAndFilenames into: \n 
+    - paramsNames
     - paramsScales
     - sensNcFilenames
     - sensNcFilenamesExt
-    - sensSST4KNcFilenamesExt
     """
 
 
@@ -37,7 +37,7 @@ def process_paramsnames(paramsNamesScalesAndFilenames,folder_name):
 
 
 
-def process_prescribed_paramnames(prescribedParamsNamesScalesAndValues,folder_name):
+def process_prescribed_paramsnames(prescribedParamsNamesScalesAndValues,folder_name):
     """
     Split up prescribedParamsNamesScalesAndValues into: 
     - prescribedParamsNames

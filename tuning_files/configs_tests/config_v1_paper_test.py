@@ -12,7 +12,7 @@ import sys
 
 
 
-def config_mandatory(beVerbose):
+def config_core(beVerbose: bool):
 
     from tuning_files.set_up_inputs import (
         setUp_x_MetricsList,
@@ -193,7 +193,7 @@ def config_mandatory(beVerbose):
      prescribedParamsNamesScalesAndValues,
      metricsNamesWeightsAndNormsCustom)
 
-def config_plots(beVerbose: bool) -> tuple[dict[str, bool], np.ndarray, int]:
+def config_plots(beVerbose: bool, varPrefixes:list[str]) -> tuple[dict[str, bool], np.ndarray, int]:
     """
     Configure settings for creating plots.
     For example, specify which plots to create.
@@ -202,8 +202,6 @@ def config_plots(beVerbose: bool) -> tuple[dict[str, bool], np.ndarray, int]:
     """
 
 
-    # Get varPrefixes from config_mandatory
-    _,varPrefixes,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_=config_mandatory(beVerbose=False)
 
     # Use these flags to determine whether or not to create specific plots
     # in create_nonbootstrap_figs.py
