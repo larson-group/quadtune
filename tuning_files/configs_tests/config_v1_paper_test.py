@@ -93,7 +93,7 @@ def config_core(beVerbose: bool):
     #    up and in the other, it is perturbed down.
     #    The output from each sensitivity simulation is expected to be stored in its own netcdf file.
     #    Each netcdf file contains metric values and parameter values for a single simulation.
-    paramsNamesScalesAndFilenames = \
+    paramsNamesScalesAndSuffixes = \
         [
         ['clubb_c8', 1.0e0,
          '14_Regional.nc',
@@ -189,11 +189,11 @@ def config_core(beVerbose: bool):
      interactParamsNamesAndFilenames,
      doPiecewise,
      reglrCoef, penaltyCoef, doBootstrapSampling,
-     paramsNamesScalesAndFilenames, folder_name,
+     paramsNamesScalesAndSuffixes, folder_name,
      prescribedParamsNamesScalesAndValues,
      metricsNamesWeightsAndNormsCustom)
 
-def config_plots(beVerbose: bool, varPrefixes:list[str],paramsNames:list[str]) -> tuple[dict[str, bool], np.ndarray, int]:
+def config_plots(beVerbose: bool, varPrefixes:list[str], paramsNames:list[str]) -> tuple[dict[str, bool], np.ndarray, int, np.ndarray]:
     """
     Configure settings for creating plots.
     For example, specify which plots to create.
@@ -240,10 +240,10 @@ def config_plots(beVerbose: bool, varPrefixes:list[str],paramsNames:list[str]) -
     # They must be a subset of metricsNames
     highlightedRegionsToPlot = np.array(['1_6', '1_14', '3_6', '3_14',
                                          '6_14', '6_18', '8_13'])
-    mapVarIdxPlusUnderscore = mapVar + '_'
-    highlightedMetricsToPlot = np.char.add(mapVarIdxPlusUnderscore, highlightedRegionsToPlot)     
+    mapVarPlusUnderscore = mapVar + '_'
+    highlightedMetricsToPlot = np.char.add(mapVarPlusUnderscore, highlightedRegionsToPlot)     
 
-    paramsAbbrv= abbreviateParamsNames(paramsNames) 
+    paramsAbbrv = abbreviateParamsNames(paramsNames) 
 
     return createPlotType, highlightedMetricsToPlot, mapVarIdx, paramsAbbrv
 

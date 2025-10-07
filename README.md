@@ -16,6 +16,7 @@ optimize parameter values, and display diagnostic plots
 on a dashboard created with plotly dash.
 See `tuning_files/README_tuning.md` for a user guide for tuning.
 
-The scripts in `tests` are pytest-tests which test the functionality of quadtune.  
-To run all tests, go to the `quadtune` directory and execute `pytest`.
-To run specifc tests, also go to the `quadtune` directory and execute `pytest -k ' {pattern found within one or more testfile names e.g. "v1" } '
+The scripts in `tests` are pytest tests which test the functionality of quadtune (https://docs.pytest.org).
+For the tests to work, pytest needs to be installed. You can install it using `pip install -r tuning_files/requirements.txt`.
+Then to run all tests, go to the `quadtune` directory and execute the command `pytest`.
+To run specifc tests, also go to the `quadtune` directory and execute the command `pytest -k ' {pattern found within one or more testfile names e.g. "v1" } '

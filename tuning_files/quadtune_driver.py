@@ -96,34 +96,34 @@ def main(args):
 
     (paramsNames, paramsScales,
     sensNcFilenames,sensNcFilenamesExt) = \
-        process_config_info.process_paramsnames_scales_and_filesuffixes(paramsNamesScalesAndFilenames,folder_name)
+        process_config_info.process_paramsnames_scales_and_filesuffixes(paramsNamesScalesAndFilenames, folder_name)
 
     (prescribedParamsNames, prescribedParamsScales,
     prescribedParamValsRow, prescribedSensNcFilenames,
     prescribedSensNcFilenamesExt,
     prescribedTransformedParamsNames) = \
-        process_config_info.process_prescribed_paramsnames(prescribedParamsNamesScalesAndValues,folder_name)
+        process_config_info.process_prescribed_paramsnames(prescribedParamsNamesScalesAndValues, folder_name)
 
     (metricsNames, metricsWeights, metricGlobalAvgs, numMetricsNoCustom) = \
-        process_config_info.process_metrics_names_weights_norms(defaultNcFilename,varPrefixes)
+        process_config_info.process_metrics_names_weights_norms(defaultNcFilename, varPrefixes)
 
 
     (metricsNames, metricsWeights,metricsNorms, metricsNamesNoprefix) = \
-        process_config_info.process_metrics_names_weights_norms_custom(metricsNamesWeightsAndNormsCustom,metricsNames,
-                                                                            metricsWeights,metricsNorms)
+        process_config_info.process_metrics_names_weights_norms_custom(metricsNamesWeightsAndNormsCustom, metricsNames,
+                                                                            metricsWeights, metricsNorms)
     
     
 
     if doCreatePlots:
         createPlotType, highlightedMetricsToPlot, mapVarIdx, paramsAbbrv = \
-            config_file.config_plots(False,varPrefixes,paramsNames)
+            config_file.config_plots(beVerbose = False, varPrefixes = varPrefixes, paramsNames = paramsNames)
     
 
     if doBootstrapSampling:
         numBootstrapSamples, folder_name_SST4K, defaultSST4KNcFilename =\
               config_file.config_bootstrap(beVerbose=False)
         _, _ , sensSST4KNcFilenames, sensSST4KNcFilenamesExt  =\
-              process_config_info.process_paramsnames_scales_and_filesuffixes(paramsNamesScalesAndFilenames,folder_name_SST4K)
+              process_config_info.process_paramsnames_scales_and_filesuffixes(paramsNamesScalesAndFilenames, folder_name_SST4K)
 
 
     # Number of regional metrics, including all of varPrefixes including the metrics we're not tuning, plus custom regions.
@@ -325,8 +325,8 @@ def main(args):
                               doPiecewise, normlzd_dpMid,
                               normlzdLeftSensMatrix, normlzdRightSensMatrix,
                               reglrCoef, penaltyCoef,
-                              defaultBiasesCol
-                              ,normlzdInteractDerivs,interactIdxs
+                              defaultBiasesCol,
+                              normlzdInteractDerivs, interactIdxs
                               )
 
         print(f"Sample avg of paramsBoot = {np.mean(paramsBoot, axis=0)}")
@@ -501,7 +501,7 @@ def main(args):
                 numMetricsToTune,
                 varPrefixes, mapVarIdx, boxSize,
                 highlightedMetricsToPlot,
-                paramsNames,paramsAbbrv, transformedParamsNames, paramsScales,
+                paramsNames, paramsAbbrv, transformedParamsNames, paramsScales,
                 metricsWeights, obsMetricValsCol, normMetricValsCol, magParamValsRow,
                 defaultBiasesCol, defaultBiasesApproxNonlin, defaultBiasesApproxElastic,
                 defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv,
