@@ -1,3 +1,4 @@
+from typing import Callable
 import numpy as np
 import pandas as pd
 
@@ -153,7 +154,13 @@ def process_metrics_names_weights_norms(defaultNcFilename,varPrefixes):
 
 
 
+def abbreviate_params_names(paramsNames: np.ndarray, abbreviateParamsNames: Callable):
+    """
+    Create abbreviated versions of paramsNames according to abbreviateParamsNames.
+    These will be used in the plots.
+    """
 
+    return abbreviateParamsNames(paramsNames)
 
 
 

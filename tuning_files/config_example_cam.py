@@ -11,6 +11,7 @@ This includes assigning filenames for input netcdf files,
 regional metric weights, and observed values of parameters.
 """
 
+from typing import Callable
 import numpy as np
 import pandas as pd
 import sys
@@ -591,13 +592,28 @@ def config_core(beVerbose: bool):
 
 
 
-def config_plots(beVerbose: bool, varPrefixes:list[str], paramsNames:list[str]) -> tuple[dict[str, bool], np.ndarray, int, np.ndarray]:
+def config_plots(beVerbose: bool, varPrefixes:list[str], paramsNames:list[str]) -> tuple[dict[str, bool], np.ndarray, int, Callable]:
     """
     Configure settings for creating plots.
     For example, specify which plots to create.
     
     :param beVerbose: Boolean flag to make output more verbose.
     """
+
+    def abbreviateParamsNames(paramsNames):
+        """
+        Abbreviate parameter names so that they fit on plots.
+        This is handled manually with the lines of code below.
+        """
+
+        paramsAbbrv = np.char.replace(paramsNames, 'clubb_', '')
+        paramsAbbrv = np.char.replace(paramsAbbrv, 'c_invrs_tau_', '')
+        paramsAbbrv = np.char.replace(paramsAbbrv, 'wpxp_n2', 'n2')
+        paramsAbbrv = np.char.replace(paramsAbbrv, 'altitude', 'alt')
+        paramsAbbrv = np.char.replace(paramsAbbrv, 'threshold', 'thres')
+        paramsAbbrv = np.char.replace(paramsAbbrv, 'thresh', 'thres')
+
+        return paramsAbbrv
 
 
     # Use these flags to determine whether or not to create specific plots
@@ -639,9 +655,7 @@ def config_plots(beVerbose: bool, varPrefixes:list[str], paramsNames:list[str]) 
     mapVarPlusUnderscore = mapVar + '_'
     highlightedMetricsToPlot = np.char.add(mapVarPlusUnderscore, highlightedRegionsToPlot)
 
-    paramsAbbrv = abbreviateParamsNames(paramsNames) 
-
-    return createPlotType, highlightedMetricsToPlot, mapVarIdx, paramsAbbrv
+    return createPlotType, highlightedMetricsToPlot, mapVarIdx, abbreviateParamsNames
 
 
 def config_bootstrap(beVerbose: bool) -> tuple[int,str,str]:
@@ -667,17 +681,4 @@ def config_additional(beVerbose:bool):
     return
 
 
-def abbreviateParamsNames(paramsNames):
-    """
-    Abbreviate parameter names so that they fit on plots.
-    This is handled manually with the lines of code below.
-    """
 
-    paramsAbbrv = np.char.replace(paramsNames, 'clubb_', '')
-    paramsAbbrv = np.char.replace(paramsAbbrv, 'c_invrs_tau_', '')
-    paramsAbbrv = np.char.replace(paramsAbbrv, 'wpxp_n2', 'n2')
-    paramsAbbrv = np.char.replace(paramsAbbrv, 'altitude', 'alt')
-    paramsAbbrv = np.char.replace(paramsAbbrv, 'threshold', 'thres')
-    paramsAbbrv = np.char.replace(paramsAbbrv, 'thresh', 'thres')
-
-    return paramsAbbrv

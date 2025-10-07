@@ -115,9 +115,10 @@ def main(args):
     
 
     if doCreatePlots:
-        createPlotType, highlightedMetricsToPlot, mapVarIdx, paramsAbbrv = \
+        createPlotType, highlightedMetricsToPlot, mapVarIdx, abbreviateParamsNames  = \
             config_file.config_plots(beVerbose = False, varPrefixes = varPrefixes, paramsNames = paramsNames)
-    
+
+        paramsAbbrv = process_config_info.abbreviate_params_names(paramsNames, abbreviateParamsNames)
 
     if doBootstrapSampling:
         numBootstrapSamples, folder_name_SST4K, defaultSST4KNcFilename =\
