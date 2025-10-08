@@ -158,6 +158,7 @@ def bootstrapCalculations(numSamples,
     # residualsBootstrapMatrix = (  y_i -  y_hat_i  ) ,
     #   where y_hat_i is a bootstrapped, tuned model prediction.
     residualsBootstrapMatrix = -defaultBiasesApproxNonlinMatrix[:, :, 0] - defaultBiasesCol.T
+    residualsBootstrapMatrixSST4K = -defaultBiasesApproxNonlinMatrixSST4K[:, :, 0] - defaultBiasesCol.T
     dDefaultBiasesApproxNonlinMatrixSST4K = \
         defaultBiasesApproxNonlinMatrixSST4K[:, :, 0] - defaultBiasesApproxNonlinMatrix[:, :, 0]
 
@@ -178,6 +179,8 @@ def bootstrapCalculations(numSamples,
 
     return (paramsBoot, paramsTuned, residualsDefaultCol, residualsTunedCol,
             residualsBootstrapMatrix,
+            residualsBootstrapMatrixSST4K,
+            defaultBiasesApproxNonlinMatrix,
             defaultBiasesApproxNonlinMatrixSST4K,
             dDefaultBiasesApproxNonlinMatrixSST4K,
             paramBoundsBoot,

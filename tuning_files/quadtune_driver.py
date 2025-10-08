@@ -285,7 +285,7 @@ def main(args):
 
     if doBootstrapSampling:
 
-        print("Starting boostrap sampling . . .")
+        print("Starting bootstrap sampling . . .")
 
         # SST4K:  call constructNormlzdSensCurvMatrices with SST4K sensFiles.
 
@@ -305,6 +305,8 @@ def main(args):
 
         ( paramsBoot, paramsTuned, residualsDefaultCol, residualsTunedCol,
           residualsBootstrapMatrix,
+          residualsBootstrapMatrixSST4K,
+          defaultBiasesApproxNonlinMatrix,
           defaultBiasesApproxNonlinMatrixSST4K,
           dDefaultBiasesApproxNonlinMatrixSST4K,
           paramBoundsBoot,
@@ -336,6 +338,8 @@ def main(args):
                        boxSize,
                        metricsNames,
                        residualsBootstrapMatrix,
+                       residualsBootstrapMatrixSST4K,
+                       defaultBiasesApproxNonlinMatrix,
                        defaultBiasesApproxNonlinMatrixSST4K,
                        dDefaultBiasesApproxNonlinMatrixSST4K,
                        residualsTunedCol,

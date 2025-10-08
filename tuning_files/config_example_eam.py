@@ -77,8 +77,8 @@ def config_core(beVerbose: bool):
     #folder_name = 'Regional_files/20241022_1yr_20x20regs/30.0sens1022_'
     #folder_name = 'Regional_files/20241022_1yr_sst4k_30x30/30p4k1022_'
     #folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
-    # folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
-    folder_name = "data/20.0beta06_"
+    folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
+    #folder_name = "data/20.0beta06_"
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_take3/20.0sens1022_'
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_msq/20.0sens1022_'
     #folder_name = 'Regional_files/20231211_20x20regs/sens0707_'

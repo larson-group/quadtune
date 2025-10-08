@@ -38,6 +38,8 @@ def bootstrapPlots(numMetricsToTune,
                    boxSize,
                    metricsNames,
                    residualsBootstrapMatrix,
+                   residualsBootstrapMatrixSST4K,
+                   defaultBiasesApproxNonlinMatrix,
                    defaultBiasesApproxNonlinMatrixSST4K,
                    dDefaultBiasesApproxNonlinMatrixSST4K,
                    residualsTunedCol,
@@ -83,10 +85,13 @@ def bootstrapPlots(numMetricsToTune,
     plot_residuals_distributions(dDefaultBiasesApproxNonlinMatrixSST4K, residualsDefaultCol, residualsTunedCol, metricsNames,
                                  folderName, 'dBias')
     plot_regional_variances(residualsBootstrapMatrix[:,:numBoxesInMap], boxSize, folderName, 'Variances')
+    plot_regional_variances(residualsBootstrapMatrixSST4K[:,:numBoxesInMap], boxSize, folderName, 'VariancesSST4K')
+    plot_regional_variances(defaultBiasesApproxNonlinMatrix[:, :numBoxesInMap], boxSize, folderName,
+                            'varnce_biasesApprox')
     plot_regional_variances(defaultBiasesApproxNonlinMatrixSST4K[:, :numBoxesInMap], boxSize, folderName,
-                            'biasesApproxSST4K')
+                            'varnce_biasesApproxSST4K')
     plot_regional_variances(dDefaultBiasesApproxNonlinMatrixSST4K[:, :numBoxesInMap], boxSize, folderName,
-                            'dBiasesApproxSST4K')
+                            'varnce_dBiasesApproxSST4K')
     plot_regional_msr(residualsBootstrapMatrix[:,:numBoxesInMap], boxSize, folderName)
     plot_residual_map(normResidualPairsMatrix, metricsNames, False, "Residual_norm_heatmap", folderName)
     plot_residual_map(tradeoffBinaryMatrix, metricsNames, True, "Tradeoff_map", folderName)
