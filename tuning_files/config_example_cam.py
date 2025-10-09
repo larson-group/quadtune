@@ -43,6 +43,9 @@ def config_core(beVerbose: bool):
     # Flag for whether or not to create plots after the tuning is done.
     doCreatePlots = True
 
+    # Set debug level
+    debug_level = 0
+    chosen_delta_param = 0.01 * np.ones((5,1))
 
     # Number of metrics to tune.
     # If there are more metrics than this, then
@@ -588,7 +591,8 @@ def config_core(beVerbose: bool):
      reglrCoef, penaltyCoef, doBootstrapSampling,
      paramsNamesScalesAndSuffixes, folder_name,
      prescribedParamsNamesScalesAndValues,
-     metricsNamesWeightsAndNormsCustom)
+     metricsNamesWeightsAndNormsCustom,
+     debug_level,chosen_delta_param)
 
 
 
