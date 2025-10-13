@@ -8,9 +8,8 @@ in folder `create_regional_files`.
 
 ## Getting started
 
-1) Use `requirements.txt` to import needed python libraries.
-E.g., use your IDE or at the command line type 
-`pip install -r requirements.txt`.
+
+1) Make sure you installed all used python libraries from `requirements.txt` as described in the top-level `README.md`.
 
 2) QuadTune has no namelist file, but 
 you may copy `configs_tests/config_v1_paper_test.py` into `tuning_files` and specify the configuration of your tuning run, 
