@@ -220,8 +220,8 @@ def main(args):
                         normlzdInteractDerivs, interactIdxs)
 
     if debug_level > 0 :
-        check_recovery_of_param(debug_level,chosen_delta_param,normlzdCurvMatrix, normlzdSensMatrixPoly,\
-                                doPiecewise, normlzd_dpMid, normlzdLeftSensMatrix,normlzdRightSensMatrix,numMetrics,normlzdInteractDerivs,interactIdxs,\
+        check_recovery_of_param(debug_level, chosen_delta_param, normlzdCurvMatrix, normlzdSensMatrixPoly,\
+                                doPiecewise, normlzd_dpMid, normlzdLeftSensMatrix, normlzdRightSensMatrix, numMetrics, normlzdInteractDerivs, interactIdxs,\
                                     metricsNames, metricsWeights, normMetricValsCol, magParamValsRow,defaultParamValsOrigRow, reglrCoef, penaltyCoef)
         
     # For prescribed parameters, construct numMetrics x numParams matrix of second derivatives, d2metrics/dparams2.
@@ -1425,11 +1425,11 @@ def findParamsUsingElastic(normlzdSensMatrix, normlzdWeightedSensMatrix,
 
 
 def check_recovery_of_param(debug_level: int, chosen_delta_param: np.ndarray, normlzdCurvMatrix, 
-                            normlzdSensMatrixPoly,doPiecewise, normlzd_dpMid,
-                            normlzdLeftSensMatrix,normlzdRightSensMatrix,
-                            numMetrics,normlzdInteractDerivs,interactIdxs,
+                            normlzdSensMatrixPoly, doPiecewise, normlzd_dpMid,
+                            normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                            numMetrics, normlzdInteractDerivs, interactIdxs,
                             metricsNames, metricsWeights, normMetricsValsCol,
-                            magparamValsRow,defaultParamValsOrigRow,reglrCoef, penaltyCoef):
+                            magparamValsRow, defaultParamValsOrigRow, reglrCoef, penaltyCoef):
     """
     Check if quadtune can recover fixed parameters.
     Calls fwdFnc using chosen_delta_param and tries to recover them using solveUsingNonLin
