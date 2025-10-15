@@ -46,8 +46,8 @@ def config_core(beVerbose: bool):
     doCreatePlots = True
 
     # Set debug level
-    debug_level = 0
-    chosen_delta_param = 0.01 * np.ones((5,1))
+    debug_level = 2
+    chosen_delta_param = 0.5 * np.ones((5,1))
 
     #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
     #varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']

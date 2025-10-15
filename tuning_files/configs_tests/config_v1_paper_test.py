@@ -52,14 +52,14 @@ def config_core(beVerbose: bool):
     
     - debug_level 0: Run no additional tests
     - debug_level 1: Run additional tests and print the results
-    - debug_level 2: Run additional tests and assert the expected result
+    - debug_level 2: Run additional tests and stop upon failure
 
     """
-    debug_level = 1
+    debug_level = 2
 
     # If debug_level > 0: Set delta_param for test
     # Shape should be numParams x 1
-    chosen_delta_param = 0.01 * np.ones((5,1))
+    chosen_delta_param = 0.5 * np.ones((5,1))
     
     
 

@@ -220,7 +220,7 @@ def main(args):
                         normlzdInteractDerivs, interactIdxs)
 
     if debug_level > 0 :
-        check_recovery_of_param(debug_level, chosen_delta_param, normlzdCurvMatrix, normlzdSensMatrixPoly,\
+        check_recovery_of_param_vals(debug_level, chosen_delta_param, normlzdCurvMatrix, normlzdSensMatrixPoly,\
                                 doPiecewise, normlzd_dpMid, normlzdLeftSensMatrix, normlzdRightSensMatrix, numMetrics, normlzdInteractDerivs, interactIdxs,\
                                     metricsNames, metricsWeights, normMetricValsCol, magParamValsRow,defaultParamValsOrigRow, reglrCoef, penaltyCoef)
         
@@ -1424,7 +1424,7 @@ def findParamsUsingElastic(normlzdSensMatrix, normlzdWeightedSensMatrix,
 
 
 
-def check_recovery_of_param(debug_level: int, chosen_delta_param: np.ndarray, normlzdCurvMatrix, 
+def check_recovery_of_param_vals(debug_level: int, chosen_delta_param: np.ndarray, normlzdCurvMatrix, 
                             normlzdSensMatrixPoly, doPiecewise, normlzd_dpMid,
                             normlzdLeftSensMatrix, normlzdRightSensMatrix,
                             numMetrics, normlzdInteractDerivs, interactIdxs,
@@ -1435,7 +1435,7 @@ def check_recovery_of_param(debug_level: int, chosen_delta_param: np.ndarray, no
     Calls fwdFnc using chosen_delta_param and tries to recover them using solveUsingNonLin
     """
 
-    normlzdDefaultBiasesApproxNonlin = fwdFnc(-chosen_delta_param, normlzdSensMatrixPoly, normlzdCurvMatrix, \
+    normlzdDefaultBiasesApproxNonlin = fwdFnc(chosen_delta_param, normlzdSensMatrixPoly, normlzdCurvMatrix, \
                           doPiecewise, normlzd_dpMid, normlzdLeftSensMatrix, normlzdRightSensMatrix,\
                           numMetrics, normlzdInteractDerivs, interactIdxs)
     
@@ -1445,7 +1445,7 @@ def check_recovery_of_param(debug_level: int, chosen_delta_param: np.ndarray, no
     defaultBiasesApproxNonlin2x, \
     defaultBiasesApproxNonlinNoCurv, defaultBiasesApproxNonlin2xCurv = \
         solveUsingNonlin(metricsNames, metricsWeights, normMetricsValsCol, magparamValsRow, \
-                        defaultParamValsOrigRow, normlzdSensMatrixPoly, normlzdDefaultBiasesApproxNonlin,\
+                        defaultParamValsOrigRow, normlzdSensMatrixPoly, -normlzdDefaultBiasesApproxNonlin,\
                             normlzdCurvMatrix, doPiecewise, normlzd_dpMid, normlzdLeftSensMatrix,\
                                 normlzdRightSensMatrix, normlzdInteractDerivs, interactIdxs, reglrCoef, penaltyCoef)
     
