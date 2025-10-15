@@ -44,7 +44,10 @@ def config_core(beVerbose: bool):
     # Use these flags to determine whether or not to create specific plots
     #    in create_nonbootstrap_figs.py
     doCreatePlots = True
-    
+
+    # Set debug level
+    debug_level = 2
+    chosen_delta_param = 0.5 * np.ones((5,1))
 
     #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
     #varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
@@ -593,7 +596,8 @@ def config_core(beVerbose: bool):
      reglrCoef, penaltyCoef, doBootstrapSampling,
      paramsNamesScalesAndSuffixes, folder_name,
      prescribedParamsNamesScalesAndValues,
-     metricsNamesWeightsAndNormsCustom)
+     metricsNamesWeightsAndNormsCustom,
+     debug_level, chosen_delta_param)
 
     # SST4K: Output defaultNcFilenameSST4K, etc.
 
