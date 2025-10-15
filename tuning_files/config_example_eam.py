@@ -26,7 +26,7 @@ def config_core(beVerbose: bool):
     )
 
     # Flag for using bootstrap sampling
-    doBootstrapSampling = True
+    doBootstrapSampling = False
 
     # doPiecewise = True if using a piecewise linear emulator
     doPiecewise = False
