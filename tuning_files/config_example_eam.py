@@ -17,7 +17,7 @@ import pandas as pd
 import sys
 
 
-def config_core(beVerbose: bool):
+def config_core():
     from set_up_inputs import (
         setUp_x_MetricsList,
         setUpDefaultMetricValsCol, setUp_x_ObsMetricValsDict,
@@ -30,6 +30,9 @@ def config_core(beVerbose: bool):
 
     # doPiecewise = True if using a piecewise linear emulator
     doPiecewise = False
+
+    # Flag for enabling additional output of multiple functions
+    beVerbose = False
 
     # L1 regularization coefficient, i.e., penalty on param perturbations in objFnc
     # Increase this value to 0.1 or 0.5 or so if you want to eliminate
@@ -46,9 +49,10 @@ def config_core(beVerbose: bool):
     doCreatePlots = True
 
     # Set debug level
-    debug_level = 2
+    debug_level = 1
+    # Set perturbation for the recovery test
     chosen_delta_param = 0.5 * np.ones((5,1))
-
+    
     #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
     #varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
     varPrefixes = ['SWCF']
@@ -597,7 +601,7 @@ def config_core(beVerbose: bool):
      paramsNamesScalesAndSuffixes, folder_name,
      prescribedParamsNamesScalesAndValues,
      metricsNamesWeightsAndNormsCustom,
-     debug_level, chosen_delta_param)
+     debug_level, chosen_delta_param, beVerbose)
 
     # SST4K: Output defaultNcFilenameSST4K, etc.
 
