@@ -222,7 +222,7 @@ def main(args):
     if debug_level > 0 :
         check_recovery_of_param_vals(debug_level, chosen_delta_param, normlzdCurvMatrix, normlzdSensMatrixPoly,\
                                 doPiecewise, normlzd_dpMid, normlzdLeftSensMatrix, normlzdRightSensMatrix, numMetrics, normlzdInteractDerivs, interactIdxs,\
-                                    metricsNames, metricsWeights, normMetricValsCol, magParamValsRow,defaultParamValsOrigRow, reglrCoef, penaltyCoef,beVerbose)
+                                    metricsNames, metricsWeights, normMetricValsCol, magParamValsRow, defaultParamValsOrigRow, reglrCoef, penaltyCoef, beVerbose)
         
     # For prescribed parameters, construct numMetrics x numParams matrix of second derivatives, d2metrics/dparams2.
     # The derivatives are normalized by observed metric values and max param values.
@@ -1429,7 +1429,7 @@ def check_recovery_of_param_vals(debug_level: int, chosen_delta_param: np.ndarra
                             normlzdLeftSensMatrix, normlzdRightSensMatrix,
                             numMetrics, normlzdInteractDerivs, interactIdxs,
                             metricsNames, metricsWeights, normMetricsValsCol,
-                            magparamValsRow, defaultParamValsOrigRow, reglrCoef, penaltyCoef,beVerbose):
+                            magparamValsRow, defaultParamValsOrigRow, reglrCoef, penaltyCoef, beVerbose):
     """
     Check if quadtune can recover fixed parameters.
     Calls fwdFnc using chosen_delta_param and tries to recover them using solveUsingNonLin
@@ -1453,8 +1453,7 @@ def check_recovery_of_param_vals(debug_level: int, chosen_delta_param: np.ndarra
         print(f"\nStart test to check if quadtune can recover prescribed parameter deltas . . .\n")
         print(f"Prescribed parameter deltas: {nonlin_recovered_delta_param.flatten()}")
         print(f"Recovered parameter deltas: {nonlin_recovered_delta_param.flatten()}")
-        print(f"Norm(chosen_delta_param - nonlin_recovered_delta_param) = {np.linalg.norm(chosen_delta_param - nonlin_recovered_delta_param)}")
-        print(f"Norm(chosen_delta_param - lin_recovered_delta_param) = {np.linalg.norm(chosen_delta_param - lin_recovered_delta_param)}")                 
+        print(f"Norm(chosen_delta_param - nonlin_recovered_delta_param) = {np.linalg.norm(chosen_delta_param - nonlin_recovered_delta_param)}")            
     
     
     assert np.allclose(chosen_delta_param, nonlin_recovered_delta_param), "Recovered parameter delta is not close to chosen parameter delta"
