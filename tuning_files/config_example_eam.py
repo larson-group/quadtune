@@ -51,7 +51,7 @@ def config_core():
     # Set debug level
     debug_level = 1
     # Set perturbation for the recovery test
-    chosen_delta_param = 0.5 * np.ones((5,1))
+    chosen_delta_param = 0.5
     
     #varPrefixes = ['SWCF', 'TMQ', 'LWCF', 'PRECT']
     #varPrefixes = ['SWCF', 'LWCF', 'FSNTC', 'FLNTC']
@@ -85,7 +85,7 @@ def config_core():
     #folder_name = 'Regional_files/20241022_1yr_sst4k_30x30/30p4k1022_'
     #folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
     folder_name = 'Regional_files/20241022_1yr_20x20regs/20.0sens1022_'
-    #folder_name = "data/20.0beta06_"
+    # folder_name = "data/eam/20.0sens1022_"
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_take3/20.0sens1022_'
     #folder_name = 'Regional_files/20241022_2yr_20x20regs_msq/20.0sens1022_'
     #folder_name = 'Regional_files/20231211_20x20regs/sens0707_'
@@ -122,7 +122,7 @@ def config_core():
             #'Regional_files/20250530_1yr_20x20_ANN_CAM/20.0cam078_' + 'qt4_Regional.nc'
             #defaultNcFilename
             folder_name + '84_Regional.nc'
-            #folder_name + '69_Regional.nc'
+            # folder_name + '69_Regional.nc'
     #    'Regional_files/20231211_20x20regs/20sens0707_61_Regional.nc'
     #    'Regional_files/20degree_CAM_TAUS_202404_DJF/20.0Tuner_20240702_20d_DJF_Regional.nc'
     #    'Regional_files/stephens_20240131/btune_regional_files/b1850.076base.n2th1b_Regional.nc'
@@ -412,7 +412,7 @@ def config_core():
             #                          obsPathAndFilename='Regional_files/20231204_30x30regs/'
             #                                             + 'sens0707_20241011_30.0_OBS.nc')
         #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "20241011_20.0_OBS.nc")
-        #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "20.0_OBS.nc")
+        # setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_',obsPathAndFilename=folder_name + "20.0_OBS.nc")
         #setUp_x_ObsMetricValsDict(varPrefixes, "Regional_files/stephens_20240131/btune_regional_files/b1850.075plus_Regional.nc")
         )
 

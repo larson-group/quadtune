@@ -60,8 +60,8 @@ def config_core():
     debug_level = 1
 
     # If debug_level > 0: Set delta_param for test
-    # Shape should be numParams x 1
-    chosen_delta_param = 0.5 * np.ones((5,1))
+    # This will be applied to all parameters
+    chosen_delta_param = 0.5 
     
     
 
