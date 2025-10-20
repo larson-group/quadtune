@@ -86,9 +86,9 @@ def main(args):
      paramsNamesScalesAndFilenames, folder_name,
      prescribedParamsNamesScalesAndValues,
      metricsNamesWeightsAndNormsCustom, 
-     debug_level, chosen_delta_param) \
+     debug_level, chosen_delta_param, beVerbose) \
     = \
-        config_file.config_core(beVerbose=False)
+        config_file.config_core()
     
 
 
@@ -116,13 +116,13 @@ def main(args):
 
     if doCreatePlots:
         createPlotType, highlightedMetricsToPlot, mapVarIdx, abbreviateParamsNames  = \
-            config_file.config_plots(beVerbose = False, varPrefixes = varPrefixes, paramsNames = paramsNames)
+            config_file.config_plots(beVerbose, varPrefixes = varPrefixes, paramsNames = paramsNames)
 
         paramsAbbrv = process_config_info.abbreviate_params_names(paramsNames, abbreviateParamsNames)
 
     if doBootstrapSampling:
         numBootstrapSamples, folder_name_SST4K, defaultSST4KNcFilename =\
-              config_file.config_bootstrap(beVerbose=False)
+              config_file.config_bootstrap(beVerbose)
         _, _ , sensSST4KNcFilenames, sensSST4KNcFilenamesExt  =\
               process_config_info.process_paramsnames_scales_and_filesuffixes(paramsNamesScalesAndFilenames, folder_name_SST4K)
 
@@ -222,7 +222,7 @@ def main(args):
     if debug_level > 0 :
         check_recovery_of_param_vals(debug_level, chosen_delta_param, normlzdCurvMatrix, normlzdSensMatrixPoly,\
                                 doPiecewise, normlzd_dpMid, normlzdLeftSensMatrix, normlzdRightSensMatrix, numMetrics, normlzdInteractDerivs, interactIdxs,\
-                                    metricsNames, metricsWeights, normMetricValsCol, magParamValsRow,defaultParamValsOrigRow, reglrCoef, penaltyCoef)
+                                    metricsNames, metricsWeights, normMetricValsCol, magParamValsRow, defaultParamValsOrigRow, reglrCoef, penaltyCoef, beVerbose)
         
     # For prescribed parameters, construct numMetrics x numParams matrix of second derivatives, d2metrics/dparams2.
     # The derivatives are normalized by observed metric values and max param values.
@@ -264,9 +264,9 @@ def main(args):
     # If sValsRatio is 1, then only the first singular vector will be kept.
     sValsRatio = 800.
     normlzdSensMatrixPolySvd = \
-        approxMatrixWithSvd(normlzdSensMatrixPoly, sValsRatio, sValsNumToKeep=None, beVerbose=False)
+        approxMatrixWithSvd(normlzdSensMatrixPoly, sValsRatio, sValsNumToKeep=None, beVerbose=beVerbose)
     normlzdCurvMatrixSvd = \
-        approxMatrixWithSvd(normlzdCurvMatrix, sValsRatio, sValsNumToKeep=None, beVerbose=False)
+        approxMatrixWithSvd(normlzdCurvMatrix, sValsRatio, sValsNumToKeep=None, beVerbose=beVerbose)
 
     # Check whether piecewise-linear and quadratic emulators agree at lo/hi parameter values
     dLeftRightParams = ( normlzd_pLeftRow - defaultParamValsOrigRow * np.reciprocal(magParamValsRow) ).T
@@ -382,7 +382,7 @@ def main(args):
                          normlzdLeftSensMatrix, normlzdRightSensMatrix,
                          normlzdInteractDerivs, interactIdxs,
                          reglrCoef, penaltyCoef,
-                         beVerbose=False)
+                         beVerbose)
 
     y_hat_i = defaultBiasesApproxNonlin + defaultBiasesCol + obsMetricValsCol
 
@@ -490,7 +490,7 @@ def main(args):
                      defaultBiasesCol, normMetricValsCol, metricsWeights,
                      magParamValsRow, defaultParamValsOrigRow,
                      normlzdCurvMatrix,
-                     beVerbose=False)
+                     beVerbose)
     #defaultBiasesApproxElasticCheck = ( normlzdWeightedSensMatrixPoly @ dnormlzdParamsSolnElastic ) \
     #                        * np.reciprocal(metricsWeights) * np.abs(normMetricValsCol)
     #print("defaultBiasesApproxElastic = ", defaultBiasesApproxElastic)
@@ -530,7 +530,7 @@ def main(args):
                 paramsSolnElastic, dnormlzdParamsSolnElastic,
                 sensNcFilenames, sensNcFilenamesExt, defaultNcFilename,
                 createPlotType,
-                beVerbose=False, useLongTitle=False, paramBoundsBoot=paramBoundsBoot)
+                beVerbose, useLongTitle=False, paramBoundsBoot=paramBoundsBoot)
 
     return paramsSolnNonlin, paramsNames
 
@@ -1429,7 +1429,7 @@ def check_recovery_of_param_vals(debug_level: int, chosen_delta_param: np.ndarra
                             normlzdLeftSensMatrix, normlzdRightSensMatrix,
                             numMetrics, normlzdInteractDerivs, interactIdxs,
                             metricsNames, metricsWeights, normMetricsValsCol,
-                            magparamValsRow, defaultParamValsOrigRow, reglrCoef, penaltyCoef):
+                            magparamValsRow, defaultParamValsOrigRow, reglrCoef, penaltyCoef, beVerbose):
     """
     Check if quadtune can recover fixed parameters.
     Calls fwdFnc using chosen_delta_param and tries to recover them using solveUsingNonLin
@@ -1448,13 +1448,15 @@ def check_recovery_of_param_vals(debug_level: int, chosen_delta_param: np.ndarra
                         defaultParamValsOrigRow, normlzdSensMatrixPoly, -normlzdDefaultBiasesApproxNonlin,\
                             normlzdCurvMatrix, doPiecewise, normlzd_dpMid, normlzdLeftSensMatrix,\
                                 normlzdRightSensMatrix, normlzdInteractDerivs, interactIdxs, reglrCoef, penaltyCoef)
+    beVerbose=True
+    if beVerbose:
+        print(f"\nStart test to check if quadtune can recover prescribed parameter deltas . . .\n")
+        print(f"Prescribed parameter deltas: {nonlin_recovered_delta_param.flatten()}")
+        print(f"Recovered parameter deltas: {nonlin_recovered_delta_param.flatten()}")
+        print(f"Norm(chosen_delta_param - nonlin_recovered_delta_param) = {np.linalg.norm(chosen_delta_param - nonlin_recovered_delta_param)}")            
     
-    print(f"Recovered parameter deltas: {nonlin_recovered_delta_param.flatten()}")
-    print(f"Norm(chosen_delta_param - nonlin_recovered_delta_param) = {np.linalg.norm(chosen_delta_param - nonlin_recovered_delta_param)}")
-    print(f"Norm(chosen_delta_param - lin_recovered_delta_param) = {np.linalg.norm(chosen_delta_param - lin_recovered_delta_param)}")                 
     
-    if debug_level >= 2:
-        assert np.allclose(chosen_delta_param, nonlin_recovered_delta_param), "Recovered parameter delta is not close to chosen parameter delta"
+    assert np.allclose(chosen_delta_param, nonlin_recovered_delta_param), "Recovered parameter delta is not close to chosen parameter delta"
 
 
 

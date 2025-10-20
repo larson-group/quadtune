@@ -13,9 +13,9 @@ import sys
 
 
 
-def config_core(beVerbose: bool):
+def config_core():
 
-    from tuning_files.set_up_inputs import (
+    from set_up_inputs import (
         setUp_x_MetricsList,
         setUpDefaultMetricValsCol, setUp_x_ObsMetricValsDict,
         calcObsGlobalAvgCol
@@ -26,6 +26,9 @@ def config_core(beVerbose: bool):
     # Flag for using bootstrap sampling
     doBootstrapSampling = False
 
+
+    # Flag for enabling additional output of multiple functions
+    beVerbose = False
 
     # L1 regularization coefficient, i.e., penalty on param perturbations in objFnc
     # Increase this value to 0.1 or 0.5 or so if you want to eliminate
@@ -51,11 +54,10 @@ def config_core(beVerbose: bool):
     Enable tests for debugging:
     
     - debug_level 0: Run no additional tests
-    - debug_level 1: Run additional tests and print the results
-    - debug_level 2: Run additional tests and stop upon failure
-
+    - debug_level 1: Run additional tests and stop upon failure
+    
     """
-    debug_level = 2
+    debug_level = 1
 
     # If debug_level > 0: Set delta_param for test
     # Shape should be numParams x 1
@@ -206,7 +208,7 @@ def config_core(beVerbose: bool):
      paramsNamesScalesAndSuffixes, folder_name,
      prescribedParamsNamesScalesAndValues,
      metricsNamesWeightsAndNormsCustom,
-     debug_level, chosen_delta_param)
+     debug_level, chosen_delta_param, beVerbose)
 
 def config_plots(beVerbose: bool, varPrefixes:list[str], paramsNames:list[str]) -> tuple[dict[str, bool], np.ndarray, int, Callable]:
     """
