@@ -410,7 +410,7 @@ def config_core():
             #                          obsPathAndFilename='Regional_files/20231204_30x30regs/'
             #                                             + 'sens0707_20241011_30.0_OBS.nc')
         #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "20241011_20.0_OBS.nc")
-        # setUp_x_ObsMetricValsDict(varPrefixes,suffix='_[0-9]+_', obsPathAndFilename=folder_name + "20.0_OBS.nc")
+        # setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_', obsPathAndFilename=folder_name + "20.0_OBS.nc")
         #setUp_x_ObsMetricValsDict(varPrefixes, "Regional_files/stephens_20240131/btune_regional_files/b1850.075plus_Regional.nc")
         )
 
