@@ -49,7 +49,7 @@ def config_core():
     # Set debug level
     debug_level = 1
     # Set perturbation for the recovery test
-    chosen_delta_param = 0.5 * np.ones((5,1))
+    chosen_delta_param = 0.3
 
     # Number of metrics to tune.
     # If there are more metrics than this, then
@@ -87,7 +87,7 @@ def config_core():
 
     # Directory where the regional files are stored (plus possibly a filename prefix)
     folder_name = 'Regional_files/20250725_2yr_20x20_ANN_BCASE/20.0beta06_'
-    # folder_name = "data/20.0beta06_"
+    # folder_name = "data/cam/20.0beta06_"
     #folder_name = 'Regional_files/20241022_1yr_20x20regs/30.0sens1022_'
     #folder_name = 'Regional_files/20241022_1yr_sst4k_30x30/30p4k1022_'
     #folder_name = 'Regional_files/20250429_1yr_20x20_ANN_CAM/20.0cam078_'
@@ -410,7 +410,7 @@ def config_core():
             #                          obsPathAndFilename='Regional_files/20231204_30x30regs/'
             #                                             + 'sens0707_20241011_30.0_OBS.nc')
         #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "20241011_20.0_OBS.nc")
-        #setUp_x_ObsMetricValsDict(varPrefixes, folder_name + "20.0_OBS.nc")
+        # setUp_x_ObsMetricValsDict(varPrefixes, suffix='_[0-9]+_', obsPathAndFilename=folder_name + "20.0_OBS.nc")
         #setUp_x_ObsMetricValsDict(varPrefixes, "Regional_files/stephens_20240131/btune_regional_files/b1850.075plus_Regional.nc")
         )
 

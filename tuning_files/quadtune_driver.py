@@ -220,6 +220,7 @@ def main(args):
                         normlzdInteractDerivs, interactIdxs)
 
     if debug_level > 0 :
+        chosen_delta_param = chosen_delta_param *  np.ones((len(paramsNames),1))
         check_recovery_of_param_vals(debug_level, chosen_delta_param, normlzdCurvMatrix, normlzdSensMatrixPoly,\
                                 doPiecewise, normlzd_dpMid, normlzdLeftSensMatrix, normlzdRightSensMatrix, numMetrics, normlzdInteractDerivs, interactIdxs,\
                                     metricsNames, metricsWeights, normMetricValsCol, magParamValsRow, defaultParamValsOrigRow, reglrCoef, penaltyCoef, beVerbose)
@@ -1448,10 +1449,9 @@ def check_recovery_of_param_vals(debug_level: int, chosen_delta_param: np.ndarra
                         defaultParamValsOrigRow, normlzdSensMatrixPoly, -normlzdDefaultBiasesApproxNonlin,\
                             normlzdCurvMatrix, doPiecewise, normlzd_dpMid, normlzdLeftSensMatrix,\
                                 normlzdRightSensMatrix, normlzdInteractDerivs, interactIdxs, reglrCoef, penaltyCoef)
-    beVerbose=True
     if beVerbose:
         print(f"\nStart test to check if quadtune can recover prescribed parameter deltas . . .\n")
-        print(f"Prescribed parameter deltas: {nonlin_recovered_delta_param.flatten()}")
+        print(f"Prescribed parameter deltas: {chosen_delta_param.flatten()}")
         print(f"Recovered parameter deltas: {nonlin_recovered_delta_param.flatten()}")
         print(f"Norm(chosen_delta_param - nonlin_recovered_delta_param) = {np.linalg.norm(chosen_delta_param - nonlin_recovered_delta_param)}")            
     
