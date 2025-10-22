@@ -241,22 +241,23 @@ def config_plots(beVerbose: bool, varPrefixes:list[str], paramsNames:list[str]) 
     createPlotType: dict[str, bool] = {
         'paramsErrorBarsFig': False,               # Parameter values with error bars
         'biasesOrderedArrowFig': False,            # Predicted vs. actual global-model bias removal
-        'threeDotFig': False,                       # Quadratic fnc for each metric and parameter
-        'metricsBarChart': False,                   # Visualization of tuning matrix eqn
-        'paramsIncrsBarChart': False,               # Mean parameter contributions to removal of biases
-        'paramsAbsIncrsBarChart': False,            # Squared parameter contributions to bias removal
+        'threeDotFig': False,                      # Quadratic fnc for each metric and parameter
+        'metricsBarChart': False,                  # Visualization of tuning matrix eqn
+        'paramsIncrsBarChart': False,              # Mean parameter contributions to removal of biases
+        'paramsAbsIncrsBarChart': False,           # Squared parameter contributions to bias removal
         'paramsTotContrbBarChart': False,          # Linear + nonlinear contributions to bias removal
         'biasesVsDiagnosticScatterplot': False,    # Scatterplot of biases vs. other fields
         'dpMin2PtFig': False,                      # Min param perturbation needed to simultaneously remove 2 biases
         'dpMinMatrixScatterFig': False,            # Scatterplot of min param perturbation for 2-bias removal
         'projectionMatrixFigs': False,             # Color-coded projection matrix
-        'biasesVsSensMagScatterplot': False,        # Biases vs. parameter sensitivities
+        'biasesVsSensMagScatterplot': False,       # Biases vs. parameter sensitivities
         'biasesVsSvdScatterplot': False,           # Left SV1*bias vs. left SV2*bias
-        'paramsCorrArrayFig': False,                # Color-coded matrix showing correlations among parameters
+        'paramsCorrArrayFig': False,               # Color-coded matrix showing correlations among parameters
         'sensMatrixAndBiasVecFig': False,          # Color-coded matrix equation
         'PcaBiplot': False,                        # Principal components biplot
-        'PcSensMap': False,                         # Maps showing sensitivities to parameters and left singular vectors
-        'vhMatrixFig': False,                       # Color-coded matrix of right singular vectors
+        'PcSensMap': False,                        # Maps showing sensitivities to parameters and left singular vectors
+        'vhMatrixFig': False,                      # Color-coded matrix of right singular vectors
+        'lossFunc2DPlots': False,                  # 2D loss function plots
     }
 
     if beVerbose:

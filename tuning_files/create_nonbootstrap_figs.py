@@ -27,6 +27,10 @@ from dash import html
 import sys
 from re import match
 
+from quadtune_driver import ( lossFncMetrics,
+                                normlzdSemiLinMatrixFnc,
+                                normlzdPiecewiseLinMatrixFnc,
+                                lossFncWithPenalty )
 
 #######################################################################################################
 #
@@ -58,16 +62,15 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                paramsSolnElastic, dnormlzdParamsSolnElastic,
                sensNcFilenames, sensNcFilenamesExt, defaultNcFilename,
                createPlotType,
-               beVerbose, useLongTitle, paramBoundsBoot):
+               normlzdSensMatrix,
+               reglrCoef, penaltyCoef, numMetrics, normlzdInteractDerivs, beVerbose,
+               useLongTitle, paramBoundsBoot):
     """
     Create figures for display on a plotly dash dashboard.
     The figures are based on a single optimal parameter set,
     rather than a bootstrap ensemble of parameter sets.
     """
     
-    from quadtune_driver import ( lossFncMetrics,
-                                  normlzdSemiLinMatrixFnc,
-                                  normlzdPiecewiseLinMatrixFnc )
 
     print("Creating plots . . .")
 
@@ -985,6 +988,22 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
             printCellText=True
         )
 
+    if createPlotType["lossFunc2DPlots"]:
+        print("Creating 2D loss function plots . . .")
+    
+        perturbs = np.linspace(-1,2,101)
+        lossFunc2DPlots = create2DLossFunctionPlots(perturbs, dnormlzdParamsSolnNonlin,
+                               normlzdSensMatrix, normlzdDefaultBiasesCol,
+                               metricsWeights, normlzdCurvMatrix,
+                                doPiecewise, normlzd_dpMid,
+                                 normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                                reglrCoef, penaltyCoef, numMetrics,
+                                normlzdInteractDerivs, interactIdxs,paramsNames)
+
+        
+    
+        
+
 
     external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -1098,6 +1117,11 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     if False:
         dashboardChildren.append(dcc.Graph(id='biasesVsSensArrowFig', figure=biasesVsSensArrowFig,
                                            config=downloadConfig))
+        
+    if createPlotType["lossFunc2DPlots"]:
+        for idx,lossFuncPlot in enumerate(lossFunc2DPlots):
+            dashboardChildren.append(dcc.Graph(id=f'lossFunc2DPlot_{idx}', figure=lossFuncPlot,
+                                               config=downloadConfig))
 
     print("At end of createFigs . . .")
     ##redundant dcc.Graph( id='biasTotContrbBarFig', figure=biasTotContrbBarFig ),
@@ -3616,6 +3640,88 @@ def createPcaBiplot(normlzdSensMatrix, normlzdDefaultBiasesCol,
 
 
     return PcaBiplotFig
+
+
+def create2DLossFunctionPlots(
+    perturbs, dnormlzdParamsSolnNonlin,
+    normlzdSensMatrix, normlzdDefaultBiasesCol,
+    metricsWeights, normlzdCurvMatrix,
+    doPiecewise, normlzd_dpMid,
+    normlzdLeftSensMatrix, normlzdRightSensMatrix,
+    reglrCoef, penaltyCoef, numMetrics,
+    normlzdInteractDerivs, interactIdxs, paramsNames
+):
+    plots = []
+    num_params = len(dnormlzdParamsSolnNonlin)
+    plot_vals = np.empty((num_params, len(perturbs)))
+
+    for param_idx, para in enumerate(dnormlzdParamsSolnNonlin.flatten()):
+        for perturbed_idx, perturb in enumerate(perturbs):
+            current_vals = dnormlzdParamsSolnNonlin.copy().flatten()
+            current_vals[param_idx] = para * perturb
+
+            testLoss = lossFncWithPenalty(
+                current_vals,
+                normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
+                normlzdCurvMatrix,
+                doPiecewise, normlzd_dpMid,
+                normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                reglrCoef, penaltyCoef, numMetrics,
+                normlzdInteractDerivs, interactIdxs
+            )
+            plot_vals[param_idx, perturbed_idx] = testLoss
+
+    for idx, param in enumerate(dnormlzdParamsSolnNonlin):
+        x_vals = perturbs * param
+        y_vals = plot_vals[idx, :]
+
+        min_idx = np.argmin(y_vals)
+        min_x = x_vals[min_idx]
+        min_y = y_vals[min_idx]
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=x_vals, y=y_vals,
+            mode='lines',
+            name='Loss Function',
+            line=dict(color='blue')
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=[min_x], y=[min_y],
+            mode='markers',
+            name='Minimum Loss (in this range)',
+            marker=dict(color='red', size=10)
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=[dnormlzdParamsSolnNonlin[idx]], y=[min_y],
+            mode='markers',
+            name='QuadTuned Parameter Value',
+            marker=dict(color='green', size=10)
+        ))
+
+        fig.add_shape(type='line',
+            x0=dnormlzdParamsSolnNonlin.flatten()[idx], 
+            x1=dnormlzdParamsSolnNonlin.flatten()[idx],
+            y0=np.min(y_vals), y1=np.max(y_vals),
+            name='QuadTuned Parameter Value',
+            xref='x', yref='y',
+            line=dict(color='green', dash='dash')
+        )
+
+        fig.update_layout(
+            title=f"2D Loss Function for Parameter {paramsNames[idx]}",
+            xaxis_title="Parameter Value",
+            yaxis_title="Loss Function Value",
+            legend=dict(x=0.02, y=0.98),
+            width=800, height=500
+        )
+
+        plots.append(fig)
+
+    return plots
 
 
 def oldCode():
