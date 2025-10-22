@@ -998,7 +998,7 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                                 doPiecewise, normlzd_dpMid,
                                  normlzdLeftSensMatrix, normlzdRightSensMatrix,
                                 reglrCoef, penaltyCoef, numMetrics,
-                                normlzdInteractDerivs, interactIdxs,paramsNames)
+                                normlzdInteractDerivs, interactIdxs, paramsNames)
 
         
     
@@ -3682,41 +3682,41 @@ def create2DLossFunctionPlots(
         fig = go.Figure()
 
         fig.add_trace(go.Scatter(
-            x=x_vals, y=y_vals,
-            mode='lines',
-            name='Loss Function',
-            line=dict(color='blue')
+            x = x_vals, y = y_vals,
+            mode = 'lines',
+            name = 'Loss Function',
+            line = dict(color = 'blue')
         ))
 
         fig.add_trace(go.Scatter(
-            x=[min_x], y=[min_y],
-            mode='markers',
-            name='Minimum Loss (in this range)',
-            marker=dict(color='red', size=10)
+            x = [min_x], y = [min_y],
+            mode = 'markers',
+            name = 'Minimum Loss (in this range)',
+            marker = dict(color = 'red', size = 10)
         ))
 
         fig.add_trace(go.Scatter(
-            x=[dnormlzdParamsSolnNonlin[idx]], y=[min_y],
-            mode='markers',
-            name='QuadTuned Parameter Value',
-            marker=dict(color='green', size=10)
+            x = [dnormlzdParamsSolnNonlin[idx]], y = [min_y],
+            mode = 'markers',
+            name = 'QuadTuned Parameter Value',
+            marker = dict(color = 'green', size = 10)
         ))
 
         fig.add_shape(type='line',
-            x0=dnormlzdParamsSolnNonlin.flatten()[idx], 
-            x1=dnormlzdParamsSolnNonlin.flatten()[idx],
-            y0=np.min(y_vals), y1=np.max(y_vals),
-            name='QuadTuned Parameter Value',
-            xref='x', yref='y',
-            line=dict(color='green', dash='dash')
+            x0 = dnormlzdParamsSolnNonlin.flatten()[idx], 
+            x1 = dnormlzdParamsSolnNonlin.flatten()[idx],
+            y0 = np.min(y_vals), y1 = np.max(y_vals),
+            name = 'QuadTuned Parameter Value',
+            xref = 'x', yref = 'y',
+            line = dict(color = 'green', dash = 'dash')
         )
 
         fig.update_layout(
-            title=f"2D Loss Function for Parameter {paramsNames[idx]}",
-            xaxis_title="Parameter Value",
-            yaxis_title="Loss Function Value",
-            legend=dict(x=0.02, y=0.98),
-            width=800, height=500
+            title = f"2D Loss Function for Parameter {paramsNames[idx]}",
+            xaxis_title = "Parameter Value",
+            yaxis_title = "Loss Function Value",
+            legend = dict(x = 0.02, y = 0.98),
+            width = 800, height = 500
         )
 
         plots.append(fig)
