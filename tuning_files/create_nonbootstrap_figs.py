@@ -1120,12 +1120,26 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                                            config=downloadConfig))
         
     if createPlotType["lossFncVsParamFig"]:
-        for idx,lossFuncPlot in enumerate(lossFncVsParamPanelList):
-            dashboardChildren.append(dcc.Graph(id=f'lossFunc2DPlot_{idx}', figure=lossFuncPlot,
-                                               config=downloadConfig))
+
+        left_panels = lossFncVsParamPanelList[0::2]
+        right_panels = lossFncVsParamPanelList[1::2]
+
+        left_col = html.Div(
+            [dcc.Graph(id=f'lossFunc2DPlot_left_{i}', figure=fig, config=downloadConfig)
+             for i, fig in enumerate(left_panels)],
+            style={'width': '50%' }
+        )
+        right_col = html.Div(
+            [dcc.Graph(id=f'lossFunc2DPlot_right_{i}', figure=fig, config=downloadConfig)
+             for i, fig in enumerate(right_panels)],
+            style={'width': '50%'}
+        )
+
+        dashboardChildren.append(
+            html.Div([left_col, right_col], style={'display': 'flex'})
+        )
 
     print("At end of createFigs . . .")
-    ##redundant dcc.Graph( id='biasTotContrbBarFig', figure=biasTotContrbBarFig ),
 
     sensMatrixDashboard.layout = html.Div(children=dashboardChildren)
 
@@ -3711,11 +3725,10 @@ def createLossFncVsParamPanels(
         )
 
         fig.update_layout(
-            title = f"Loss function vs. parameter {paramsNames[idx]}, with other parameters at their QuadTuned values",
+            title = f"Loss function vs. parameter {paramsNames[idx]}, with other parameters at QuadTuned values",
             xaxis_title = "Parameter Value",
             yaxis_title = "Loss Function Value",
-            legend = dict(x = 0.02, y = 0.98),
-            width = 800, height = 500
+            legend = dict(x = 0.02, y = 0.98)
         )
 
         plots.append(fig)
