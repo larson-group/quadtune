@@ -532,7 +532,8 @@ def main(args):
                 sensNcFilenames, sensNcFilenamesExt, defaultNcFilename,
                 createPlotType,
                 normlzdSensMatrixPoly,
-                reglrCoef, penaltyCoef, numMetrics, normlzdInteractDerivs, beVerbose,
+                reglrCoef, penaltyCoef, numMetrics,
+                beVerbose,
                 useLongTitle=False, paramBoundsBoot=paramBoundsBoot)
 
     return paramsSolnNonlin, paramsNames

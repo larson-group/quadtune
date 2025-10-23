@@ -649,7 +649,7 @@ def config_plots(beVerbose: bool, varPrefixes:list[str], paramsNames:list[str]) 
         'PcaBiplot': False,                        # Principal components biplot
         'PcSensMap': True,                         # Maps showing sensitivities to parameters and left singular vectors
         'vhMatrixFig': True,                       # Color-coded matrix of right singular vectors
-        'lossFunc2DPlots': True,                   # 2D loss function plots
+        'lossFncVsParamFig': True,                 # 2D loss function plots
     }
 
     if beVerbose:
