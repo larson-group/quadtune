@@ -28,6 +28,8 @@ import sys
 from re import match
 
 
+import quadtune_driver
+
 #######################################################################################################
 #
 #    Create the diagnostic plots that do *not* require a bootstrap ensemble of parameter/metric values,
@@ -47,7 +49,7 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                normlzdCurvMatrix, normlzdSensMatrixPoly, normlzdConstMatrix,
                doPiecewise, normlzd_dpMid,
                normlzdLeftSensMatrix, normlzdRightSensMatrix,
-               interactDerivs, interactIdxs,
+               normlzdInteractDerivs, interactIdxs,
                normlzdOrdDparamsMin, normlzdOrdDparamsMax,
                normlzdWeightedSensMatrixPoly,
                dnormlzdParamsSolnNonlin,
@@ -58,16 +60,16 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
                paramsSolnElastic, dnormlzdParamsSolnElastic,
                sensNcFilenames, sensNcFilenamesExt, defaultNcFilename,
                createPlotType,
-               beVerbose, useLongTitle, paramBoundsBoot):
+               normlzdSensMatrix,
+               reglrCoef, penaltyCoef, numMetrics,
+               beVerbose,
+               useLongTitle, paramBoundsBoot):
     """
     Create figures for display on a plotly dash dashboard.
     The figures are based on a single optimal parameter set,
     rather than a bootstrap ensemble of parameter sets.
     """
     
-    from quadtune_driver import ( lossFncMetrics,
-                                  normlzdSemiLinMatrixFnc,
-                                  normlzdPiecewiseLinMatrixFnc )
 
     print("Creating plots . . .")
 
@@ -101,40 +103,40 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     metricsNamesOrdered = metricsNames[metricsSensOrder]  # list of metrics names, ordered from least to most sensitive
 
     # Estimated loss function values in the global simulation upon tuning.
-    tunedLossCol = lossFncMetrics(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
+    tunedLossCol = quadtune_driver.lossFncMetrics(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol, metricsWeights,
                    normlzdCurvMatrix,
                    doPiecewise, normlzd_dpMid,
                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
                    len(metricsNames),
-                   interactDerivs, interactIdxs)
+                   normlzdInteractDerivs, interactIdxs)
 
-    tunedLossColUnweighted = lossFncMetrics(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
+    tunedLossColUnweighted = quadtune_driver.lossFncMetrics(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol,
                    np.average(metricsWeights)*np.ones_like(metricsWeights),
                    normlzdCurvMatrix,
                    doPiecewise, normlzd_dpMid,
                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
                    len(metricsNames),
-                   interactDerivs, interactIdxs)
+                   normlzdInteractDerivs, interactIdxs)
 
     # Loss function values in the default-parameter global simulation.
-    defaultLossCol = lossFncMetrics(np.zeros_like(dnormlzdParamsSolnNonlin), normlzdSensMatrixPoly,
+    defaultLossCol = quadtune_driver.lossFncMetrics(np.zeros_like(dnormlzdParamsSolnNonlin), normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol, metricsWeights,
                    normlzdCurvMatrix,
                    doPiecewise, normlzd_dpMid,
                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
                    len(metricsNames),
-                   interactDerivs, interactIdxs)
+                   normlzdInteractDerivs, interactIdxs)
 
-    defaultLossColUnweighted = lossFncMetrics(np.zeros_like(dnormlzdParamsSolnNonlin), normlzdSensMatrixPoly,
+    defaultLossColUnweighted = quadtune_driver.lossFncMetrics(np.zeros_like(dnormlzdParamsSolnNonlin), normlzdSensMatrixPoly,
                    normlzdDefaultBiasesCol,
                    np.average(metricsWeights)*np.ones_like(metricsWeights),
                    normlzdCurvMatrix,
                    doPiecewise, normlzd_dpMid,
                    normlzdLeftSensMatrix, normlzdRightSensMatrix,
                    len(metricsNames),
-                   interactDerivs, interactIdxs)
+                   normlzdInteractDerivs, interactIdxs)
 
     # Estimate how the loss function value changes with tuning in each region.
     tunedLossChange = tunedLossCol - defaultLossCol
@@ -255,17 +257,17 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     # Form matrix of parameter perturbations, for later multiplication into the sensitivity matrix
     if doPiecewise:
         linMatrixDparams = \
-            normlzdPiecewiseLinMatrixFnc(dnormlzdParamsSolnNonlin, normlzd_dpMid,
+            quadtune_driver.normlzdPiecewiseLinMatrixFnc(dnormlzdParamsSolnNonlin, normlzd_dpMid,
                                          normlzdLeftSensMatrix, normlzdRightSensMatrix) \
             * dnormlzdParamsSolnNonlinMatrix
         curvMatrixDparams = np.zeros_like(linMatrixDparams)
     else:
         linMatrixDparams = \
-            normlzdSemiLinMatrixFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
+            quadtune_driver.normlzdSemiLinMatrixFnc(dnormlzdParamsSolnNonlin, normlzdSensMatrixPoly,
                                 np.zeros_like(normlzdCurvMatrix), len(metricsNames)) \
             * dnormlzdParamsSolnNonlinMatrix
         curvMatrixDparams = \
-            normlzdSemiLinMatrixFnc(dnormlzdParamsSolnNonlin, np.zeros_like(normlzdSensMatrixPoly),
+            quadtune_driver.normlzdSemiLinMatrixFnc(dnormlzdParamsSolnNonlin, np.zeros_like(normlzdSensMatrixPoly),
                                 normlzdCurvMatrix, len(metricsNames)) \
             * dnormlzdParamsSolnNonlinMatrix
 
@@ -985,6 +987,24 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
             printCellText=True
         )
 
+    if createPlotType["lossFncVsParamFig"]:
+        print("Creating 2D loss function plots . . .")
+    
+        
+        # perturbFactors contains a list of factors by which the tuned parameter perturbations are perturbed, before evaluating the loss function
+        perturbFactors = np.linspace(-1,2,101)
+        lossFncVsParamPanelList = createLossFncVsParamPanels(perturbFactors, dnormlzdParamsSolnNonlin,
+                                normlzdSensMatrix, normlzdDefaultBiasesCol,
+                                metricsWeights, normlzdCurvMatrix,
+                                doPiecewise, normlzd_dpMid,
+                                normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                                reglrCoef, penaltyCoef, numMetrics,
+                                normlzdInteractDerivs, interactIdxs, paramsNames)
+
+        
+    
+        
+
 
     external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
@@ -1098,9 +1118,28 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     if False:
         dashboardChildren.append(dcc.Graph(id='biasesVsSensArrowFig', figure=biasesVsSensArrowFig,
                                            config=downloadConfig))
+        
+    if createPlotType["lossFncVsParamFig"]:
+
+        left_panels = lossFncVsParamPanelList[0::2]
+        right_panels = lossFncVsParamPanelList[1::2]
+
+        left_col = html.Div(
+            [dcc.Graph(id=f'lossFunc2DPlot_left_{i}', figure=fig, config=downloadConfig)
+             for i, fig in enumerate(left_panels)],
+            style={'width': '50%' }
+        )
+        right_col = html.Div(
+            [dcc.Graph(id=f'lossFunc2DPlot_right_{i}', figure=fig, config=downloadConfig)
+             for i, fig in enumerate(right_panels)],
+            style={'width': '50%'}
+        )
+
+        dashboardChildren.append(
+            html.Div([left_col, right_col], style={'display': 'flex'})
+        )
 
     print("At end of createFigs . . .")
-    ##redundant dcc.Graph( id='biasTotContrbBarFig', figure=biasTotContrbBarFig ),
 
     sensMatrixDashboard.layout = html.Div(children=dashboardChildren)
 
@@ -3616,6 +3655,85 @@ def createPcaBiplot(normlzdSensMatrix, normlzdDefaultBiasesCol,
 
 
     return PcaBiplotFig
+
+
+def createLossFncVsParamPanels(
+    perturbFactors, dnormlzdParamsSolnNonlin,
+    normlzdSensMatrix, normlzdDefaultBiasesCol,
+    metricsWeights, normlzdCurvMatrix,
+    doPiecewise, normlzd_dpMid,
+    normlzdLeftSensMatrix, normlzdRightSensMatrix,
+    reglrCoef, penaltyCoef, numMetrics,
+    normlzdInteractDerivs, interactIdxs, paramsNames
+):
+    plots = []
+    num_params = len(dnormlzdParamsSolnNonlin)
+    plot_vals = np.empty((num_params, len(perturbFactors)))
+
+    for param_idx, paramVal in enumerate(dnormlzdParamsSolnNonlin.flatten()):
+        for perturbed_idx, perturbFactor in enumerate(perturbFactors):
+            currentParamVals = dnormlzdParamsSolnNonlin.copy().flatten()
+            currentParamVals[param_idx] = paramVal * perturbFactor
+
+            plot_vals[param_idx, perturbed_idx] = quadtune_driver.lossFncWithPenalty(
+                currentParamVals,
+                normlzdSensMatrix, normlzdDefaultBiasesCol, metricsWeights,
+                normlzdCurvMatrix,
+                doPiecewise, normlzd_dpMid,
+                normlzdLeftSensMatrix, normlzdRightSensMatrix,
+                reglrCoef, penaltyCoef, numMetrics,
+                normlzdInteractDerivs, interactIdxs)
+
+    for idx, paramVal in enumerate(dnormlzdParamsSolnNonlin):
+        x_vals = perturbFactors * paramVal
+        y_vals = plot_vals[idx, :]
+
+        min_idx = np.argmin(y_vals)
+        min_x = x_vals[min_idx]
+        min_y = y_vals[min_idx]
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x = x_vals, y = y_vals,
+            mode = 'lines',
+            name = 'Loss Function',
+            line = dict(color = 'blue')
+        ))
+
+        fig.add_trace(go.Scatter(
+            x = [min_x], y = [min_y],
+            mode = 'markers',
+            name = 'Minimum Loss (in this range)',
+            marker = dict(color = 'red', size = 10)
+        ))
+
+        fig.add_trace(go.Scatter(
+            x = [dnormlzdParamsSolnNonlin[idx]], y = [min_y],
+            mode = 'markers',
+            name = 'QuadTuned Parameter Value',
+            marker = dict(color = 'green', size = 10)
+        ))
+
+        fig.add_shape(type='line',
+            x0 = dnormlzdParamsSolnNonlin.flatten()[idx], 
+            x1 = dnormlzdParamsSolnNonlin.flatten()[idx],
+            y0 = np.min(y_vals), y1 = np.max(y_vals),
+            name = 'QuadTuned Parameter Value',
+            xref = 'x', yref = 'y',
+            line = dict(color = 'green', dash = 'dash')
+        )
+
+        fig.update_layout(
+            title = f"Loss function vs. parameter {paramsNames[idx]}, with other parameters at QuadTuned values",
+            xaxis_title = "Parameter Value",
+            yaxis_title = "Loss Function Value",
+            legend = dict(x = 0.02, y = 0.98)
+        )
+
+        plots.append(fig)
+
+    return plots
 
 
 def oldCode():

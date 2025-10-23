@@ -531,7 +531,10 @@ def main(args):
                 paramsSolnElastic, dnormlzdParamsSolnElastic,
                 sensNcFilenames, sensNcFilenamesExt, defaultNcFilename,
                 createPlotType,
-                beVerbose, useLongTitle=False, paramBoundsBoot=paramBoundsBoot)
+                normlzdSensMatrixPoly,
+                reglrCoef, penaltyCoef, numMetrics,
+                beVerbose,
+                useLongTitle=False, paramBoundsBoot=paramBoundsBoot)
 
     return paramsSolnNonlin, paramsNames
 
