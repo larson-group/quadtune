@@ -3670,8 +3670,8 @@ def createLossFncVsParamPanels(
                 reglrCoef, penaltyCoef, numMetrics,
                 normlzdInteractDerivs, interactIdxs)
 
-    for idx, param in enumerate(dnormlzdParamsSolnNonlin):
-        x_vals = perturbFactors * param
+    for idx, paramVal in enumerate(dnormlzdParamsSolnNonlin):
+        x_vals = perturbFactors * paramVal
         y_vals = plot_vals[idx, :]
 
         min_idx = np.argmin(y_vals)
