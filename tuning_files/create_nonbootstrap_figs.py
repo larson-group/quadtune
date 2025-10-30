@@ -1144,6 +1144,9 @@ def createFigs(numMetricsNoSpecial, metricsNames, metricsNamesNoprefix,
     sensMatrixDashboard.layout = html.Div(children=dashboardChildren)
 
     sensMatrixDashboard.run(debug=True, use_reloader=False)
+    # Some older versions of python require the dash_core_components library,
+    #    which requires run_server
+    #sensMatrixDashboard.run_server(debug=True, use_reloader=False)
 
     return
 

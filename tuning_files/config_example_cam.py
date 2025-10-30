@@ -677,11 +677,13 @@ def config_bootstrap(beVerbose: bool) -> tuple[int,str,str]:
     numBootstrapSamples: int = 100
 
     # Directory where the SST4K regional files are stored (plus possibly a filename prefix)
-    folder_name_SST4K = 'Regional_files/20241022_1yr_sst4k_20x20/20p4k1022_'
+    #folder_name_SST4K = 'Regional_files/20241022_1yr_sst4k_20x20/20p4k1022_'
+    folder_name_SST4K = 'Regional_files/20250725_2yr_20x20_ANN_BCASE/20.0beta06_'
 
     defaultSST4KNcFilename = \
     (
-        folder_name_SST4K + '1_Regional.nc'
+        #folder_name_SST4K + '1_Regional.nc'
+        folder_name_SST4K + 'dflt_Regional.nc'
     )
 
     return numBootstrapSamples, folder_name_SST4K, defaultSST4KNcFilename
